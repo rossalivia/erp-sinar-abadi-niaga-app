@@ -30,6 +30,7 @@ interface BadgeStatusProps {
 const STATUS_VARIANT_MAP: Record<string, BadgeProps['variant']> = {
   // Status Pesanan Jual & Pembelian
   draf: 'neutral',
+  dikonfirmasi: 'info',
   menunggu_persetujuan: 'warning',
   disetujui: 'info',
   diproses: 'info',
@@ -53,6 +54,7 @@ const STATUS_VARIANT_MAP: Record<string, BadgeProps['variant']> = {
 
 const STATUS_LABEL_MAP: Record<string, string> = {
   draf: 'Draf',
+  dikonfirmasi: 'Dikonfirmasi',
   menunggu_persetujuan: 'Menunggu Persetujuan',
   disetujui: 'Disetujui',
   diproses: 'Diproses',
