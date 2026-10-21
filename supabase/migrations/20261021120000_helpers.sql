@@ -19,6 +19,7 @@ BEGIN
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'service_role') THEN
     CREATE ROLE service_role NOLOGIN;
   END IF;
+  GRANT USAGE ON SCHEMA public TO anon, authenticated;
 END $$;
 
 -- Mock / helper auth.uid() jika belum tersedia di lingkungan pengujian

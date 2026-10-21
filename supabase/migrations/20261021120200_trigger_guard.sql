@@ -43,8 +43,15 @@ BEGIN
   END IF;
 
   -- Perubahan harga_jual atau harga_pokok hanya boleh oleh Manajer (E23)
-  IF (OLD.harga_jual IS DISTINCT FROM NEW.harga_jual) OR (OLD.harga_pokok IS DISTINCT FROM NEW.harga_pokok) THEN
+  -- Catatan: harga_pokok dapat diperbarui secara tidak langsung oleh Gudang saat penerimaan pembelian (app.terima_pembelian = '1')
+  IF (OLD.harga_jual IS DISTINCT FROM NEW.harga_jual) THEN
     IF NOT public.fn_is_manajer() THEN
+      RAISE EXCEPTION 'Hanya Manajer yang dapat mengubah harga';
+    END IF;
+  END IF;
+
+  IF (OLD.harga_pokok IS DISTINCT FROM NEW.harga_pokok) THEN
+    IF NOT public.fn_is_manajer() AND COALESCE(current_setting('app.terima_pembelian', true), '') <> '1' THEN
       RAISE EXCEPTION 'Hanya Manajer yang dapat mengubah harga';
     END IF;
   END IF;
