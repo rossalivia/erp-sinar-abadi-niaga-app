@@ -102,13 +102,20 @@ Pemeriksaan kepatuhan terhadap Panduan Desain ERP Profesional ([AGENTS.md](../AG
 
 ## 5. Delivery & Artefak Rilis
 
-1. **Konfigurasi Deployment Netlify:**
+1. **Konfigurasi & Proyek Deployment Netlify:**
+   - Proyek Netlify telah dibuat: [erp-sinar-abadi-niaga](https://app.netlify.com/projects/erp-sinar-abadi-niaga) (Site ID: `7f84b7cd-f2bf-4de0-8f61-42b87f16efba`).
+   - Domain produksi: `https://erp-sinar-abadi-niaga.netlify.app`.
+   - Environment variables (`NEXT_PUBLIC_SUPABASE_URL` dan `NEXT_PUBLIC_SUPABASE_ANON_KEY`) telah diinjeksikan secara otomatis ke konfigurasi Netlify.
    - File [netlify.toml](../netlify.toml) telah dikonfigurasi dengan build command `npm run build`, plugin `@netlify/plugin-nextjs`, Node 20 LTS, dan headers keamanan & noindex otomatis.
-2. **Automated CI Pipeline:**
-   - File [.github/workflows/ci.yml](../.github/workflows/ci.yml) menyediakan pipeline otomatis pada setiap push ke branch `main`: lint, typecheck, unit test Vitest, dan build verifikasi.
-3. **Data Demo Bersih:**
+   - *Catatan kuota:* Akun Netlify saat ini berstatus *build credit usage exceeded*; deployment otomatis dapat di-trigger ulang segera setelah kuota bulanan reset atau menghubungkan repository GitHub langsung via Netlify dashboard.
+2. **Automated CI Pipeline (GitHub Actions):**
+   - File [.github/workflows/ci.yml](../.github/workflows/ci.yml) aktif pada setiap push ke branch `main`.
+   - Pipeline CI sukses 100% (*green*): linting, typechecking, 61 unit tests Vitest, dan build Next.js produksi lulus tanpa kesalahan.
+3. **GitHub Release Resmi:**
+   - Release v1.0.0 resmi telah diterbitkan: [Release v1.0.0](https://github.com/rossalivia/erp-sinar-abadi-niaga-app/releases/tag/v1.0.0).
+4. **Data Demo Bersih:**
    - File [supabase/seed-demo.sql](../supabase/seed-demo.sql) telah disiapkan berisi data master katalog 15 barang, 6 pelanggan, 4 pemasok, dan saldo awal kartu stok yang atomik TANPA memuat akun kredensial atau password nyata.
-4. **Dokumentasi Pengguna & Pengembang:**
+5. **Dokumentasi Pengguna & Pengembang:**
    - File [README.md](../README.md) menyajikan petunjuk lengkap instalasi, dependensi, akun uji peran, struktur arsitektur sistem, serta panduan deployment ke Netlify.
 
 ---
