@@ -39,6 +39,12 @@ export const MENU_ITEMS: MenuItem[] = [
     roles: ['gudang', 'manajer'],
   },
   {
+    title: 'Pemasok',
+    href: '/pemasok',
+    icon: 'Building2',
+    roles: ['gudang', 'manajer'],
+  },
+  {
     title: 'Laporan',
     href: '/laporan',
     icon: 'BarChart3',
@@ -46,9 +52,15 @@ export const MENU_ITEMS: MenuItem[] = [
   },
   {
     title: 'Akun & Peran',
-    href: '/pengaturan/akun',
+    href: '/akun',
     icon: 'UserCog',
     roles: ['manajer'],
+  },
+  {
+    title: 'Profil Saya',
+    href: '/profil',
+    icon: 'User',
+    roles: ['penjualan', 'gudang', 'manajer'],
   },
   {
     title: 'Audit Log',
@@ -60,11 +72,15 @@ export const MENU_ITEMS: MenuItem[] = [
 
 export const ROUTE_PERMISSIONS: { pattern: RegExp; roles: Peran[] }[] = [
   { pattern: /^\/($|dashboard)/, roles: ['penjualan', 'gudang', 'manajer'] },
+  { pattern: /^\/barang\/baru/, roles: ['manajer'] },
   { pattern: /^\/barang/, roles: ['penjualan', 'gudang', 'manajer'] },
   { pattern: /^\/pelanggan/, roles: ['penjualan', 'manajer'] },
+  { pattern: /^\/pemasok/, roles: ['gudang', 'manajer'] },
   { pattern: /^\/pesanan/, roles: ['penjualan', 'gudang', 'manajer'] },
   { pattern: /^\/pembelian/, roles: ['gudang', 'manajer'] },
   { pattern: /^\/laporan/, roles: ['manajer'] },
+  { pattern: /^\/akun/, roles: ['manajer'] },
+  { pattern: /^\/profil/, roles: ['penjualan', 'gudang', 'manajer'] },
   { pattern: /^\/pengaturan/, roles: ['manajer'] },
 ];
 

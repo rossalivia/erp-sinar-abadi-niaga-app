@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import { Menu, LogOut, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -49,7 +50,11 @@ export function Header({ user, onOpenMobileSidebar }: HeaderProps) {
 
       {/* Sisi Kanan: Pengguna & Tombol Keluar */}
       <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2">
+        <Link
+          href="/profil"
+          className="flex items-center gap-2 hover:bg-slate-50 p-1.5 rounded-md transition-colors"
+          title="Buka Profil Saya"
+        >
           <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-slate-600">
             <User className="h-4 w-4" />
           </div>
@@ -64,7 +69,7 @@ export function Header({ user, onOpenMobileSidebar }: HeaderProps) {
           <Badge variant={peranInfo.variant} className="ml-1 text-[10px] py-0">
             {user.peran}
           </Badge>
-        </div>
+        </Link>
 
         <div className="h-4 w-px bg-slate-200 mx-1" />
 

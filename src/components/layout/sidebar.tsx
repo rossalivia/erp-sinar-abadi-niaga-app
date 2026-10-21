@@ -12,6 +12,7 @@ import {
   BarChart3,
   UserCog,
   ShieldAlert,
+  User,
   Building2,
   X,
   LucideIcon,
@@ -26,8 +27,10 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Users,
   ShoppingCart,
   Truck,
+  Building2,
   BarChart3,
   UserCog,
+  User,
   ShieldAlert,
 };
 
