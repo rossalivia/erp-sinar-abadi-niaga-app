@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
-import { ShieldCheck, UserCheck } from 'lucide-react';
 import { DataTable, Column } from '@/components/shared/data-table';
 import { BadgeStatus } from '@/components/shared/badge-status';
 import { Badge } from '@/components/ui/badge';

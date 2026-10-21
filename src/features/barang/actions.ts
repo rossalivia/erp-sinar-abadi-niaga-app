@@ -46,7 +46,7 @@ export async function buatBarangAction(
     p_satuan: parsed.data.satuan,
     p_harga_jual: parsed.data.harga_jual,
     p_stok_minimum: parsed.data.stok_minimum,
-    p_harga_pokok: parsed.data.harga_pokok ?? null,
+    p_harga_pokok: parsed.data.harga_pokok ?? undefined,
   });
 
   if (error) {

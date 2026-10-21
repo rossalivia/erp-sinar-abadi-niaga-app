@@ -13,6 +13,12 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
+import type { Database } from '@/types/database';
+
+type BarangRowManajer = Database['public']['Views']['v_barang_manajer']['Row'];
+type BarangRowPublik = Database['public']['Views']['v_barang']['Row'];
+type BarangItem = BarangRowManajer | BarangRowPublik;
+
 export default async function DetailBarangPage({ params }: PageProps) {
   const profile = await getProfil();
   if (!profile) {
@@ -23,7 +29,7 @@ export default async function DetailBarangPage({ params }: PageProps) {
   const isManajer = profile.peran === 'manajer';
   const supabase = await createServerClient();
 
-  let barangData: any = null;
+  let barangData: BarangItem | null = null;
 
   if (isManajer) {
     const { data, error } = await supabase

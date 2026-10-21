@@ -25,10 +25,10 @@ import {
 import type { Peran } from '@/types/auth';
 
 interface BarangData {
-  id: string;
-  kode: string;
-  nama: string;
-  satuan: string;
+  id?: string | null;
+  kode?: string | null;
+  nama?: string | null;
+  satuan?: string | null;
   harga_jual: number | null;
   stok: number | null;
   stok_minimum: number | null;
@@ -53,7 +53,6 @@ export function BarangDetailView({ barang, peran }: BarangDetailViewProps) {
 
   const isManajer = peran === 'manajer';
   const isGudang = peran === 'gudang';
-  const isPenjualan = peran === 'penjualan';
   const canEditData = isManajer || isGudang;
 
   const stok = Number(barang.stok ?? 0);
@@ -66,10 +65,11 @@ export function BarangDetailView({ barang, peran }: BarangDetailViewProps) {
 
   const handleUpdateData = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!barang.id) return;
     const formData = new FormData(e.currentTarget);
 
     startTransitionData(async () => {
-      const res = await ubahBarangAction(barang.id, null, formData);
+      const res = await ubahBarangAction(barang.id!, null, formData);
       if (!res.success) {
         toast.error(res.message || 'Gagal memperbarui data barang');
       } else {
@@ -81,10 +81,11 @@ export function BarangDetailView({ barang, peran }: BarangDetailViewProps) {
 
   const handleUpdateHargaJual = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!barang.id) return;
     const formData = new FormData(e.currentTarget);
 
     startTransitionHargaJual(async () => {
-      const res = await ubahHargaJualAction(barang.id, null, formData);
+      const res = await ubahHargaJualAction(barang.id!, null, formData);
       if (!res.success) {
         toast.error(res.message || 'Gagal mengubah harga jual');
       } else {
@@ -96,10 +97,11 @@ export function BarangDetailView({ barang, peran }: BarangDetailViewProps) {
 
   const handleUpdateHargaPokok = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!barang.id) return;
     const formData = new FormData(e.currentTarget);
 
     startTransitionHargaPokok(async () => {
-      const res = await ubahHargaPokokAction(barang.id, null, formData);
+      const res = await ubahHargaPokokAction(barang.id!, null, formData);
       if (!res.success) {
         toast.error(res.message || 'Gagal mengubah harga pokok');
       } else {
@@ -227,7 +229,7 @@ export function BarangDetailView({ barang, peran }: BarangDetailViewProps) {
                     <Input
                       id="nama"
                       name="nama"
-                      defaultValue={barang.nama}
+                      defaultValue={barang.nama || ''}
                       required
                       disabled={isPendingData}
                     />
@@ -238,7 +240,7 @@ export function BarangDetailView({ barang, peran }: BarangDetailViewProps) {
                       <Input
                         id="satuan"
                         name="satuan"
-                        defaultValue={barang.satuan}
+                        defaultValue={barang.satuan || ''}
                         required
                         disabled={isPendingData}
                       />

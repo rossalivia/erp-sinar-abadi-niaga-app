@@ -51,8 +51,8 @@ export async function buatPelangganAction(
   const { data, error } = await supabase.rpc('rpc_buat_pelanggan', {
     p_kode: parsed.data.kode,
     p_nama_toko: parsed.data.nama_toko,
-    p_telepon: parsed.data.telepon || null,
-    p_alamat: parsed.data.alamat || null,
+    p_telepon: parsed.data.telepon || undefined,
+    p_alamat: parsed.data.alamat || undefined,
     p_termin_hari: parsed.data.termin_hari,
     p_batas_kredit: batasKreditKirim,
   });

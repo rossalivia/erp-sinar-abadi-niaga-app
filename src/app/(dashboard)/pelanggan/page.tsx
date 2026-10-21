@@ -55,7 +55,7 @@ export default async function PelangganPage({ searchParams }: PageProps) {
   const from = (currentPage - 1) * PAGE_SIZE;
   const to = from + PAGE_SIZE - 1;
 
-  const { data, count, error } = await query
+  const { data, count } = await query
     .order('kode', { ascending: true })
     .range(from, to);
 

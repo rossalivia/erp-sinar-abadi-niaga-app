@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { redirect } from 'next/navigation';
-import { Info, ShieldAlert } from 'lucide-react';
+import { Info } from 'lucide-react';
 import { createServerClient } from '@/lib/supabase/server';
 import { getProfil } from '@/lib/profil';
 import { PageHeader } from '@/components/shared/page-header';
@@ -13,7 +13,7 @@ export default async function AkunPage() {
   }
 
   const supabase = await createServerClient();
-  const { data: users, error } = await supabase
+  const { data: users } = await supabase
     .from('profiles')
     .select('*')
     .order('dibuat_pada', { ascending: false });

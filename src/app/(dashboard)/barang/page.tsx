@@ -13,6 +13,21 @@ import { Input } from '@/components/ui/input';
 import { formatRupiah } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
+interface BarangRow {
+  id: string | null;
+  kode: string | null;
+  nama: string | null;
+  satuan: string | null;
+  harga_jual: number | null;
+  stok: number | null;
+  stok_minimum: number | null;
+  aktif: boolean | null;
+  diperbarui_pada: string | null;
+  stok_menipis: boolean | null;
+  harga_pokok?: number | null;
+  harga_pokok_belum_diisi?: boolean | null;
+}
+
 interface PageProps {
   searchParams: Promise<{
     q?: string;
@@ -42,7 +57,7 @@ export default async function BarangPage({ searchParams }: PageProps) {
   const to = from + PAGE_SIZE - 1;
 
   // Non-Manajer TIDAK BOLEH memanggil v_barang_manajer
-  let barangList: any[] = [];
+  let barangList: BarangRow[] = [];
   let totalCount = 0;
 
   if (isManajer) {
@@ -98,7 +113,7 @@ export default async function BarangPage({ searchParams }: PageProps) {
 
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
-  const baseColumns: Column<any>[] = [
+  const baseColumns: Column<BarangRow>[] = [
     {
       header: 'Kode',
       accessorKey: 'kode',
@@ -180,7 +195,7 @@ export default async function BarangPage({ searchParams }: PageProps) {
         <span
           className={cn(
             'tabular-nums font-semibold',
-            row.stok_menipis || (row.stok <= row.stok_minimum) ? 'text-amber-700' : 'text-slate-900'
+            row.stok_menipis || ((row.stok ?? 0) <= (row.stok_minimum ?? 0)) ? 'text-amber-700' : 'text-slate-900'
           )}
         >
           {row.stok ?? 0}
@@ -201,7 +216,7 @@ export default async function BarangPage({ searchParams }: PageProps) {
     {
       header: 'Peringatan',
       cell: (row) =>
-        row.stok_menipis || (row.stok <= row.stok_minimum) ? (
+        row.stok_menipis || ((row.stok ?? 0) <= (row.stok_minimum ?? 0)) ? (
           <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">
             <AlertTriangle className="h-3 w-3 shrink-0" />
             Stok Menipis
