@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { hitungSubtotal, hitungTotalPesanan } from '../utils';
-import { simpanDrafPesananAction } from '../actions';
+import { simpanDrafPesananAction, getKreditPelangganAction, type KreditPelangganInfo } from '../actions';
 import type { BarangOption, PelangganOption } from '../types';
 import type { Peran } from '@/types/auth';
 import { formatRupiah } from '@/lib/format';
@@ -50,6 +50,32 @@ export function PesananEditor({
   const [pelangganId, setPelangganId] = React.useState<string>(
     initialData?.pelanggan_id || (pelangganList[0]?.id ?? '')
   );
+
+  const [kreditInfo, setKreditInfo] = React.useState<KreditPelangganInfo | null>(null);
+  const [isLoadingKredit, setIsLoadingKredit] = React.useState(false);
+
+  React.useEffect(() => {
+    let active = true;
+    if (!pelangganId) return;
+
+    void (async () => {
+      setIsLoadingKredit(true);
+      try {
+        const res = await getKreditPelangganAction(pelangganId);
+        if (active) {
+          setKreditInfo(res.success && res.data ? res.data : null);
+        }
+      } finally {
+        if (active) {
+          setIsLoadingKredit(false);
+        }
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [pelangganId]);
 
   const [items, setItems] = React.useState<ItemFormRow[]>(() => {
     if (initialData?.items && initialData.items.length > 0) {
@@ -293,6 +319,125 @@ export function PesananEditor({
           )}
         </div>
       </div>
+
+      {/* Panel Kredit Dinamis & Status Overdue (BR-13 & BR-14) */}
+      {selectedPelanggan && (
+        <div className="bg-white border border-slate-200 rounded-md p-4 space-y-3">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-slate-800 uppercase tracking-wider">
+                Status Batas Kredit & Keuangan Pelanggan
+              </span>
+              {isLoadingKredit && (
+                <span className="text-[11px] text-slate-400">Memuat status kredit...</span>
+              )}
+            </div>
+            {kreditInfo && (
+              <div>
+                {kreditInfo.punya_overdue ? (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-50 text-red-800 border border-red-200">
+                    Diblokir: Overdue
+                  </span>
+                ) : kreditInfo.sisa_kredit < 0 ? (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200">
+                    Plafon Terlampaui
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200">
+                    Layak Transaksi
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+            {/* Plafon */}
+            <div className="bg-slate-50 border border-slate-200 rounded p-2.5">
+              <span className="text-slate-500 block text-[11px]">Batas Kredit (Plafon)</span>
+              <span className="font-semibold text-slate-900 font-mono tabular-nums text-sm">
+                {formatRupiah(kreditInfo?.batas_kredit ?? selectedPelanggan.batas_kredit)}
+              </span>
+              <span className="text-[11px] text-slate-400 block mt-0.5">
+                Termin: {selectedPelanggan.termin_hari} Hari
+              </span>
+            </div>
+
+            {/* Piutang Berjalan */}
+            <div className="bg-slate-50 border border-slate-200 rounded p-2.5">
+              <span className="text-slate-500 block text-[11px]">Total Piutang Berjalan</span>
+              <span className="font-semibold text-slate-900 font-mono tabular-nums text-sm">
+                {formatRupiah(kreditInfo?.piutang_berjalan ?? 0)}
+              </span>
+              <span className="text-[10px] text-slate-500 block mt-0.5 truncate" title={`Terkonfirmasi: ${formatRupiah(kreditInfo?.piutang_terkonfirmasi ?? 0)} | Terkirim: ${formatRupiah(kreditInfo?.piutang_terkirim ?? 0)}`}>
+                Konf: {formatRupiah(kreditInfo?.piutang_terkonfirmasi ?? 0)} | Kirim: {formatRupiah(kreditInfo?.piutang_terkirim ?? 0)}
+              </span>
+            </div>
+
+            {/* Sisa Kredit */}
+            <div className={`border rounded p-2.5 ${
+              (kreditInfo?.sisa_kredit ?? (selectedPelanggan.batas_kredit || 0)) < 0
+                ? 'bg-red-50 border-red-200 text-red-800'
+                : 'bg-slate-50 border-slate-200'
+            }`}>
+              <span className="text-slate-500 block text-[11px]">Sisa Plafon Kredit</span>
+              <span className={`font-semibold font-mono tabular-nums text-sm ${
+                (kreditInfo?.sisa_kredit ?? (selectedPelanggan.batas_kredit || 0)) < 0 ? 'text-red-700' : 'text-slate-900'
+              }`}>
+                {formatRupiah(kreditInfo?.sisa_kredit ?? selectedPelanggan.batas_kredit)}
+              </span>
+              <span className="text-[10px] text-slate-500 block mt-0.5">
+                {(kreditInfo?.sisa_kredit ?? 0) < 0 ? 'Limit habis terpakai' : 'Batas pemesanan baru'}
+              </span>
+            </div>
+
+            {/* Estimasi Setelah Pesanan */}
+            <div className={`border rounded p-2.5 ${
+              kreditInfo && totalPesanan > kreditInfo.sisa_kredit
+                ? 'bg-amber-50 border-amber-200 text-amber-900'
+                : 'bg-slate-50 border-slate-200'
+            }`}>
+              <span className="text-slate-500 block text-[11px]">Sisa Setelah Pesanan Ini</span>
+              <span className={`font-semibold font-mono tabular-nums text-sm ${
+                kreditInfo && totalPesanan > kreditInfo.sisa_kredit ? 'text-amber-700' : 'text-slate-900'
+              }`}>
+                {formatRupiah((kreditInfo?.sisa_kredit ?? selectedPelanggan.batas_kredit) - totalPesanan)}
+              </span>
+              <span className="text-[10px] text-slate-500 block mt-0.5">
+                {kreditInfo && totalPesanan > kreditInfo.sisa_kredit
+                  ? 'Melampaui plafon kredit'
+                  : 'Dalam batas aman'}
+              </span>
+            </div>
+          </div>
+
+          {/* Banner Overdue Alert (D2 & D4) */}
+          {kreditInfo?.punya_overdue && (
+            <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 text-red-800 rounded text-xs">
+              <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+              <span>
+                <strong>Peringatan Blokir Overdue:</strong> Pelanggan memiliki{' '}
+                {kreditInfo.jumlah_faktur_overdue} faktur lewat jatuh tempo (keterlambatan hingga{' '}
+                {kreditInfo.hari_terlambat_terlama} hari). Draf tetap dapat disimpan, namun konfirmasi
+                pesanan akan ditolak oleh sistem hingga tunggakan dilunasi.
+              </span>
+            </div>
+          )}
+
+          {/* Banner Overlimit Alert (D1 & D7) */}
+          {kreditInfo && !kreditInfo.punya_overdue && totalPesanan > kreditInfo.sisa_kredit && (
+            <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 text-amber-900 rounded text-xs">
+              <AlertCircle className="w-4 h-4 shrink-0 text-amber-600" />
+              <span>
+                <strong>Peringatan Plafon Kredit:</strong> Total nilai pesanan ini (
+                {formatRupiah(totalPesanan)}) melampaui sisa kredit pelanggan (
+                {formatRupiah(kreditInfo.sisa_kredit)}). Draf dapat disimpan, tetapi konfirmasi pesanan
+                akan ditolak (E0006) kecuali limit dinaikkan oleh Manajer.
+              </span>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Bagian Baris Barang */}
       <div className="bg-white border border-slate-200 rounded-md p-5 space-y-4">

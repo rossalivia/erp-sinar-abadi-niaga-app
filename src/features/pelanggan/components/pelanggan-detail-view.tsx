@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { AlertCircle, CheckCircle2, ShieldAlert } from 'lucide-react';
@@ -9,34 +10,71 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormField } from '@/components/shared/form-field';
 import { BadgeStatus } from '@/components/shared/badge-status';
-import { formatRupiah } from '@/lib/format';
+import { formatRupiah, formatTanggal } from '@/lib/format';
 import {
   ubahPelangganAction,
   ubahBatasKreditAction,
   ubahTerminAction,
+  type FakturOverdueRow,
 } from '../actions';
+import { catatPelunasanAction } from '@/features/pesanan/actions';
 import type { Database } from '@/types/database';
 
 type PelangganPiutangRow = Database['public']['Views']['v_pelanggan_piutang']['Row'];
 
+type PelangganDetailData = PelangganPiutangRow & {
+  piutang_terkonfirmasi?: number | null;
+  piutang_terkirim?: number | null;
+  sisa_kredit?: number | null;
+  jumlah_faktur_overdue?: number | null;
+  hari_terlambat_terlama?: number | null;
+  punya_overdue?: boolean | null;
+  boleh_transaksi?: boolean | null;
+};
+
 interface PelangganDetailViewProps {
-  pelanggan: PelangganPiutangRow;
+  pelanggan: PelangganDetailData;
   isManajer: boolean;
+  fakturOverdue?: FakturOverdueRow[];
 }
 
 export function PelangganDetailView({
   pelanggan,
   isManajer,
+  fakturOverdue = [],
 }: PelangganDetailViewProps) {
   const router = useRouter();
   const [isPendingData, startTransitionData] = React.useTransition();
   const [isPendingKredit, startTransitionKredit] = React.useTransition();
   const [isPendingTermin, startTransitionTermin] = React.useTransition();
+  const [isPendingPelunasan, startTransitionPelunasan] = React.useTransition();
+  const [pelunasanId, setPelunasanId] = React.useState<string | null>(null);
 
   const batasKredit = Number(pelanggan.batas_kredit ?? 0);
   const piutangBerjalan = Number(pelanggan.piutang_berjalan ?? 0);
+  const piutangTerkonfirmasi = Number(pelanggan.piutang_terkonfirmasi ?? 0);
+  const piutangTerkirim = Number(pelanggan.piutang_terkirim ?? 0);
   const sisaKredit = batasKredit - piutangBerjalan;
-  const adaLewatJatuhTempo = pelanggan.ada_lewat_jatuh_tempo || pelanggan.punya_pesanan_lewat_tempo;
+  const adaLewatJatuhTempo =
+    Boolean(pelanggan.ada_lewat_jatuh_tempo || pelanggan.punya_pesanan_lewat_tempo || pelanggan.punya_overdue) ||
+    fakturOverdue.length > 0;
+
+  const handlePelunasan = (pesananId: string) => {
+    if (!confirm('Catat pelunasan untuk faktur ini? Piutang akan berkurang dan blokir overdue dibuka jika tidak ada tunggakan lain.')) {
+      return;
+    }
+    setPelunasanId(pesananId);
+    startTransitionPelunasan(async () => {
+      const res = await catatPelunasanAction(pesananId);
+      if (!res.success) {
+        toast.error(res.message || 'Gagal mencatat pelunasan');
+      } else {
+        toast.success(res.message || 'Pelunasan faktur berhasil dicatat');
+        router.refresh();
+      }
+      setPelunasanId(null);
+    });
+  };
 
   const handleUpdateData = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -93,7 +131,7 @@ export function PelangganDetailView({
         <Card className="border-slate-200 shadow-none">
           <CardHeader className="py-2.5 px-4 border-b border-slate-100">
             <CardTitle className="text-xs font-medium text-slate-500">
-              Batas Kredit
+              Batas Kredit (Plafon)
             </CardTitle>
           </CardHeader>
           <CardContent className="py-3 px-4">
@@ -116,8 +154,8 @@ export function PelangganDetailView({
             <div className="text-lg font-semibold text-slate-900 tabular-nums">
               {formatRupiah(piutangBerjalan)}
             </div>
-            <p className="text-[11px] text-slate-500 mt-0.5">
-              Pesanan konfirmasi & dikirim
+            <p className="text-[11px] text-slate-500 mt-0.5 truncate">
+              Terkonfirmasi: {formatRupiah(piutangTerkonfirmasi)} | Terkirim: {formatRupiah(piutangTerkirim)}
             </p>
           </CardContent>
         </Card>
@@ -131,7 +169,7 @@ export function PelangganDetailView({
           <CardContent className="py-3 px-4">
             <div
               className={`text-lg font-semibold tabular-nums ${
-                sisaKredit < 0 ? 'text-red-600' : 'text-slate-900'
+                sisaKredit < 0 ? 'text-red-700' : 'text-slate-900'
               }`}
             >
               {formatRupiah(sisaKredit)}
@@ -145,7 +183,7 @@ export function PelangganDetailView({
         <Card
           className={`border shadow-none ${
             adaLewatJatuhTempo
-              ? 'border-red-200 bg-red-50/30'
+              ? 'border-red-200 bg-red-50/40'
               : 'border-slate-200 bg-white'
           }`}
         >
@@ -168,12 +206,94 @@ export function PelangganDetailView({
             )}
             <p className="text-[11px] text-slate-500 mt-0.5">
               {adaLewatJatuhTempo
-                ? 'Pesanan baru ditolak sampai tagihan dilunasi'
+                ? `${fakturOverdue.length || pelanggan.jumlah_faktur_overdue || 1} faktur lewat tempo (transaksi diblokir)`
                 : 'Tidak ada pesanan lewat jatuh tempo'}
             </p>
           </CardContent>
         </Card>
       </div>
+
+      {/* Tabel Faktur Overdue (Credit & Overdue Control) */}
+      {fakturOverdue.length > 0 && (
+        <Card className="border-red-200 shadow-none bg-red-50/10">
+          <CardHeader className="py-3 px-4 border-b border-red-100 flex flex-row items-center justify-between">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+              <div>
+                <CardTitle className="text-xs font-bold text-red-900 uppercase tracking-wider">
+                  Faktur Lewat Jatuh Tempo ({fakturOverdue.length} Faktur Menunggak)
+                </CardTitle>
+                <p className="text-[11px] text-red-700 mt-0.5">
+                  Pelanggan ini sedang diblokir otomatis dari konfirmasi pesanan baru hingga seluruh tunggakan dilunasi.
+                </p>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0 overflow-x-auto">
+            <table className="w-full text-xs text-left border-collapse">
+              <thead className="bg-red-50/60 text-slate-700 font-medium border-b border-red-100">
+                <tr>
+                  <th className="py-2 px-3">Nomor SO</th>
+                  <th className="py-2 px-3">Tanggal Kirim</th>
+                  <th className="py-2 px-3">Jatuh Tempo</th>
+                  <th className="py-2 px-3 text-center">Keterlambatan</th>
+                  <th className="py-2 px-3 text-right">Total Tagihan</th>
+                  <th className="py-2 px-3 text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-red-100">
+                {fakturOverdue.map((f) => (
+                  <tr key={f.id} className="hover:bg-red-50/30">
+                    <td className="py-2 px-3 font-mono font-medium text-slate-900">
+                      <Link
+                        href={`/pesanan/${f.id}`}
+                        className="text-blue-600 hover:underline"
+                        title="Lihat Detail Pesanan"
+                      >
+                        {f.nomor}
+                      </Link>
+                    </td>
+                    <td className="py-2 px-3 text-slate-600">
+                      {f.dikirim_pada ? formatTanggal(f.dikirim_pada) : '-'}
+                    </td>
+                    <td className="py-2 px-3 font-medium text-red-700">
+                      {formatTanggal(f.jatuh_tempo)}
+                    </td>
+                    <td className="py-2 px-3 text-center">
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-red-100 text-red-800">
+                        {f.hari_terlambat} hari
+                      </span>
+                    </td>
+                    <td className="py-2 px-3 text-right font-mono font-medium text-slate-900 tabular-nums">
+                      {formatRupiah(f.total)}
+                    </td>
+                    <td className="py-2 px-3 text-right">
+                      {isManajer ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handlePelunasan(f.id)}
+                          disabled={isPendingPelunasan && pelunasanId === f.id}
+                          className="h-7 text-xs border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800"
+                        >
+                          {isPendingPelunasan && pelunasanId === f.id ? 'Memproses...' : 'Catat Lunas'}
+                        </Button>
+                      ) : (
+                        <Link
+                          href={`/pesanan/${f.id}`}
+                          className="text-[11px] text-slate-500 hover:text-slate-800 hover:underline"
+                        >
+                          Detail &rarr;
+                        </Link>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Kolom Kiri: Form Ubah Data Pokok Toko */}

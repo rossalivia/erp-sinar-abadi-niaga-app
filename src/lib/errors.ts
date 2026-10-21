@@ -68,6 +68,13 @@ export function getErrorMessage(error: unknown): string {
 
   // 2. Jika ada pesan bawaan RAISE EXCEPTION dari Postgres dalam Bahasa Indonesia
   if (pgError.message) {
+    // D6: Batas kredit dan overdue control verbatim
+    if (pgError.message.includes('E0006: Batas kredit pelanggan terlampaui')) {
+      return 'E0006: Batas kredit pelanggan terlampaui';
+    }
+    if (pgError.message.includes('E0007: Pelanggan memiliki faktur lewat jatuh tempo, transaksi diblokir')) {
+      return 'E0007: Pelanggan memiliki faktur lewat jatuh tempo, transaksi diblokir';
+    }
     if (pgError.message.includes('Harga di bawah batas, minta persetujuan Manajer')) {
       return 'Harga di bawah batas, minta persetujuan Manajer';
     }

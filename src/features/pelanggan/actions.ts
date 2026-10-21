@@ -197,3 +197,38 @@ export async function ubahTerminAction(
     message: 'Termin bayar berhasil diperbarui',
   };
 }
+
+export interface FakturOverdueRow {
+  id: string;
+  nomor: string;
+  dikirim_pada: string | null;
+  jatuh_tempo: string;
+  total: number;
+  hari_terlambat: number;
+}
+
+export async function getFakturOverduePelangganAction(
+  pelangganId: string
+): Promise<ActionResult<FakturOverdueRow[]>> {
+  if (!pelangganId) {
+    return { success: false, message: 'ID pelanggan tidak valid' };
+  }
+
+  const supabase = await createServerClient();
+  const { data, error } = await supabase.rpc('rpc_get_faktur_overdue_pelanggan', {
+    p_pelanggan_id: pelangganId,
+  });
+
+  if (error) {
+    return {
+      success: false,
+      message: getErrorMessage(error),
+    };
+  }
+
+  return {
+    success: true,
+    data: (data || []) as unknown as FakturOverdueRow[],
+  };
+}
+

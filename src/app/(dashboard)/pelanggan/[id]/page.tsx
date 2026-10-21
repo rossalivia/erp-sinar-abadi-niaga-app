@@ -32,6 +32,10 @@ export default async function DetailPelangganPage({ params }: PageProps) {
     notFound();
   }
 
+  const { data: fakturOverdue } = await supabase.rpc('rpc_get_faktur_overdue_pelanggan', {
+    p_pelanggan_id: id,
+  });
+
   const isManajer = profile.peran === 'manajer';
 
   return (
@@ -53,7 +57,11 @@ export default async function DetailPelangganPage({ params }: PageProps) {
         }
       />
 
-      <PelangganDetailView pelanggan={pelanggan} isManajer={isManajer} />
+      <PelangganDetailView
+        pelanggan={pelanggan}
+        isManajer={isManajer}
+        fakturOverdue={fakturOverdue || []}
+      />
     </div>
   );
 }

@@ -189,6 +189,7 @@ export async function catatPelunasanAction(
 
   revalidatePath('/pesanan');
   revalidatePath(`/pesanan/${pesananId}`);
+  revalidatePath('/pelanggan');
 
   const res = data as { id: string; status: string };
   return {
@@ -244,3 +245,45 @@ export async function batalkanPesananTerkonfirmasiAction(
     data: res,
   };
 }
+
+export interface KreditPelangganInfo {
+  batas_kredit: number;
+  piutang_terkonfirmasi: number;
+  piutang_terkirim: number;
+  piutang_berjalan: number;
+  sisa_kredit: number;
+  jumlah_faktur_overdue: number;
+  hari_terlambat_terlama: number;
+  punya_overdue: boolean;
+  boleh_transaksi: boolean;
+}
+
+/**
+ * Mengambil informasi kredit dan status overdue pelanggan untuk validasi UI editor pesanan.
+ * Menggunakan RPC rpc_get_kredit_pelanggan.
+ */
+export async function getKreditPelangganAction(
+  pelangganId: string
+): Promise<ActionResult<KreditPelangganInfo>> {
+  if (!pelangganId) {
+    return { success: false, message: 'ID pelanggan tidak valid' };
+  }
+
+  const supabase = await createServerClient();
+  const { data, error } = await supabase.rpc('rpc_get_kredit_pelanggan', {
+    p_pelanggan_id: pelangganId,
+  });
+
+  if (error) {
+    return {
+      success: false,
+      message: getErrorMessage(error),
+    };
+  }
+
+  return {
+    success: true,
+    data: data as unknown as KreditPelangganInfo,
+  };
+}
+
