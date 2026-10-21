@@ -39,11 +39,11 @@ Kolom rahasia: `barang.harga_pokok`, `pembelian.harga_beli_satuan`, `item_pesana
 | | DELETE | ❌ | ❌ | ❌ | Pakai `aktif = false` | CG |
 | **pelanggan** | SELECT | ✅ | ⚠️ | ✅ | P/M semua kolom. G baca saja (untuk info kirim) | RLS |
 | | INSERT | ⚠️ | ❌ | ✅ | P: `batas_kredit` dipaksa 0. `dibuat_oleh` dipaksa `auth.uid()` | RLS, TG, CK (`termin_hari IN (0,7,14,30)`, `batas_kredit >= 0`) |
-| | UPDATE | ⚠️ | ❌ | ✅ | P: `kode, nama_toko, telepon, alamat, termin_hari, aktif`; **tidak** `batas_kredit`. M: semua; perubahan `batas_kredit` diaudit | RLS, TG (blok `batas_kredit` untuk non-M), trigger audit |
+| | UPDATE | ⚠️ | ❌ | ✅ | P: `kode, nama_toko, telepon, alamat, aktif`; **tidak** `batas_kredit` dan **tidak** `termin_hari`. M: semua; perubahan `batas_kredit` & `termin_hari` diaudit | RLS, TG (blok `batas_kredit` & `termin_hari` untuk non-M), trigger audit |
 | | DELETE | ❌ | ❌ | ❌ | — | CG |
 | **barang** | SELECT | ⚠️ | ⚠️ | ⚠️ | Semua peran: semua kolom **kecuali `harga_pokok`**. M membaca `harga_pokok` via `v_barang_manajer` | CG, VW |
 | | INSERT | ❌ | ❌ | ⚠️ | M via RPC `buat_barang` (bisa mengisi `harga_pokok` awal). Stok awal 0 | RLS, RPC, CK |
-| | UPDATE | ❌ | ⚠️ | ⚠️ | G: `nama, satuan, stok_minimum, aktif`. M: + `harga_jual` (diaudit). **Tidak ada** yang boleh UPDATE `stok` atau `kode` langsung. `harga_pokok` hanya via RPC | RLS, CG, TG (`fn_guard_kolom_barang`), trigger audit |
+| | UPDATE | ❌ | ⚠️ | ⚠️ | G: `nama, satuan, stok_minimum, aktif`. M: + `harga_jual` (diaudit). **Tidak ada** yang boleh UPDATE `stok` atau `kode` langsung. `harga_pokok` via penerimaan PO atau RPC `ubah_harga_pokok` (M, diaudit) | RLS, CG, TG (`fn_guard_kolom_barang`), trigger audit |
 | | DELETE | ❌ | ❌ | ❌ | — | CG |
 | **pembelian** | SELECT | ❌ | ⚠️ | ⚠️ | G/M: semua kolom **kecuali `harga_beli_satuan`**. M membacanya via `v_pembelian_manajer` | RLS, CG, VW |
 | | INSERT/UPDATE | ❌ | ❌ | ❌ | Hanya via RPC `ajukan_pembelian`, `putuskan_pembelian`, `terima_pembelian` | CG (tanpa grant tulis), RPC |
@@ -83,11 +83,13 @@ Kolom rahasia: `barang.harga_pokok`, `pembelian.harga_beli_satuan`, `item_pesana
 | Ubah harga jual | ❌ | ❌ | ✅ | `> 0`, diaudit | TG, CK, trigger audit |
 | Kelola pelanggan | ✅ | ❌ | ✅ | P: batas kredit dipaksa Rp0 | RLS, TG |
 | Ubah batas kredit | ❌ | ❌ | ✅ | `>= 0`, diaudit | TG / RPC `ubah_batas_kredit`, trigger audit |
+| Ubah termin bayar lanjutan | ❌ | ❌ | ✅ | `IN (0,7,14,30)`, diaudit | TG / trigger audit |
+| Ubah harga pokok manual | ❌ | ❌ | ✅ | `>= 0`, diaudit | RPC `ubah_harga_pokok`, trigger audit |
 | Kelola pemasok | ❌ | ✅ | ✅ | — | RLS |
 | Buat draf pesanan & ubah baris | ✅ | ❌ | ✅ | BR-02, BR-03; P hanya draf miliknya | RPC, RLS |
 | Diskon 0–10% | ✅ | — | ✅ | — | RPC `simpan_item_pesanan` |
 | Diskon >10% s.d. 25% | ❌ | — | ✅ | >25% ditolak untuk semua | RPC, CK (`diskon_persen BETWEEN 0 AND 25`) |
-| Konfirmasi draf | ⚠️ milik sendiri | ❌ | ✅ semua | BR-04, BR-05, BR-06; kunci pelanggan + barang | RPC `konfirmasi_pesanan` |
+| Konfirmasi draf | ⚠️ milik sendiri | ❌ | ✅ semua | BR-04 s.d. BR-06; kunci pelanggan + barang (tanpa bypass batas kredit untuk M) | RPC `konfirmasi_pesanan` |
 | Konfirmasi dengan harga di bawah HPP | ❌ | ❌ | ✅ | Pesan persis BR-04 untuk P | RPC |
 | Batalkan draf | ⚠️ milik sendiri | ❌ | ✅ | — | RPC `batalkan_pesanan` |
 | Batalkan pesanan dikonfirmasi | ❌ | ❌ | ✅ | Alasan ≥ 10 karakter, stok kembali, diaudit | RPC, audit |
@@ -113,9 +115,9 @@ Kolom rahasia: `barang.harga_pokok`, `pembelian.harga_beli_satuan`, `item_pesana
 |---|---|---|---|---|---|---|
 | `/masuk` | Masuk | publik | publik | publik | Tidak ada tautan daftar | Supabase Auth (sign-up dimatikan) |
 | `/dashboard` | Dashboard | ✅ | ✅ | ✅ | P: pesanan saya per status, pelanggan lewat jatuh tempo. G: siap kirim, stok menipis, PO menunggu barang. M: omzet, margin, piutang, grafik mingguan, PO menunggu | MW, RLS, VW |
-| `/barang` | Barang & Stok | ✅ (baca) | ✅ (ubah non-harga, penyesuaian) | ✅ (+ tambah, harga, kolom harga pokok) | Kolom harga pokok hanya dirender untuk M dari `v_barang_manajer` | RLS, CG, TG, VW |
+| `/barang` | Barang & Stok | ✅ (baca) | ✅ (ubah non-harga, penyesuaian) | ✅ (+ tambah, harga, kolom harga pokok, ubah HPP manual) | Kolom harga pokok hanya dirender untuk M dari `v_barang_manajer` | RLS, CG, TG, VW |
 | `/barang/[id]/kartu-stok` | Kartu Stok | ✅ | ✅ | ✅ | — | RLS |
-| `/pelanggan` | Pelanggan | ✅ | ❌ | ✅ | Field batas kredit read-only untuk P | MW, RLS, TG |
+| `/pelanggan` | Pelanggan | ✅ | ❌ | ✅ | P tentukan termin_hari saat buat baru; saat edit/update, batas kredit & termin_hari read-only untuk P | MW, RLS, TG |
 | `/pesanan` | Daftar Pesanan Jual | ✅ (miliknya) | ✅ (non-draf) | ✅ (semua) | Filter status, pelanggan, tanggal | RLS |
 | `/pesanan/[id]` | Detail Pesanan | ✅ | ✅ | ✅ | Tombol sesuai peran & status; panel HPP/margin hanya M | RLS, RPC, VW |
 | `/pembelian` | Pembelian & Pemasok | ❌ | ✅ | ✅ | Kolom harga beli hanya M; tab Pemasok | MW, RLS, CG, VW |
@@ -135,10 +137,11 @@ Kolom rahasia: `barang.harga_pokok`, `pembelian.harga_beli_satuan`, `item_pesana
 | P/G membaca `harga_pokok`, `harga_beli_satuan`, `hpp_satuan` | CG (permission denied) | VW manajer filter peran, UI tidak merender | TC-03, TC-04, TC-05 |
 | Eskalasi peran sendiri | TG pada `profiles` + RPC `ubah_peran` cek M | RLS update baris sendiri | TC-06 |
 | UPDATE langsung `barang.stok` | CG (kolom `stok` & `kode` tidak di-grant UPDATE ke `authenticated`; RPC mutasi berjalan sebagai owner) | TG (E22) bila grant berubah | TC-08 |
-| G mengubah harga / P mengubah batas kredit | TG | — | TC-09, TC-18 |
+| G mengubah harga / P mengubah batas kredit atau termin | TG | — | TC-09, TC-18 |
 | Diskon >10% oleh P | RPC | CK 0–25 | TC-13 |
 | Konfirmasi di bawah HPP oleh P | RPC (pesan generik) | — | TC-14 |
 | Kredit & jatuh tempo | RPC (+ kunci baris pelanggan) | — | TC-16, TC-17 |
 | Stok minus saat bersamaan | RPC (`FOR UPDATE` urut id) | CK `stok >= 0` | TC-19, TC-20 |
 | Transisi status ilegal | RPC | CK nilai status | TC-22 |
 | Audit log hanya dibaca M | RLS | CG (tanpa grant tulis) | TC-28 |
+

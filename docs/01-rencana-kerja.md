@@ -44,7 +44,7 @@ flowchart LR
 | Aspek | Isi |
 |---|---|
 | Tujuan | Seluruh aturan bisnis BR-02..BR-12 diimplementasikan sebagai fungsi `SECURITY DEFINER` dengan `search_path` terkunci. |
-| Deliverable | Migrasi RPC: `buat_pesanan`, `simpan_item_pesanan`, `hapus_item_pesanan`, `konfirmasi_pesanan`, `batalkan_pesanan`, `kirim_pesanan`, `lunasi_pesanan`, `ajukan_pembelian`, `putuskan_pembelian` (setujui/tolak), `batalkan_pembelian`, `terima_pembelian`, `sesuaikan_stok`, `ubah_batas_kredit`, `ubah_harga_jual`, `ubah_peran`, `buat_barang`. Helper `catat_audit()`. Skrip uji SQL `supabase/tests/*.sql` (pgTAP atau skrip psql). Skrip uji konkurensi (2 sesi psql paralel). |
+| Deliverable | Migrasi RPC: `buat_pesanan`, `simpan_item_pesanan`, `hapus_item_pesanan`, `konfirmasi_pesanan`, `batalkan_pesanan`, `kirim_pesanan`, `lunasi_pesanan`, `ajukan_pembelian`, `putuskan_pembelian` (setujui/tolak), `terima_pembelian`, `sesuaikan_stok`, `ubah_batas_kredit`, `ubah_harga_jual`, `ubah_harga_pokok`, `ubah_peran`, `buat_barang`. Helper `catat_audit()`. Skrip uji SQL `supabase/tests/*.sql` (pgTAP atau skrip psql). Skrip uji konkurensi (2 sesi psql paralel). |
 | Dependensi | T2. |
 | Risiko utama | Deadlock jika urutan kunci tidak konsisten. Pesan error membocorkan HPP. Fungsi `SECURITY DEFINER` tanpa cek peran. Pembulatan subtotal tidak konsisten (`round` numeric vs float). |
 | Definition of Done | (1) Semua RPC memeriksa `peran_saya()` dan `aktif`. (2) Kunci `FOR UPDATE` pada pelanggan lalu barang (diurutkan `id`) di `konfirmasi_pesanan`. (3) Uji konkurensi 2 sesi: satu sukses, satu gagal, stok ≥ 0 (TC-18, TC-19). (4) TC-10..TC-28 lapisan SQL lolos. (5) Tidak ada pesan error yang memuat angka HPP/harga beli. |
@@ -62,7 +62,7 @@ flowchart LR
 | Aspek | Isi |
 |---|---|
 | Tujuan | CRUD data master sesuai matriks akses. |
-| Deliverable | Halaman Barang & Stok (daftar, cari, label stok menipis, form tambah khusus Manajer, form ubah per peran, kolom harga pokok khusus Manajer). Pelanggan (daftar, form, piutang berjalan; batas kredit hanya Manajer). Pemasok (Gudang/Manajer). Pengaturan Akun (Manajer: ubah peran/aktif). |
+| Deliverable | Halaman Barang & Stok (daftar, cari, label stok menipis, form tambah khusus Manajer, form ubah per peran, kolom harga pokok & modal ubah HPP khusus Manajer). Pelanggan (daftar, form, piutang berjalan; batas kredit & termin lanjutan hanya Manajer). Pemasok (Gudang/Manajer). Pengaturan Akun (Manajer: ubah peran/aktif). |
 | Dependensi | T3, T4. |
 | Risiko utama | Form mengirim kolom terlarang (misal `harga_jual` oleh Gudang), padahal DB akan menolak sehingga UX jadi buruk. Data rahasia ikut terkirim di payload RSC. |
 | Definition of Done | (1) Gudang mengubah nama/satuan/stok_minimum/aktif → sukses; mengubah harga → ditolak DB. (2) Pelanggan baru dari Penjualan → `batas_kredit = 0`. (3) Payload jaringan halaman Barang untuk Penjualan tidak memuat `harga_pokok`. (4) TC-07..TC-09 UI lolos. |
