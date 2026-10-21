@@ -21,6 +21,12 @@ export const MENU_ITEMS: MenuItem[] = [
     roles: ['penjualan', 'gudang', 'manajer'],
   },
   {
+    title: 'Kartu Stok',
+    href: '/stok',
+    icon: 'Layers',
+    roles: ['gudang', 'manajer'],
+  },
+  {
     title: 'Pelanggan',
     href: '/pelanggan',
     icon: 'Users',
@@ -79,6 +85,7 @@ export const ROUTE_PERMISSIONS: { pattern: RegExp; roles: Peran[] }[] = [
   { pattern: /^\/pesanan\/(baru|[^\/]+\/ubah)/, roles: ['penjualan', 'manajer'] },
   { pattern: /^\/pesanan/, roles: ['penjualan', 'gudang', 'manajer'] },
   { pattern: /^\/pembelian/, roles: ['gudang', 'manajer'] },
+  { pattern: /^\/stok/, roles: ['penjualan', 'gudang', 'manajer'] },
   { pattern: /^\/laporan/, roles: ['manajer'] },
   { pattern: /^\/akun/, roles: ['manajer'] },
   { pattern: /^\/profil/, roles: ['penjualan', 'gudang', 'manajer'] },

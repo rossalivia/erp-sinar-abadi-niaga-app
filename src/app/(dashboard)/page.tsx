@@ -1,11 +1,13 @@
+import Link from 'next/link';
 import { getProfil } from '@/lib/profil';
 import { createClient } from '@/lib/supabase/server';
 import { PageHeader } from '@/components/shared/page-header';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { DataTable, type Column } from '@/components/shared/data-table';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { formatTanggal } from '@/lib/format';
-import { AlertTriangle, Clock, Shield } from 'lucide-react';
+import { AlertTriangle, Clock, Shield, ShoppingCart } from 'lucide-react';
 
 interface BarangMenipis {
   id: string;
@@ -74,6 +76,29 @@ export default async function DashboardPage() {
           Menipis
         </Badge>
       ),
+    },
+    {
+      header: 'Aksi',
+      align: 'right',
+      className: 'w-28 text-right',
+      cell: (row) => {
+        if (user?.peran === 'gudang' || user?.peran === 'manajer') {
+          return (
+            <Button
+              asChild
+              size="sm"
+              variant="outline"
+              className="h-6 text-[11px] px-2 border-slate-300 gap-1"
+            >
+              <Link href={`/pembelian/baru?barang=${row.id}`}>
+                <ShoppingCart className="w-3 h-3" />
+                Ajukan PO
+              </Link>
+            </Button>
+          );
+        }
+        return null;
+      },
     },
   ];
 

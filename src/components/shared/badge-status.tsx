@@ -31,10 +31,12 @@ const STATUS_VARIANT_MAP: Record<string, BadgeProps['variant']> = {
   // Status Pesanan Jual & Pembelian
   draf: 'neutral',
   dikonfirmasi: 'info',
+  diajukan: 'warning',
   menunggu_persetujuan: 'warning',
   disetujui: 'info',
   diproses: 'info',
   dikirim: 'info',
+  diterima: 'success',
   selesai: 'success',
   lunas: 'success',
   ditolak: 'danger',
@@ -44,6 +46,11 @@ const STATUS_VARIANT_MAP: Record<string, BadgeProps['variant']> = {
   diterima_sebagian: 'warning',
   diterima_lengkap: 'success',
   lewat_jatuh_tempo: 'danger',
+
+  // Status Mutasi Stok
+  masuk: 'success',
+  keluar: 'danger',
+  penyesuaian: 'neutral',
 
   // Status Master Data
   aktif: 'success',
@@ -55,10 +62,12 @@ const STATUS_VARIANT_MAP: Record<string, BadgeProps['variant']> = {
 const STATUS_LABEL_MAP: Record<string, string> = {
   draf: 'Draf',
   dikonfirmasi: 'Dikonfirmasi',
+  diajukan: 'Diajukan',
   menunggu_persetujuan: 'Menunggu Persetujuan',
   disetujui: 'Disetujui',
   diproses: 'Diproses',
   dikirim: 'Dikirim',
+  diterima: 'Diterima',
   selesai: 'Selesai',
   lunas: 'Lunas',
   ditolak: 'Ditolak',
@@ -68,6 +77,9 @@ const STATUS_LABEL_MAP: Record<string, string> = {
   diterima_sebagian: 'Diterima Sebagian',
   diterima_lengkap: 'Diterima Lengkap',
   lewat_jatuh_tempo: 'Lewat Jatuh Tempo',
+  masuk: 'Masuk',
+  keluar: 'Keluar',
+  penyesuaian: 'Penyesuaian',
   aktif: 'Aktif',
   nonaktif: 'Nonaktif',
 };

@@ -15,6 +15,7 @@ import {
   User,
   Building2,
   X,
+  Layers,
   LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -24,6 +25,7 @@ import type { Peran } from '@/types/auth';
 const ICON_MAP: Record<string, LucideIcon> = {
   LayoutDashboard,
   Package,
+  Layers,
   Users,
   ShoppingCart,
   Truck,
