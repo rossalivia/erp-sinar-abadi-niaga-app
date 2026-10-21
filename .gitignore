@@ -39,8 +39,9 @@ yarn-error.log*
 /playwright-report/
 /test-results/
 
-# vercel
+# deployment
 .vercel
+.netlify
 
 # typescript
 *.tsbuildinfo
