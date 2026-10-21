@@ -377,7 +377,7 @@ BEGIN
     v_err := true; v_msg := SQLERRM;
   END;
 
-  IF v_err AND v_msg LIKE '%Batas kredit pelanggan terlampaui%' THEN
+  IF v_err AND v_msg LIKE '%E0006: Batas kredit pelanggan terlampaui%' THEN
     INSERT INTO hasil_uji_rpc (kode_br, kode_tc, deskripsi, status, pesan)
     VALUES ('BR-05', 'TC-16', 'Konfirmasi melampaui batas kredit ditolak (E12)', 'PASS', v_msg);
   ELSE
@@ -411,7 +411,7 @@ BEGIN
     v_err := true; v_msg := SQLERRM;
   END;
 
-  IF v_err AND v_msg LIKE '%Pelanggan memiliki tagihan lewat jatuh tempo%' THEN
+  IF v_err AND v_msg LIKE '%E0007: Pelanggan memiliki faktur lewat jatuh tempo, transaksi diblokir%' THEN
     INSERT INTO hasil_uji_rpc (kode_br, kode_tc, deskripsi, status, pesan)
     VALUES ('BR-05', 'TC-17', 'Konfirmasi saat ada tagihan lewat jatuh tempo ditolak (E13)', 'PASS', v_msg);
   ELSE
