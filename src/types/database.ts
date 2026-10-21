@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -816,6 +816,13 @@ export type Database = {
           punya_pesanan_lewat_tempo: boolean | null
           telepon: string | null
           termin_hari: number | null
+          piutang_terkonfirmasi: number | null
+          piutang_terkirim: number | null
+          sisa_kredit: number | null
+          jumlah_faktur_overdue: number | null
+          hari_terlambat_terlama: number | null
+          punya_overdue: boolean | null
+          boleh_transaksi: boolean | null
         }
         Insert: {
           ada_lewat_jatuh_tempo?: never
@@ -842,6 +849,47 @@ export type Database = {
           punya_pesanan_lewat_tempo?: never
           telepon?: string | null
           termin_hari?: number | null
+        }
+        Relationships: []
+      }
+      v_pelanggan_kredit: {
+        Row: {
+          id: string | null
+          kode: string | null
+          nama_toko: string | null
+          telepon: string | null
+          alamat: string | null
+          termin_hari: number | null
+          aktif: boolean | null
+          batas_kredit: number | null
+          piutang_terkonfirmasi: number | null
+          piutang_terkirim: number | null
+          piutang_berjalan: number | null
+          sisa_kredit: number | null
+          jumlah_faktur_overdue: number | null
+          hari_terlambat_terlama: number | null
+          punya_overdue: boolean | null
+          boleh_transaksi: boolean | null
+        }
+        Insert: {
+          id?: string | null
+          kode?: string | null
+          nama_toko?: string | null
+          telepon?: string | null
+          alamat?: string | null
+          termin_hari?: number | null
+          aktif?: boolean | null
+          batas_kredit?: number | null
+        }
+        Update: {
+          id?: string | null
+          kode?: string | null
+          nama_toko?: string | null
+          telepon?: string | null
+          alamat?: string | null
+          termin_hari?: number | null
+          aktif?: boolean | null
+          batas_kredit?: number | null
         }
         Relationships: []
       }
@@ -1137,6 +1185,35 @@ export type Database = {
       }
       rpc_buat_pesanan: { Args: { p_pelanggan_id: string }; Returns: Json }
       rpc_catat_pelunasan: { Args: { p_pesanan_id: string }; Returns: Json }
+      fn_hitung_kredit_pelanggan: {
+        Args: { p_pelanggan_id: string }
+        Returns: {
+          batas_kredit: number
+          piutang_terkonfirmasi: number
+          piutang_terkirim: number
+          piutang_berjalan: number
+          sisa_kredit: number
+          jumlah_faktur_overdue: number
+          hari_terlambat_terlama: number
+          punya_overdue: boolean
+          boleh_transaksi: boolean
+        }[]
+      }
+      rpc_get_kredit_pelanggan: {
+        Args: { p_pelanggan_id: string }
+        Returns: Json
+      }
+      rpc_get_faktur_overdue_pelanggan: {
+        Args: { p_pelanggan_id: string }
+        Returns: {
+          id: string
+          nomor: string
+          dikirim_pada: string | null
+          jatuh_tempo: string
+          total: number
+          hari_terlambat: number
+        }[]
+      }
       rpc_kirim_pesanan: { Args: { p_pesanan_id: string }; Returns: Json }
       rpc_konfirmasi_pesanan: { Args: { p_pesanan_id: string }; Returns: Json }
       rpc_laporan_aging_piutang: {
