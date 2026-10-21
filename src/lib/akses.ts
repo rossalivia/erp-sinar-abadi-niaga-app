@@ -70,7 +70,7 @@ export const MENU_ITEMS: MenuItem[] = [
   },
   {
     title: 'Audit Log',
-    href: '/pengaturan/audit-log',
+    href: '/audit',
     icon: 'ShieldAlert',
     roles: ['manajer'],
   },
@@ -87,6 +87,7 @@ export const ROUTE_PERMISSIONS: { pattern: RegExp; roles: Peran[] }[] = [
   { pattern: /^\/pembelian/, roles: ['gudang', 'manajer'] },
   { pattern: /^\/stok/, roles: ['penjualan', 'gudang', 'manajer'] },
   { pattern: /^\/laporan/, roles: ['manajer'] },
+  { pattern: /^\/audit/, roles: ['manajer'] },
   { pattern: /^\/akun/, roles: ['manajer'] },
   { pattern: /^\/profil/, roles: ['penjualan', 'gudang', 'manajer'] },
   { pattern: /^\/pengaturan/, roles: ['manajer'] },

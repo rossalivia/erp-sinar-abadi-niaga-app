@@ -1,13 +1,23 @@
 import Link from 'next/link';
 import { getProfil } from '@/lib/profil';
-import { createClient } from '@/lib/supabase/server';
+import { createServerClient } from '@/lib/supabase/server';
 import { PageHeader } from '@/components/shared/page-header';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { DataTable, type Column } from '@/components/shared/data-table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { formatTanggal } from '@/lib/format';
-import { AlertTriangle, Clock, Shield, ShoppingCart } from 'lucide-react';
+import { formatTanggal, formatRupiah } from '@/lib/format';
+import {
+  AlertTriangle,
+  Clock,
+  Shield,
+  ShoppingCart,
+  TrendingUp,
+  DollarSign,
+  ReceiptText,
+  ArrowRight,
+} from 'lucide-react';
+import type { LaporanRingkasan, LaporanAgingPiutang } from '@/features/laporan/types';
 
 interface BarangMenipis {
   id: string;
@@ -21,9 +31,12 @@ interface BarangMenipis {
 
 export default async function DashboardPage() {
   const user = await getProfil();
-  const supabase = await createClient();
+  const supabase = await createServerClient();
 
-  const { data: barangMenipisData, error } = await supabase
+  const isManajer = user?.peran === 'manajer';
+
+  // Ambil data stok menipis (untuk semua peran)
+  const { data: barangMenipisData, error: stokError } = await supabase
     .from('v_barang')
     .select('id, kode, nama, satuan, stok, stok_minimum, stok_menipis')
     .eq('stok_menipis', true)
@@ -38,6 +51,52 @@ export default async function DashboardPage() {
     stok_minimum: item.stok_minimum ?? 0,
     stok_menipis: item.stok_menipis ?? true,
   }));
+
+  // Jika Manajer, ambil KPI ringkas minggu berjalan & piutang tempo
+  let kpiMinggu: LaporanRingkasan | null = null;
+  let agingPiutang: LaporanAgingPiutang | null = null;
+
+  if (isManajer) {
+    const now = new Date();
+    // Hitung awal minggu ini (Senin)
+    const day = now.getDay();
+    const diffToMonday = (day === 0 ? -6 : 1) - day;
+    const monday = new Date(now);
+    monday.setDate(now.getDate() + diffToMonday);
+    const mondayStr = monday.toISOString().split('T')[0];
+    const todayStr = now.toISOString().split('T')[0];
+
+    const [ringkasanRes, agingRes] = await Promise.all([
+      supabase.rpc('rpc_laporan_ringkasan', { p_dari: mondayStr, p_sampai: todayStr }),
+      supabase.rpc('rpc_laporan_aging_piutang'),
+    ]);
+
+    const ringkasanRaw = Array.isArray(ringkasanRes.data) ? ringkasanRes.data[0] : ringkasanRes.data;
+    if (ringkasanRaw) {
+      kpiMinggu = {
+        total_omzet: Number(ringkasanRaw.total_omzet) || 0,
+        total_hpp: Number(ringkasanRaw.total_hpp) || 0,
+        total_margin: Number(ringkasanRaw.total_margin) || 0,
+        margin_persen: Number(ringkasanRaw.margin_persen) || 0,
+        jumlah_pesanan: Number(ringkasanRaw.jumlah_pesanan) || 0,
+        pesanan_dikirim: Number(ringkasanRaw.pesanan_dikirim) || 0,
+        pesanan_lunas: Number(ringkasanRaw.pesanan_lunas) || 0,
+      };
+    }
+
+    const agingRaw = Array.isArray(agingRes.data) ? agingRes.data[0] : agingRes.data;
+    if (agingRaw) {
+      agingPiutang = {
+        total_piutang_dikirim: Number(agingRaw.total_piutang_dikirim) || 0,
+        belum_jatuh_tempo: Number(agingRaw.belum_jatuh_tempo) || 0,
+        lewat_1_7_hari: Number(agingRaw.lewat_1_7_hari) || 0,
+        lewat_8_30_hari: Number(agingRaw.lewat_8_30_hari) || 0,
+        lewat_gt_30_hari: Number(agingRaw.lewat_gt_30_hari) || 0,
+        jumlah_pesanan_lewat_tempo: Number(agingRaw.jumlah_pesanan_lewat_tempo) || 0,
+        total_pesanan_dikirim: Number(agingRaw.total_pesanan_dikirim) || 0,
+      };
+    }
+  }
 
   const columns: Column<BarangMenipis>[] = [
     {
@@ -142,6 +201,102 @@ export default async function DashboardPage() {
         </CardContent>
       </Card>
 
+      {/* Panel Khusus Manajer: KPI Ringkas Minggu Berjalan & Piutang Jatuh Tempo */}
+      {isManajer && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+              Ringkasan Keuangan Manajer (Minggu Berjalan)
+            </h3>
+            <Link
+              href="/laporan"
+              className="text-xs font-semibold text-slate-700 hover:text-slate-900 flex items-center gap-1 hover:underline"
+            >
+              Lihat Laporan Lengkap
+              <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Omzet Minggu Ini */}
+            <Card className="border-slate-200 bg-white">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between text-xs font-medium text-slate-500">
+                  <span>Omzet Minggu Ini</span>
+                  <DollarSign className="h-4 w-4 text-slate-400" />
+                </div>
+                <div className="mt-2 text-lg font-bold text-slate-900 tabular-nums">
+                  {formatRupiah(kpiMinggu?.total_omzet || 0)}
+                </div>
+                <p className="mt-1 text-[11px] text-slate-500">
+                  {kpiMinggu?.jumlah_pesanan || 0} pesanan terealisasi
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Margin Kotor Minggu Ini */}
+            <Card className="border-slate-200 bg-white">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between text-xs font-medium text-slate-500">
+                  <span>Margin Kotor</span>
+                  <TrendingUp className="h-4 w-4 text-emerald-600" />
+                </div>
+                <div className="mt-2 text-lg font-bold text-emerald-700 tabular-nums">
+                  {formatRupiah(kpiMinggu?.total_margin || 0)}
+                </div>
+                <p className="mt-1 text-[11px] text-slate-500">
+                  Margin: {kpiMinggu?.margin_persen || 0}%
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Total Piutang Aktif */}
+            <Card className="border-slate-200 bg-white">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between text-xs font-medium text-slate-500">
+                  <span>Total Piutang Berjalan</span>
+                  <ReceiptText className="h-4 w-4 text-slate-400" />
+                </div>
+                <div className="mt-2 text-lg font-bold text-slate-900 tabular-nums">
+                  {formatRupiah(agingPiutang?.total_piutang_dikirim || 0)}
+                </div>
+                <Link
+                  href="/laporan/piutang"
+                  className="mt-1 text-[11px] text-slate-600 hover:text-slate-900 hover:underline block"
+                >
+                  {agingPiutang?.total_pesanan_dikirim || 0} tagihan belum lunas
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Pesanan Lewat Jatuh Tempo */}
+            <Card className={`border-slate-200 ${
+              (agingPiutang?.jumlah_pesanan_lewat_tempo || 0) > 0 ? 'bg-red-50/40 border-red-200' : 'bg-white'
+            }`}>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between text-xs font-medium text-slate-500">
+                  <span>Tagihan Lewat Tempo</span>
+                  <AlertTriangle className={`h-4 w-4 ${
+                    (agingPiutang?.jumlah_pesanan_lewat_tempo || 0) > 0 ? 'text-red-600' : 'text-slate-400'
+                  }`} />
+                </div>
+                <div className={`mt-2 text-lg font-bold tabular-nums ${
+                  (agingPiutang?.jumlah_pesanan_lewat_tempo || 0) > 0 ? 'text-red-700' : 'text-slate-700'
+                }`}>
+                  {agingPiutang?.jumlah_pesanan_lewat_tempo || 0} <span className="text-xs font-normal text-slate-500">pesanan</span>
+                </div>
+                <Link
+                  href="/laporan/piutang"
+                  className="mt-1 text-[11px] text-red-700 font-medium hover:underline block"
+                >
+                  Periksa penagihan piutang &rarr;
+                </Link>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
+
       {/* Daftar Stok Menipis */}
       <Card className="border-slate-200">
         <CardHeader className="pb-3">
@@ -165,9 +320,9 @@ export default async function DashboardPage() {
           </div>
         </CardHeader>
         <CardContent className="pt-0">
-          {error ? (
+          {stokError ? (
             <div className="p-4 text-xs text-red-600 bg-red-50 rounded border border-red-200">
-              Gagal memuat data stok barang: {error.message}
+              Gagal memuat data stok barang: {stokError.message}
             </div>
           ) : (
             <DataTable
