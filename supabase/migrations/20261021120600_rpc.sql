@@ -1573,6 +1573,27 @@ $$;
 -- ============================================================
 -- E. HAK AKSES EKSEKUSI RPC
 -- ============================================================
+
+-- ============================================================
+-- Fungsi RPC: peran_saya (Mengembalikan peran user saat ini untuk frontend)
+-- ============================================================
+CREATE OR REPLACE FUNCTION public.peran_saya()
+RETURNS text
+LANGUAGE plpgsql
+SECURITY DEFINER
+STABLE
+AS $$
+DECLARE
+  v_peran text;
+BEGIN
+  SELECT peran INTO v_peran
+  FROM public.profiles
+  WHERE id = auth.uid() AND aktif = true;
+  
+  RETURN COALESCE(v_peran, 'penjualan');
+END;
+$$;
+
 -- Cabut dari PUBLIC dan anon; hanya izinkan authenticated
 REVOKE ALL ON ALL FUNCTIONS IN SCHEMA public FROM PUBLIC, anon;
 

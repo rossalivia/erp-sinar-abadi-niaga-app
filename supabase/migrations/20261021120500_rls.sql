@@ -2,6 +2,25 @@
 -- Migrasi 6: Row-Level Security (RLS) pada 9 Tabel
 -- Sesuai docs/02-matriks-akses.md
 -- ============================================================
+-- ============================================================
+-- Fungsi Helper: fn_peran (Mengembalikan peran user yang sedang login)
+-- ============================================================
+CREATE OR REPLACE FUNCTION public.fn_peran()
+RETURNS text
+LANGUAGE plpgsql
+SECURITY DEFINER
+STABLE
+AS $$
+DECLARE
+  v_peran text;
+BEGIN
+  SELECT peran INTO v_peran
+  FROM public.profiles
+  WHERE id = auth.uid() AND aktif = true;
+  
+  RETURN COALESCE(v_peran, 'penjualan');
+END;
+$$;
 
 -- Aktifkan RLS pada seluruh tabel
 ALTER TABLE public.profiles          ENABLE ROW LEVEL SECURITY;

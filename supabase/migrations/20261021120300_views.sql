@@ -119,6 +119,25 @@ END $$;
 -- ============================================================
 -- B. VIEW MANAJER (Owner rights + filter fn_is_manajer())
 -- ============================================================
+-- ============================================================
+-- Fungsi Helper: fn_is_manajer
+-- ============================================================
+CREATE OR REPLACE FUNCTION public.fn_is_manajer()
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+STABLE
+AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 
+    FROM public.profiles 
+    WHERE id = auth.uid() 
+      AND peran = 'manajer' 
+      AND aktif = true
+  );
+END;
+$$;
 
 -- 1. v_barang_manajer: termasuk harga_pokok & peringatan belum diisi (A5)
 CREATE OR REPLACE VIEW public.v_barang_manajer

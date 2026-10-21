@@ -16,7 +16,7 @@ Dokumen ini wajib dibaca dan dipatuhi oleh setiap agen/sesi kerja sebelum menyen
 - **Semua logika bisnis berada di fungsi database (RPC Postgres)**, bukan di Next.js. Next.js hanya memanggil RPC atau membaca view/tabel, lalu menampilkan hasilnya.
 - Validasi di klien hanya untuk kenyamanan UX. Validasi yang berlaku adalah yang ada di database (constraint, trigger, RPC, RLS).
 - Perubahan stok **hanya** lewat RPC mutasi (konfirmasi, pembatalan, penerimaan, penyesuaian). UPDATE langsung ke `barang.stok` harus diblokir di database.
-- Pesan error bisnis berasal dari `RAISE EXCEPTION` di RPC, dalam Bahasa Indonesia. UI menampilkannya apa adanya.
+- Pesan error bisnis berasal dari `RAISE EXCEPTION` di RPC, dalam Bahasa Indonesia. UI menampilkannya apa adanya lewat helper `getErrorMessage()` di [`src/lib/errors.ts`](src/lib/errors.ts).
 
 ## 3. Kerahasiaan Data
 - Nilai rahasia (`harga_pokok`, `harga_beli_satuan`, `hpp_satuan`, dan turunannya seperti margin/HPP total) **tidak boleh muncul** di respons API, log, pesan error, atau kode/bundle klien untuk peran non-Manajer.
@@ -30,18 +30,55 @@ Dokumen ini wajib dibaca dan dipatuhi oleh setiap agen/sesi kerja sebelum menyen
 - **Aplikasi tidak memakai service-role key sama sekali**, termasuk di server/route handler. Semua akses memakai anon key + sesi pengguna sehingga RLS selalu berlaku.
 - Data seed tidak boleh berisi password asli. Gunakan password latihan yang terdokumentasi saja.
 
-## 5. Konvensi
-- Tabel dan kolom memakai **snake_case Bahasa Indonesia** (contoh: `pesanan_jual`, `batas_kredit`).
-- Fungsi RPC memakai snake_case dengan kata kerja di depan (contoh: `konfirmasi_pesanan`, `terima_pembelian`).
-- TypeScript dalam mode **strict**. Hindari `any`. Tipe database dihasilkan lewat `supabase gen types`.
-- Seluruh teks UI dalam **Bahasa Indonesia**. Format uang `Rp1.250.000`, tanggal zona Asia/Jakarta.
-- Semua halaman memakai `noindex` (meta robots dan header `X-Robots-Tag`).
+## 5. Konvensi Struktur Folder & Kode
+- **Struktur direktori frontend (`src/`)**:
+  - `src/app/`: Halaman aplikasi (Next.js App Router).
+    - `src/app/(dashboard)/`: Halaman terproteksi di dalam shell navigasi utama.
+    - `src/app/login/`: Autentikasi dan aksi login/logout.
+    - `src/app/tidak-berwenang/`: Halaman 403 saat akses diblokir route guard.
+  - `src/lib/`: Utilitas dasar yang dapat digunakan kembali:
+    - `supabase/`: Inisialisasi client (client browser, server, middleware).
+    - `akses.ts`: Satu-satunya sumber kebenaran menu peran dan penjaga rute.
+    - `format.ts`: Pemformat Rupiah, tanggal, dan waktu Indonesia.
+    - `errors.ts`: Pemetaan kode error RPC Postgres (E0001..E0030) ke Bahasa Indonesia.
+    - `profil.ts`: Pengambilan profil pengguna aktif (`getProfil`) ter-cache per request.
+  - `src/components/ui/`: Komponen primitif atomik (button, input, table, badge, dll).
+  - `src/components/layout/`: Komponen tata letak (AppShell, Sidebar, Header).
+  - `src/components/shared/`: Komponen bersama tingkat lanjut (DataTable padat, FormField, BadgeStatus, EmptyState, PageHeader).
+  - `src/features/<modul>/`: Komponen spesifik modul bisnis (pesanan, pembelian, pelanggan, laporan, pengaturan).
+- **Pola Server Action + Validasi Zod**:
+  - Setiap mutasi data di frontend diproses melalui Server Action (`'use server'`).
+  - Input divalidasi terlebih dahulu dengan skema Zod di awal Server Action.
+  - Error validasi dikembalikan dalam bentuk `fieldErrors`, error database dipetakan via `getErrorMessage(err)`.
+- **Konvensi Penamaan**:
+  - Tabel dan kolom memakai **snake_case Bahasa Indonesia** (contoh: `pesanan_jual`, `batas_kredit`).
+  - Fungsi RPC memakai snake_case dengan kata kerja di depan (contoh: `konfirmasi_pesanan`, `terima_pembelian`).
+  - TypeScript dalam mode **strict**. Hindari `any`. Tipe database dihasilkan lewat `npm run gen:types`.
+  - Seluruh teks UI dalam **Bahasa Indonesia**. Format uang `Rp1.250.000`, tanggal zona Asia/Jakarta.
+  - Semua halaman memakai `noindex` (meta robots, header `X-Robots-Tag`, dan `public/robots.txt`).
 
-## 6. Gaya UI Frontend
-- Gunakan Tailwind CSS yang bersih, bergaya aplikasi **enterprise/ERP profesional** seperti sistem internal korporat.
-- Karakter visual: clean, data-table yang padat, border minimalis, warna profesional yang kalem (abu/slate dengan satu aksen), **tanpa glassmorphism berlebihan, tanpa gradien mencolok**.
-- Utamakan keterbacaan data, kerapian perataan tabel (angka rata kanan, header sticky), dan fungsionalitas murni.
-- Status ditampilkan sebagai badge kecil dengan warna kalem dan konsisten.
+## 6. Aturan UI & Sistem Desain (Wajib Dipatuhi Seluruh Modul)
+Gunakan styling Tailwind CSS yang bersih, bergaya aplikasi **enterprise/ERP profesional** seperti sistem internal korporat:
+- **Karakter Visual**: Clean, data-table yang padat, border minimalis (`border-slate-200`), warna profesional yang kalem (slate/gray dengan satu aksen), **tanpa glassmorphism berlebihan, tanpa gradien mencolok, tanpa animasi dekoratif**.
+- **Palet Warna**:
+  - Latar belakang: `bg-slate-50` / card `bg-white`.
+  - Teks: primer `text-slate-900`, sekunder `text-slate-500`, border `border-slate-200`.
+  - Aksi utama: `bg-slate-900 text-white hover:bg-slate-800`.
+  - Status/Badge: warna redup dengan kontras teks tinggi (`success`: emerald-50/text-emerald-800, `warning`: amber-50/text-amber-800, `danger`: red-50/text-red-800, `neutral`: slate-100/text-slate-700, `info`: blue-50/text-blue-800).
+- **Tabel Data (DataTable)**:
+  - Padat (`text-xs` atau `text-sm`, padding vertikal kecil `py-1.5 px-2.5`).
+  - Header menempel (`sticky top-0 bg-slate-100 font-medium text-slate-700`).
+  - Garis pemisah tipis `border-slate-200`, baris zebra opsional sangat halus (`bg-slate-50/50`).
+  - Kolom angka/rupiah dan stok rata kanan dengan angka tabular (`tabular-nums text-right`).
+  - Kolom aksi rata kanan. Status kosong dan loading skeleton rapi.
+- **Komponen Form & Input**:
+  - Sudut konsisten kecil (`rounded-md`), bayangan minimal/tanpa bayangan (`shadow-none`).
+  - Form dalam grid yang rapi, label di atas input, pesan error di bawah input.
+- **Tata Letak Konsisten**:
+  - Sidebar tetap (lebar 56 / `w-56` di desktop) + header tipis (`h-14`) + area konten dengan lebar maksimum `max-w-7xl mx-auto`.
+  - Tombol aksi utama berada di slot kanan atas `PageHeader` di setiap halaman modul.
+- **Gunakan Komponen Bersama**:
+  - Selalu gunakan `AppShell`, `PageHeader`, `DataTable`, `BadgeStatus`, `FormField`, `EmptyState` dari `@/components/shared/` atau `@/components/ui/`. Jangan membuat variasi styling baru per halaman.
 
 ## 7. Penutup Setiap Tahap
 Setiap sesi/tahap **wajib diakhiri dengan ringkasan** yang memuat:
