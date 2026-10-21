@@ -29,6 +29,11 @@ export async function middleware(request: NextRequest) {
     request,
   });
 
+  supabaseResponse.headers.set('X-Robots-Tag', 'noindex, nofollow');
+  supabaseResponse.headers.set('X-Content-Type-Options', 'nosniff');
+  supabaseResponse.headers.set('X-Frame-Options', 'DENY');
+  supabaseResponse.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+
   const supabase = createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -69,7 +74,12 @@ export async function middleware(request: NextRequest) {
     if (safeNext !== '/') {
       redirectUrl.searchParams.set('next', safeNext);
     }
-    return NextResponse.redirect(redirectUrl);
+    const redirectRes = NextResponse.redirect(redirectUrl);
+    redirectRes.headers.set('X-Robots-Tag', 'noindex, nofollow');
+    redirectRes.headers.set('X-Content-Type-Options', 'nosniff');
+    redirectRes.headers.set('X-Frame-Options', 'DENY');
+    redirectRes.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+    return redirectRes;
   }
 
   // Pengguna terautentikasi: ambil profil (peran, status aktif)

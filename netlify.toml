@@ -1,0 +1,23 @@
+# Konfigurasi Deployment Netlify untuk ERP CV Sinar Abadi Niaga
+# Next.js App Router dengan SSR / Server Actions
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "20"
+  NPM_FLAGS = "--prefer-offline --no-audit"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Header Keamanan Global & Perlindungan Mesin Pencari (noindex)
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow, noarchive, nosnippet"
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
