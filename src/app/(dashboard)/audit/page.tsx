@@ -42,7 +42,7 @@ export default async function AuditLogPage({ searchParams }: PageProps) {
   let query = supabase
     .from('audit_log')
     .select(
-      'id, pelaku_id, aksi, nama_tabel, data_id, nilai_lama, nilai_baru, dibuat_pada, pelaku:pelaku_id (nama_lengkap, email, peran)',
+      'id, pelaku_id, aksi, nama_tabel, data_id, nilai_lama, nilai_baru, dibuat_pada, pelaku:pelaku_id (nama_lengkap, peran)',
       { count: 'exact' }
     );
 
@@ -65,7 +65,6 @@ export default async function AuditLogPage({ searchParams }: PageProps) {
   const logs: AuditLogItem[] = ((rawLogs || []) as Record<string, unknown>[]).map((r) => {
     const pelaku = (Array.isArray(r.pelaku) ? r.pelaku[0] : r.pelaku) as {
       nama_lengkap?: string;
-      email?: string;
       peran?: string;
     } | null;
 
@@ -73,7 +72,7 @@ export default async function AuditLogPage({ searchParams }: PageProps) {
       id: Number(r.id),
       pelaku_id: String(r.pelaku_id || ''),
       pelaku_nama: pelaku?.nama_lengkap || 'Sistem',
-      pelaku_email: pelaku?.email || '',
+      pelaku_email: '',
       pelaku_peran: pelaku?.peran || '',
       aksi: String(r.aksi || ''),
       nama_tabel: String(r.nama_tabel || ''),
