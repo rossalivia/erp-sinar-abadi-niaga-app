@@ -131,3 +131,25 @@ Urutan validasi `konfirmasi_pesanan`: (1) akses/kepemilikan → E01/E02, (2) sta
 | BR-10 | TC-26 | TC-15 |
 | BR-11 | TC-27 | TC-15, TC-20, TC-23, TC-26 (mutasi tercatat) |
 | BR-12 | TC-03, TC-04, TC-05, TC-28 | TC-06, TC-18, TC-23, TC-25 (audit) |
+| BR-13 | TC-29, TC-30, TC-34, TC-36 | TC-16, TC-37, TC-39 |
+| BR-14 | TC-31, TC-32, TC-33, TC-35 | TC-17, TC-37, TC-40 |
+
+---
+
+## 7. Test Case Tambahan: Modul Limit Kredit Dinamis & Blokir Otomatis (TC-29 s.d. TC-40)
+
+| ID | Fokus Uji | Aktor | Media | Status | Tanggal Uji | Bukti Uji | Ringkasan Verifikasi & Hasil |
+|---|---|---|---|---|---|---|---|
+| **TC-29** | BR-13: Nilai pesanan = sisa kredit persis (D7) | P1 | SQL | **Lulus** | 2026-10-21 | `supabase/tests/04_kredit_overdue.sql` | Pesanan baru bernilai tepat sama dengan sisa plafon kredit pelanggan berhasil dikonfirmasi tanpa error. |
+| **TC-30** | BR-13: Nilai pesanan melampaui sisa plafon kredit (D7) | P1 | SQL + Unit | **Lulus** | 2026-10-21 | `supabase/tests/04_kredit_overdue.sql`<br>`src/features/pelanggan/__tests__/kredit.test.ts` | Konfirmasi pesanan yang membuat total piutang melebihi batas kredit ditolak bersih dengan pesan `E0006: Batas kredit pelanggan terlampaui`. |
+| **TC-31** | BR-14: Ada faktur overdue sisa kredit cukup (D4) | P1 | SQL + Unit | **Lulus** | 2026-10-21 | `supabase/tests/04_kredit_overdue.sql`<br>`src/features/pelanggan/__tests__/kredit.test.ts` | Meskipun sisa limit kredit masih tersedia, konfirmasi pesanan ditolak dengan pesan `E0007: Pelanggan memiliki faktur lewat jatuh tempo, transaksi diblokir`. |
+| **TC-32** | BR-14: Prioritas D4 (Overdue & Overlimit sekaligus) | P1 | SQL | **Lulus** | 2026-10-21 | `supabase/tests/04_kredit_overdue.sql` | Saat kedua kondisi pelanggaran terpenuhi sekaligus, sistem konsisten mengevaluasi dan memunculkan error overdue `E0007` terlebih dahulu. |
+| **TC-33** | BR-14: Batas tanggal jatuh tempo hari ini (D2) | P1 | SQL | **Lulus** | 2026-10-21 | `supabase/tests/04_kredit_overdue.sql` | Pesanan berstatus `dikirim` dengan `jatuh_tempo = (now() AT TIME ZONE 'Asia/Jakarta')::date` belum dianggap lewat jatuh tempo; pesanan baru dapat dikonfirmasi. |
+| **TC-34** | BR-13: Dikonfirmasi belum dikirim masuk piutang (D1) | P1 | SQL | **Lulus** | 2026-10-21 | `supabase/tests/04_kredit_overdue.sql` | Pesanan berstatus `dikonfirmasi` mengurangi sisa plafon kredit namun tidak memicu blokir overdue. |
+| **TC-35** | BR-14: Pelunasan faktur overdue membuka blokir (Alur B2) | M, P1 | SQL | **Lulus** | 2026-10-21 | `supabase/tests/04_kredit_overdue.sql` | Manajer melunasi faktur menunggak via `rpc_catat_pelunasan`, status pelanggan kembali `boleh_transaksi = true` dan pesanan berikutnya sukses. |
+| **TC-36** | BR-13: Penaikan limit kredit membuka blokir overlimit (Alur B1) | M, P1 | SQL | **Lulus** | 2026-10-21 | `supabase/tests/04_kredit_overdue.sql` | Manajer menaikkan batas kredit via `rpc_set_batas_kredit`, pesanan yang sebelumnya melebihi limit langsung dapat dikonfirmasi. |
+| **TC-37** | BR-13/14: Non-bypassable untuk Manajer (D5) | M | SQL | **Lulus** | 2026-10-21 | `supabase/tests/04_kredit_overdue.sql` | Manajer yang mencoba langsung mengonfirmasi pesanan pelanggan bermasalah kredit tetap diblokir oleh `rpc_konfirmasi_pesanan`. Override hanya legal melalui B1/B2. |
+| **TC-38** | Kerahasiaan data view & RPC baru (Zero Leakage) | P1, G | SQL | **Lulus** | 2026-10-21 | `supabase/tests/04_kredit_overdue.sql` | View `v_pelanggan_kredit` dan RPC `rpc_get_faktur_overdue_pelanggan` bebas dari kolom rahasia (`harga_pokok`, `harga_beli_satuan`, `hpp_satuan`). |
+| **TC-39** | UI Pesanan Editor: Panel Dinamis & Alert Live | P1 | UI / E2E | **Lulus** | 2026-10-21 | `tests/e2e/04-kredit-overdue.spec.ts` | Form editor pesanan menampilkan 4 kartu ringkasan kredit, estimasi sisa plafon live, banner alert saat overlimit/overdue, dan tombol draf tetap aktif (D3). |
+| **TC-40** | UI Detail Pelanggan: Rincian Piutang & Tabel Overdue | P1, M | UI / E2E | **Lulus** | 2026-10-21 | `tests/e2e/04-kredit-overdue.spec.ts` | Halaman `/pelanggan/[id]` merender rincian terkonfirmasi vs terkirim, serta Tabel Faktur Overdue lengkap dengan tombol pelunasan khusus Manajer. |
+

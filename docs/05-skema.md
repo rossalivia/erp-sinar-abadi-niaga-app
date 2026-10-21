@@ -173,5 +173,10 @@ Sistem database menerapkan 7 lapisan perlindungan mandiri di level Postgres:
 | `supabase/migrations/20261021120300_views.sql` | View publik (`security_invoker = true`) & view manajer (`fn_is_manajer()` filter). |
 | `supabase/migrations/20261021120400_grants.sql` | Column-level grants, pencabutan hak akses kolom rahasia, izin sequence dan view. |
 | `supabase/migrations/20261021120500_rls.sql` | Pengaktifan RLS dan pembuatan security policy pada seluruh 9 tabel. |
+| `supabase/migrations/20261021120600_rpc.sql` | 18 RPC alur transaksi dan pengelolaan master data. |
+| `supabase/migrations/20261021130000_rpc_laporan_tambahan.sql` | RPC agregat laporan analitik omzet, margin, dan aging piutang khusus Manajer. |
+| `supabase/migrations/20261021140000_kredit_overdue.sql` | Modul Limit Kredit Dinamis & Blokir Otomatis: `fn_hitung_kredit_pelanggan`, view `v_pelanggan_kredit`, pembaruan `v_pelanggan_piutang`, `rpc_get_kredit_pelanggan`, `rpc_get_faktur_overdue_pelanggan`, serta pembaruan `rpc_konfirmasi_pesanan`. |
 | `supabase/seed.sql` | Data seed: 5 akun uji dev (3 peran), 2 pemasok, 5 pelanggan, 15 barang (sebagian stok menipis), saldo awal kartu stok. |
 | `supabase/tests/02_keamanan.sql` | Suite uji SQL 20 skenario mencakup RBAC, column grants, trigger guard, append-only, dan penolakan anon. |
+| `supabase/tests/03_rpc.sql` | Suite uji SQL 25 skenario alur transaksi bisnis, invarian stok, batas kredit, dan konkurensi. |
+| `supabase/tests/04_kredit_overdue.sql` | Suite uji SQL TC-29 s.d. TC-38: kalkulasi sisa kredit, prioritas D4, blokir overdue, non-bypassable, dan zero leakage. |

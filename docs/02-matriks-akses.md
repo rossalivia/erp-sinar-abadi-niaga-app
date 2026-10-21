@@ -141,7 +141,24 @@ Kolom rahasia: `barang.harga_pokok`, `pembelian.harga_beli_satuan`, `item_pesana
 | Diskon >10% oleh P | RPC | CK 0–25 | TC-13 |
 | Konfirmasi di bawah HPP oleh P | RPC (pesan generik) | — | TC-14 |
 | Kredit & jatuh tempo | RPC (+ kunci baris pelanggan) | — | TC-16, TC-17 |
+| Kredit dinamis & overdue control (D1-D9) | RPC `rpc_konfirmasi_pesanan` via `fn_hitung_kredit_pelanggan` (Urutan D4: Overdue dulu, baru plafon) | Non-bypassable semua peran termasuk Manajer (D5) | TC-29 s.d. TC-40 |
 | Stok minus saat bersamaan | RPC (`FOR UPDATE` urut id) | CK `stok >= 0` | TC-19, TC-20 |
 | Transisi status ilegal | RPC | CK nilai status | TC-22 |
 | Audit log hanya dibaca M | RLS | CG (tanpa grant tulis) | TC-28 |
+
+---
+
+## E. Modul Limit Kredit Dinamis & Blokir Otomatis (Credit & Overdue Control)
+
+| Objek / Fitur | P | G | M | Aturan & Lapisan Penegak |
+|---|---|---|---|---|
+| View `v_pelanggan_kredit` | ✅ | ✅ | ✅ | `security_invoker = true`, tanpa kolom rahasia (aman untuk semua peran) |
+| RPC `rpc_get_kredit_pelanggan` | ✅ | ✅ | ✅ | RPC pembaca status kalkulasi kredit & kelayakan transaksi |
+| RPC `rpc_get_faktur_overdue_pelanggan` | ✅ | ✅ | ✅ | RPC pembaca daftar faktur overdue untuk halaman detail pelanggan (bebas HPP) |
+| Simpan Draf saat Overdue / Overlimit | ✅ | ❌ | ✅ | **D3:** Tidak diblokir di UI/draf; draf tetap dapat disimpan |
+| Konfirmasi Pesanan saat Overdue | ❌ | ❌ | ❌ | **D4 & D5:** Diblokir untuk SEMUA peran via `rpc_konfirmasi_pesanan` (`E0007`) |
+| Konfirmasi Pesanan melebihi Plafon | ❌ | ❌ | ❌ | **D4 & D5:** Diblokir untuk SEMUA peran via `rpc_konfirmasi_pesanan` (`E0006`) |
+| Override Blokir Overdue | ❌ | ❌ | ✅ | **D5:** Hanya melalui pelunasan faktur menunggak (`rpc_catat_pelunasan`) |
+| Override Plafon Kredit | ❌ | ❌ | ✅ | **D5:** Hanya melalui penaikan limit kredit pelanggan (`rpc_set_batas_kredit`) |
+
 
