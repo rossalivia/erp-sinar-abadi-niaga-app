@@ -1,7 +1,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { Plus, Search, AlertCircle } from 'lucide-react';
+import { Plus, Search, AlertCircle, Upload } from 'lucide-react';
 import { createServerClient } from '@/lib/supabase/server';
 import { getProfil } from '@/lib/profil';
 import { PageHeader } from '@/components/shared/page-header';
@@ -150,16 +150,30 @@ export default async function PelangganPage({ searchParams }: PageProps) {
         title="Data Pelanggan"
         description="Kelola data toko rekanan, batas kredit, dan ketentuan termin pembayaran"
         action={
-          <Link
-            href="/pelanggan/baru"
-            className={cn(
-              buttonVariants({ variant: 'default', size: 'sm' }),
-              'flex items-center gap-1.5'
+          <div className="flex items-center gap-2">
+            {profile.peran === 'manajer' && (
+              <Link
+                href="/impor?tab=pelanggan"
+                className={cn(
+                  buttonVariants({ variant: 'outline', size: 'sm' }),
+                  'flex items-center gap-1.5 bg-white'
+                )}
+              >
+                <Upload className="h-4 w-4" />
+                <span>Impor CSV</span>
+              </Link>
             )}
-          >
-            <Plus className="h-4 w-4" />
-            <span>Tambah Pelanggan</span>
-          </Link>
+            <Link
+              href="/pelanggan/baru"
+              className={cn(
+                buttonVariants({ variant: 'default', size: 'sm' }),
+                'flex items-center gap-1.5'
+              )}
+            >
+              <Plus className="h-4 w-4" />
+              <span>Tambah Pelanggan</span>
+            </Link>
+          </div>
         }
       />
 

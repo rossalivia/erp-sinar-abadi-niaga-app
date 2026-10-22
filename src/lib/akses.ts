@@ -92,6 +92,12 @@ export const MENU_ITEMS: MenuItem[] = [
     icon: 'ShieldAlert',
     roles: ['manajer'],
   },
+  {
+    title: 'Impor Data',
+    href: '/impor',
+    icon: 'Upload',
+    roles: ['manajer'],
+  },
 ];
 
 export const ROUTE_PERMISSIONS: { pattern: RegExp; roles: Peran[] }[] = [
@@ -108,6 +114,7 @@ export const ROUTE_PERMISSIONS: { pattern: RegExp; roles: Peran[] }[] = [
   { pattern: /^\/stok\/opname/, roles: ['gudang', 'manajer'] },
   { pattern: /^\/stok/, roles: ['penjualan', 'gudang', 'manajer'] },
   { pattern: /^\/laporan/, roles: ['manajer'] },
+  { pattern: /^\/impor/, roles: ['manajer'] },
   { pattern: /^\/audit/, roles: ['manajer'] },
   { pattern: /^\/akun/, roles: ['manajer'] },
   { pattern: /^\/profil/, roles: ['penjualan', 'gudang', 'manajer'] },

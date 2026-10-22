@@ -53,6 +53,16 @@ export const ERROR_MESSAGES: Record<string, string> = {
   E0050: 'Anda tidak memiliki wewenang menagih pelanggan ini',
   E0051: 'Catatan penagihan bersifat permanen dan tidak dapat diubah atau dihapus',
   E0052: 'Faktur tidak valid untuk penagihan pelanggan ini',
+  E0053: 'Header berkas CSV tidak sesuai dengan templat resmi',
+  E0054: 'Berkas CSV kosong, tidak ada data untuk diimpor',
+  E0055: 'Berkas CSV melebihi batas maksimal 1.000 baris data',
+  E0056: 'Ukuran berkas CSV melebihi batas maksimal 1 MB',
+  E0057: 'Kode barang atau pelanggan sudah terdaftar di sistem',
+  E0058: 'Nilai harus berupa bilangan bulat tanpa pecahan desimal',
+  E0059: 'Kode barang atau pelanggan duplikat di dalam berkas CSV',
+  E0060: 'Gagal memproses impor data, seluruh transaksi dibatalkan',
+  E0061: 'Format berkas tidak didukung, harap unggah berkas berekstensi .csv',
+  E0062: 'Data impor tidak valid',
 };
 
 interface SupabasePostgresError {

@@ -226,4 +226,34 @@ Urutan validasi `konfirmasi_pesanan`: (1) akses/kepemilikan → E01/E02, (2) sta
 | **TC-87** | Otomatisasi pencatatan riwayat saat buka WhatsApp | P, M | Integrasi | **Lulus** | 2026-10-22 | `src/features/penagihan/actions.ts` | Server Action merekam interaksi `pengingat_wa` ke `catatan_penagihan` sebelum tab WhatsApp dibuka. |
 | **TC-88** | Dampak pelunasan Manajer terhadap daftar tagihan | M | SQL | **Lulus** | 2026-10-22 | `supabase/tests/07_penagihan_piutang.sql` | Pemanggilan `rpc_catat_pelunasan` mengubah status pesanan ke `lunas`; faktur seketika hilang dari `v_tagihan`. |
 
+---
+
+## 12. Test Case Tambahan: Impor CSV Data Master (TC-89 s.d. TC-110)
+
+| ID | Fokus Uji | Aktor | Media | Status | Tanggal Uji | Bukti Uji | Ringkasan Verifikasi & Hasil |
+|---|---|---|---|---|---|---|---|
+| **TC-89** | Impor CSV Barang Valid (Stok 0, Tanpa HPP) | M | SQL + Vitest | **Lulus** | 2026-10-23 | `supabase/tests/08_impor_csv.sql`<br>`src/features/impor/__tests__/utils.test.ts` | Barang baru berhasil dibuat dengan `stok = 0`, nomor dokumen `IMP-YYYY-XXXX`, tercatat di `impor_data` dan `audit_log`. |
+| **TC-90** | Impor CSV Barang Valid dengan Stok Awal & HPP | M | SQL + Vitest | **Lulus** | 2026-10-23 | `supabase/tests/08_impor_csv.sql`<br>`src/features/impor/__tests__/utils.test.ts` | Barang tersimpan, `harga_pokok` terisi, kartu `mutasi_stok` mencatat penyesuaian saldo awal (alasan $\ge 10$ char), invarian mutasi = stok terpenuhi. |
+| **TC-91** | Impor CSV Pelanggan Valid (Termin & Batas Kredit) | M | SQL + Vitest | **Lulus** | 2026-10-23 | `supabase/tests/08_impor_csv.sql`<br>`src/features/impor/__tests__/utils.test.ts` | Pelanggan tersimpan lengkap dengan batas kredit dan termin tempo yang diizinkan (0, 7, 14, 30 hari). |
+| **TC-92** | Deteksi Kode Duplikat di dalam Berkas CSV | M | SQL + Vitest | **Lulus** | 2026-10-23 | `supabase/tests/08_impor_csv.sql`<br>`src/features/impor/__tests__/utils.test.ts` | Dua baris berkode sama di berkas ditolak dengan galat `E0059` dan membatalkan impor. |
+| **TC-93** | Penolakan Kode yang Sudah Ada di Database | M | SQL + Vitest | **Lulus** | 2026-10-23 | `supabase/tests/08_impor_csv.sql`<br>`src/features/impor/__tests__/utils.test.ts` | Kode eksisting ditolak dengan galat `E0057` (kebijakan insert-only tanpa upsert). |
+| **TC-94** | Penolakan Harga Jual Nol atau Negatif | M | SQL + Vitest | **Lulus** | 2026-10-23 | `supabase/tests/08_impor_csv.sql`<br>`src/features/impor/__tests__/utils.test.ts` | Nilai `harga_jual <= 0` ditolak tegas dengan kode error `E0028`. |
+| **TC-95** | Penolakan Format Angka Pecahan Desimal | M | Vitest | **Lulus** | 2026-10-23 | `src/features/impor/__tests__/utils.test.ts` | Input desimal seperti `15000.50` atau `15000,50` ditolak dengan error `E0058`. |
+| **TC-96** | Pembersihan Format Angka dengan Pemisah Ribuan | M | Vitest | **Lulus** | 2026-10-23 | `src/features/impor/__tests__/utils.test.ts` | String ribuan `15.000` atau `1,000,000` dinormalisasi menjadi integer murni tanpa error. |
+| **TC-97** | Penolakan Nilai Termin Hari Tidak Valid | M | SQL + Vitest | **Lulus** | 2026-10-23 | `supabase/tests/08_impor_csv.sql`<br>`src/features/impor/__tests__/utils.test.ts` | Termin selain 0, 7, 14, 30 (misal 45) ditolak tegas dengan error `E0024`. |
+| **TC-98** | Penolakan Struktur Header Salah atau Kolom Hilang | M | Vitest | **Lulus** | 2026-10-23 | `src/features/impor/__tests__/utils.test.ts` | Header kolom tidak sesuai templat ditolak pada level berkas dengan error `E0053`. |
+| **TC-99** | Penolakan Berkas CSV Kosong (0 Baris Data) | M | SQL + Vitest | **Lulus** | 2026-10-23 | `supabase/tests/08_impor_csv.sql`<br>`src/features/impor/__tests__/utils.test.ts` | Berkas CSV kosong atau hanya berisi baris header ditolak dengan error `E0054`. |
+| **TC-100** | Penolakan Berkas Melebihi Batas 1.000 Baris Data | M | Vitest | **Lulus** | 2026-10-23 | `src/features/impor/__tests__/utils.test.ts` | Berkas berisi 1.001 baris data ditolak pada validasi kuota baris dengan error `E0055`. |
+| **TC-101** | Penolakan Berkas Melebihi Batas Ukuran 1 MB | M | Server Action | **Lulus** | 2026-10-23 | `src/features/impor/actions.ts` | Berkas ukuran $> 1\text{ MB}$ ditolak sebelum proses parsing dengan error `E0056`. |
+| **TC-102** | Deteksi Otomatis Pemisah Koma (,) vs Titik Koma (;) | M | Vitest | **Lulus** | 2026-10-23 | `src/features/impor/__tests__/utils.test.ts` | Berkas beralas titik koma (Excel Indonesia) terdeteksi otomatis dan diparsing presisi. |
+| **TC-103** | Penanganan Encoding UTF-8 dengan BOM | M | Vitest | **Lulus** | 2026-10-23 | `src/features/impor/__tests__/utils.test.ts` | Karakter `\uFEFF` di awal berkas dibersihkan transparan tanpa merusak header kolom. |
+| **TC-104** | Penolakan Format Berkas Non-CSV (.xlsx / .xls) | M | Server Action | **Lulus** | 2026-10-23 | `src/features/impor/actions.ts` | Pengunggahan berkas non-csv ditolak dengan pesan instruksi jelas `E0061`. |
+| **TC-105** | Atomisitas Transaksi (All or Nothing Rollback) | M | SQL | **Lulus** | 2026-10-23 | `supabase/tests/08_impor_csv.sql` | Batch berisi baris valid dan 1 baris invalid di-rollback 100% tanpa ada data parsial. |
+| **TC-106** | Validasi Ulang di Lapisan Database RPC | M | SQL | **Lulus** | 2026-10-23 | `supabase/tests/08_impor_csv.sql` | Panggilan RPC langsung dengan payload invalid ditolak tegas oleh Postgres engine (`E0062`). |
+| **TC-107** | Pemblokiran Hak Akses Penjualan dan Gudang | P, G | SQL + Route Guard | **Lulus** | 2026-10-23 | `supabase/tests/08_impor_csv.sql`<br>`src/lib/akses.ts` | Penjualan dan Gudang dialihkan ke `/tidak-berwenang` dan ditolak RPC `E0001`. |
+| **TC-108** | Zero-Leakage Data Rahasia Harga Pokok | P, G | SQL + View/RLS | **Lulus** | 2026-10-23 | `supabase/tests/08_impor_csv.sql` | `impor_data` dan `audit_log` tidak memuat data baris mentah maupun harga pokok. |
+| **TC-109** | Ketahanan Konkurensi & Balapan Dua Berkas Bersamaan | Multi | SQL / Constraint | **Lulus** | 2026-10-23 | `supabase/migrations/20261023023000_impor_csv.sql` | Constraint unik database menjamin tidak terjadi duplikasi kode saat balapan paralel. |
+| **TC-110** | Verifikasi Siklus Templat Siap Pakai | M | End-to-End | **Lulus** | 2026-10-23 | `src/features/impor/__tests__/utils.test.ts` | Templat CSV yang diunduh dari sistem terbukti valid dan dapat diimpor kembali 100%. |
+
+
 

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { Plus, Search, AlertTriangle, AlertCircle } from 'lucide-react';
+import { Plus, Search, AlertTriangle, AlertCircle, Upload } from 'lucide-react';
 import { createServerClient } from '@/lib/supabase/server';
 import { getProfil } from '@/lib/profil';
 import { PageHeader } from '@/components/shared/page-header';
@@ -261,16 +261,28 @@ export default async function BarangPage({ searchParams }: PageProps) {
         description="Katalog barang dagang, harga jual, dan status ketersediaan stok fisik"
         action={
           isManajer ? (
-            <Link
-              href="/barang/baru"
-              className={cn(
-                buttonVariants({ variant: 'default', size: 'sm' }),
-                'flex items-center gap-1.5'
-              )}
-            >
-              <Plus className="h-4 w-4" />
-              <span>Tambah Barang</span>
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/impor?tab=barang"
+                className={cn(
+                  buttonVariants({ variant: 'outline', size: 'sm' }),
+                  'flex items-center gap-1.5 bg-white'
+                )}
+              >
+                <Upload className="h-4 w-4" />
+                <span>Impor CSV</span>
+              </Link>
+              <Link
+                href="/barang/baru"
+                className={cn(
+                  buttonVariants({ variant: 'default', size: 'sm' }),
+                  'flex items-center gap-1.5'
+                )}
+              >
+                <Plus className="h-4 w-4" />
+                <span>Tambah Barang</span>
+              </Link>
+            </div>
           ) : undefined
         }
       />

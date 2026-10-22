@@ -61,6 +61,8 @@ Kolom rahasia: `barang.harga_pokok`, `pembelian.harga_beli_satuan`, `item_pesana
 | | INSERT/UPDATE/DELETE | ❌ | ❌ | ❌ | Hanya via RPC `rpc_ajukan_persetujuan_harga`, `rpc_putuskan_persetujuan_harga`, `rpc_batalkan_pengajuan_harga` | CG, RPC |
 | **catatan_penagihan** | SELECT | ⚠️ | ❌ | ✅ | P: catatan pada pelanggan yang memiliki tagihan miliknya atau dibuat sendiri. G: 0 baris. M: semua | RLS |
 | | INSERT/UPDATE/DELETE | ❌ | ❌ | ❌ | Append-only. UPDATE/DELETE ditolak trigger `trg_catatan_penagihan_guard` (E0051). Penulisan via `rpc_catat_penagihan` | TG, CG, RPC |
+| **impor_data** | SELECT | ❌ | ❌ | ✅ | Metadata transaksi impor barang & pelanggan (tanpa baris mentah / HPP). Non-manajer 0 baris | RLS |
+| | INSERT/UPDATE/DELETE | ❌ | ❌ | ❌ | Penulisan hanya melalui RPC database `rpc_impor_barang` & `rpc_impor_pelanggan` | RLS, CG, RPC |
 
 ### View
 
@@ -139,6 +141,8 @@ Kolom rahasia: `barang.harga_pokok`, `pembelian.harga_beli_satuan`, `item_pesana
 | `/penagihan` | Penagihan & Monitoring Tagihan | ⚠️ (miliknya) | ❌ | ✅ (semua) | 4 KPI cards, filter tab klasifikasi umur, tombol WA, catat penagihan, pelunasan (M) | MW, RLS, VW |
 | `/pembelian` | Pembelian & Pemasok | ❌ | ✅ | ✅ | Kolom harga beli hanya M; tab Pemasok | MW, RLS, CG, VW |
 | `/laporan` | Laporan | ❌ | ❌ | ✅ | Grafik mingguan, margin per barang, umur piutang, CSV | MW, VW/RPC filter peran |
+| `/impor` | Impor Data Master | ❌ | ❌ | ✅ | Halaman unggah, validasi dry-run, tabel galat, pratinjau, dan eksekusi impor | MW, RLS, RPC |
+| `/impor/riwayat` | Riwayat Impor Data | ❌ | ❌ | ✅ | Rekam jejak seluruh transaksi impor data CSV | MW, RLS |
 | `/pengaturan/akun` | Akun & Peran | ❌ | ❌ | ✅ | — | MW, RPC |
 | `/pengaturan/audit-log` | Audit Log | ❌ | ❌ | ✅ | Filter aksi & tanggal | MW, RLS |
 

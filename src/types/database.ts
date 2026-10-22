@@ -181,6 +181,53 @@ export type Database = {
           },
         ]
       }
+      impor_data: {
+        Row: {
+          id: string
+          nomor: string
+          jenis: string
+          nama_berkas: string
+          jumlah_baris: number
+          jumlah_dibuat: number
+          status: string
+          ringkasan: Json
+          dibuat_oleh: string
+          dibuat_pada: string
+        }
+        Insert: {
+          id?: string
+          nomor: string
+          jenis: string
+          nama_berkas: string
+          jumlah_baris: number
+          jumlah_dibuat: number
+          status: string
+          ringkasan?: Json
+          dibuat_oleh: string
+          dibuat_pada?: string
+        }
+        Update: {
+          id?: string
+          nomor?: string
+          jenis?: string
+          nama_berkas?: string
+          jumlah_baris?: number
+          jumlah_dibuat?: number
+          status?: string
+          ringkasan?: Json
+          dibuat_oleh?: string
+          dibuat_pada?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "impor_data_dibuat_oleh_fkey"
+            columns: ["dibuat_oleh"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       mutasi_stok: {
         Row: {
           alasan: string | null
@@ -1505,6 +1552,20 @@ export type Database = {
       }
     }
     Functions: {
+      rpc_impor_barang: {
+        Args: {
+          p_nama_berkas: string
+          p_items: Json
+        }
+        Returns: Json
+      }
+      rpc_impor_pelanggan: {
+        Args: {
+          p_nama_berkas: string
+          p_items: Json
+        }
+        Returns: Json
+      }
       rpc_catat_penagihan: {
         Args: {
           p_pelanggan_id: string

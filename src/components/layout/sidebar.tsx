@@ -18,6 +18,7 @@ import {
   Layers,
   ClipboardCheck,
   ReceiptText,
+  Upload,
   LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -38,6 +39,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   UserCog,
   User,
   ShieldAlert,
+  Upload,
 };
 
 /** Definisi urutan dan pengelompokan section sidebar */
@@ -60,7 +62,7 @@ const SIDEBAR_SECTIONS: { label: string; hrefs: string[] }[] = [
   },
   {
     label: 'Administrasi Sistem',
-    hrefs: ['/akun', '/profil', '/audit'],
+    hrefs: ['/akun', '/profil', '/audit', '/impor'],
   },
 ];
 

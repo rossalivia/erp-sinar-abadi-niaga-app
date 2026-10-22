@@ -18,7 +18,7 @@ Berdasarkan inspeksi langsung terhadap katalog sistem database PostgreSQL (`info
 
 ## A. Peta Tabel Basis Data
 
-Terdapat 11 tabel di dalam skema public (9 tabel inti + 2 tabel modul stock opname). Seluruh tabel mewajibkan token JWT authenticated dan mengaktifkan Row-Level Security (RLS). Role anon dan PUBLIC telah dicabut seluruh hak aksesnya (REVOKE ALL).
+Terdapat 14 tabel di dalam skema public (9 tabel inti + 2 modul stock opname + 1 modul persetujuan harga + 1 modul penagihan + 1 modul impor CSV). Seluruh tabel mewajibkan token JWT authenticated dan mengaktifkan Row-Level Security (RLS). Role anon dan PUBLIC telah dicabut seluruh hak aksesnya (REVOKE ALL).
 
 ### 1. public.profiles
 * Tujuan: Menyimpan data profil dan penentuan peran pengguna yang terikat 1:1 dengan auth.users.
@@ -340,6 +340,28 @@ Terdapat 11 tabel di dalam skema public (9 tabel inti + 2 tabel modul stock opna
 
 ---
 
+### 14. public.impor_data (Riwayat & Metadata Eksekusi Impor CSV)
+* Tujuan: Mencatat metadata riwayat keberhasilan eksekusi impor data awal barang dan pelanggan (Append-Only, isolasi data rahasia tanpa menyimpan baris mentah).
+* Kolom:
+  * id (uuid, PRIMARY KEY DEFAULT gen_random_uuid())
+  * nomor (text, NOT NULL, UNIQUE, format IMP-YYYY-XXXX via sequence seq_impor_data)
+  * jenis (text, NOT NULL, CHECK jenis IN ('barang', 'pelanggan'))
+  * nama_file (text, NOT NULL)
+  * total_baris (integer, NOT NULL, CHECK total_baris >= 1)
+  * baris_berhasil (integer, NOT NULL, CHECK baris_berhasil >= 1)
+  * dibuat_oleh (uuid, NOT NULL, REFERENCES public.profiles(id))
+  * dibuat_pada (timestamptz, NOT NULL, DEFAULT now())
+* Triggers:
+  * trg_impor_data_guard: BEFORE UPDATE OR DELETE, memblokir seluruh operasi modifikasi/penghapusan (append-only, E0059).
+* Hak Akses Kolom (Grants):
+  * SELECT: seluruh kolom TO authenticated.
+  * INSERT, UPDATE, DELETE: TIDAK DI-GRANT langsung (penulisan hanya melalui RPC otoritatif).
+* Kebijakan RLS:
+  * impor_data_select_manajer: FOR SELECT USING (fn_is_manajer() = true). Penjualan dan Gudang menerima 0 baris.
+  * impor_data_modify_block: FOR ALL USING (false) WITH CHECK (false).
+
+---
+
 ## B. Peta View Basis Data
 
 | Nama View | Definisi Singkat | Security Option | Peran yang Dapat Membaca | Kolom Sensitif / Rahasia |
@@ -402,6 +424,8 @@ Terdapat 11 tabel di dalam skema public (9 tabel inti + 2 tabel modul stock opna
 | rpc_laporan_top_pelanggan | p_limit int, p_start_date timestamptz, p_end_date timestamptz | Manajer Saja | Read-only | Tidak | Tidak | Tidak |
 | rpc_laporan_aging_piutang | - | Manajer Saja | Read-only | Tidak | Tidak | Tidak |
 | rpc_laporan_piutang_pesanan | p_pelanggan_id uuid, p_hanya_overdue bool | Manajer Saja | Read-only | Tidak | Tidak | Tidak |
+| rpc_impor_barang | p_items jsonb, p_nama_file text | Manajer Saja | barang, mutasi_stok, impor_data, audit_log | Ya (barang) | Ya (saldo awal 'penyesuaian') | Ya (impor_barang ringkas) |
+| rpc_impor_pelanggan | p_items jsonb, p_nama_file text | Manajer Saja | pelanggan, impor_data, audit_log | Ya (pelanggan) | Tidak | Ya (impor_pelanggan ringkas) |
 
 ---
 
@@ -442,10 +466,13 @@ Terdapat 11 tabel di dalam skema public (9 tabel inti + 2 tabel modul stock opna
 | /audit | src/app/(dashboard)/audit/page.tsx | Manajer Saja | Direct Supabase SSR audit queries |
 | /pengaturan/audit-log | src/app/(dashboard)/pengaturan/audit-log/page.tsx | Manajer Saja | Alias/Redirect ke /audit |
 | /profil | src/app/(dashboard)/profil/page.tsx | Penjualan, Gudang, Manajer | Direct user session data |
+| /impor | src/app/(dashboard)/impor/page.tsx | Manajer Saja | validasiCsvAction, eksekusiImporBarangAction, eksekusiImporPelangganAction |
+| /impor/riwayat | src/app/(dashboard)/impor/riwayat/page.tsx | Manajer Saja | Direct Supabase SSR queries (impor_data) |
+| /api/impor/templat | src/app/api/impor/templat/route.ts | Manajer Saja | Route Handler unduh templat CSV (barang/pelanggan) |
 
 ---
 
-## E. Analisis Kode Error (E0001 s.d. E0036)
+## E. Analisis Kode Error (E0001 s.d. E0062)
 
 | Kode | Pesan di Katalog (src/lib/errors.ts) | Fungsi Database / Komponen yang Melempar | Status Penggunaan & Temuan |
 |---|---|---|---|
@@ -485,6 +512,32 @@ Terdapat 11 tabel di dalam skema public (9 tabel inti + 2 tabel modul stock opna
 | E0034 | Sesi opname hanya dapat disetujui atau ditolak pada status diajukan | rpc_setujui_opname_stok | Aktif Digunakan (Modul Opname). |
 | E0035 | Barang sudah ada di sesi opname ini | rpc_buat_opname_stok, rpc_ubah_draf_opname | Aktif Digunakan (Modul Opname). |
 | E0036 | Hanya Manajer yang berwenang menyetujui stock opname | rpc_setujui_opname_stok | Aktif Digunakan (Modul Opname). |
+| E0037 | Keterangan selisih stok opname minimal 10 karakter | rpc_buat_opname_stok, rpc_ubah_draf_opname | Aktif Digunakan (Modul Opname, Resolusi Temuan K3). |
+| E0038 | Stok barang telah berubah sejak sesi opname dibuat, silakan muat ulang data | rpc_setujui_opname_stok | Aktif Digunakan (Modul Opname, Anti-Drift K4). |
+| E0039 | Permohonan persetujuan harga hanya dapat diajukan oleh Staf Penjualan | rpc_ajukan_persetujuan_harga | Aktif Digunakan (Modul Persetujuan Harga). |
+| E0040 | Pesanan tidak memerlukan persetujuan harga atau sudah disetujui | rpc_ajukan_persetujuan_harga | Aktif Digunakan (Modul Persetujuan Harga). |
+| E0041 | Sudah ada pengajuan persetujuan harga yang aktif untuk pesanan ini | rpc_ajukan_persetujuan_harga | Aktif Digunakan (Modul Persetujuan Harga). |
+| E0042 | Hanya Manajer yang berwenang memutuskan persetujuan harga | rpc_putuskan_persetujuan_harga | Aktif Digunakan (Modul Persetujuan Harga). |
+| E0043 | Persetujuan harga sudah diputuskan sebelumnya atau kedaluwarsa | rpc_putuskan_persetujuan_harga | Aktif Digunakan (Modul Persetujuan Harga). |
+| E0044 | Alasan penolakan persetujuan harga minimal 10 karakter | rpc_putuskan_persetujuan_harga | Aktif Digunakan (Modul Persetujuan Harga). |
+| E0045 | Isi pesanan telah berubah sejak persetujuan harga diajukan | rpc_konfirmasi_pesanan | Aktif Digunakan (Modul Persetujuan Harga). |
+| E0046 | Jenis catatan penagihan tidak valid | rpc_catat_penagihan, trg_catatan_penagihan_guard | Aktif Digunakan (Modul Penagihan). |
+| E0047 | Isi catatan penagihan harus antara 3 sampai 500 karakter | rpc_catat_penagihan, trg_catatan_penagihan_guard | Aktif Digunakan (Modul Penagihan). |
+| E0048 | Tanggal janji bayar wajib diisi untuk jenis janji bayar | rpc_catat_penagihan | Aktif Digunakan (Modul Penagihan). |
+| E0049 | Tanggal janji bayar tidak boleh tanggal lampau | rpc_catat_penagihan | Aktif Digunakan (Modul Penagihan, Asia/Jakarta). |
+| E0050 | Faktur tidak ditemukan atau bukan milik pelanggan ini | rpc_catat_penagihan | Aktif Digunakan (Modul Penagihan). |
+| E0051 | Catatan penagihan tidak dapat diubah atau dihapus | trg_catatan_penagihan_guard | Aktif Digunakan (Modul Penagihan, Append-Only). |
+| E0052 | Hanya Staf Penjualan dan Manajer yang berwenang mencatat penagihan | rpc_catat_penagihan | Aktif Digunakan (Modul Penagihan). |
+| E0053 | Kolom wajib CSV tidak lengkap atau urutan salah | utils.ts, rpc_impor_barang, rpc_impor_pelanggan | Aktif Digunakan (Modul Impor CSV, Validasi Header). |
+| E0054 | Format baris CSV tidak valid atau kolom tidak cocok | utils.ts, actions.ts | Aktif Digunakan (Modul Impor CSV, RFC 4180 Parsing). |
+| E0055 | Jumlah baris CSV melebihi batas maksimum 1.000 baris | utils.ts, rpc_impor_barang, rpc_impor_pelanggan | Aktif Digunakan (Modul Impor CSV). |
+| E0056 | Terdapat duplikasi kode di dalam berkas CSV | utils.ts, rpc_impor_barang, rpc_impor_pelanggan | Aktif Digunakan (Modul Impor CSV). |
+| E0057 | Kode sudah terdaftar di sistem | utils.ts, rpc_impor_barang, rpc_impor_pelanggan | Aktif Digunakan (Modul Impor CSV, Insert-Only). |
+| E0058 | Nilai angka tidak valid atau mengandung desimal | utils.ts, rpc_impor_barang, rpc_impor_pelanggan | Aktif Digunakan (Modul Impor CSV, Strict Integer). |
+| E0059 | Data impor bersifat permanen dan tidak dapat diubah atau dihapus | trg_impor_data_guard | Aktif Digunakan (Modul Impor CSV, Append-Only). |
+| E0060 | Hanya Manajer yang berwenang melakukan impor data CSV | rpc_impor_barang, rpc_impor_pelanggan, actions.ts | Aktif Digunakan (Modul Impor CSV, Otorisasi RBAC). |
+| E0061 | Format berkas tidak didukung, hanya berkas CSV yang diperbolehkan | DropzoneCsv.tsx, actions.ts, utils.ts | Aktif Digunakan (Modul Impor CSV). |
+| E0062 | Ukuran berkas melebihi batas maksimum 1 MB | DropzoneCsv.tsx, actions.ts | Aktif Digunakan (Modul Impor CSV). |
 
 ---
 
@@ -540,6 +593,68 @@ Terdapat 11 tabel di dalam skema public (9 tabel inti + 2 tabel modul stock opna
 | TC-46 | supabase/tests/05_stock_opname.sql | SQL | Otomatis | Pembatalan draf oleh pembuat & pembatalan diajukan oleh Manajer (E0016) |
 | TC-47 | supabase/tests/05_stock_opname.sql | SQL | Otomatis | Isolasi data finansial opname: view v_opname_stok_manajer |
 | TC-48 | supabase/tests/05_stock_opname.sql | SQL | Otomatis | Persetujuan ganda ditolak pada status bukan diajukan (E0034) |
+| TC-49 | supabase/tests/05_stock_opname.sql, src/features/stock-opname/__tests__/schemas.test.ts | SQL + Vitest | Otomatis | Validasi keterangan selisih opname minimal 10 karakter (E0037) |
+| TC-50 | supabase/tests/05_stock_opname.sql | SQL | Otomatis | Format alasan mutasi kartu stok: Stock opname <nomor>: <keterangan> |
+| TC-51 | supabase/tests/05_stock_opname.sql | SQL | Otomatis | Pengaman anti-drift: perubahan stok fisik membatalkan persetujuan opname (E0038) |
+| TC-52 | supabase/tests/05_stock_opname.sql | SQL | Otomatis | Persetujuan opname sukses bila saldo stok stabil |
+| TC-53 | supabase/tests/05_stock_opname.sql | SQL | Otomatis | Validasi tanggal operasional bisnis opname berbasis Asia/Jakarta |
+| TC-54 | supabase/tests/05_stock_opname.sql | SQL | Otomatis | Siklus lengkap inventarisasi rak gudang fisik hingga posting mutasi |
+| TC-55 | supabase/tests/06_persetujuan_harga.sql, src/features/pesanan/__tests__/persetujuan.test.ts | SQL + Vitest | Otomatis | Pengajuan persetujuan harga draf di bawah HPP oleh Staf Penjualan |
+| TC-56 | supabase/tests/06_persetujuan_harga.sql | SQL | Otomatis | Penolakan pengajuan persetujuan harga oleh non-penjualan (E0039) |
+| TC-57 | supabase/tests/06_persetujuan_harga.sql | SQL | Otomatis | Penolakan pengajuan persetujuan harga pada pesanan non-draf (E0040) |
+| TC-58 | supabase/tests/06_persetujuan_harga.sql | SQL | Otomatis | Penolakan pengajuan ganda untuk draf yang sama (E0041) |
+| TC-59 | supabase/tests/06_persetujuan_harga.sql | SQL | Otomatis | Penolakan pengajuan jika semua harga di atas HPP (E0042) |
+| TC-60 | supabase/tests/06_persetujuan_harga.sql, src/features/pesanan/__tests__/persetujuan.test.ts | SQL + Vitest | Otomatis | Alasan penolakan Manajer minimal 10 karakter (E0044) |
+| TC-61 | supabase/tests/06_persetujuan_harga.sql | SQL | Otomatis | Persetujuan dispensasi harga oleh Manajer & masa berlaku 24 jam |
+| TC-62 | supabase/tests/06_persetujuan_harga.sql | SQL | Otomatis | Konfirmasi pesanan dengan persetujuan harga efektif berhasil memotong stok |
+| TC-63 | supabase/tests/06_persetujuan_harga.sql | SQL | Otomatis | Penolakan konfirmasi saat dispensasi harga telah kedaluwarsa 24 jam (BR-04 verbatim) |
+| TC-64 | supabase/tests/06_persetujuan_harga.sql | SQL | Otomatis | Deteksi manipulasi isi item draf (drift hash) membatalkan persetujuan |
+| TC-65 | supabase/tests/06_persetujuan_harga.sql, src/features/pesanan/__tests__/persetujuan.test.ts | SQL + Vitest | Otomatis | Pembatalan pengajuan dispensasi harga oleh staf pembuat |
+| TC-66 | supabase/tests/06_persetujuan_harga.sql | SQL | Otomatis | Penolakan pembatalan pengajuan oleh pihak lain / non-menunggu (E0001/E0045) |
+| TC-67 | supabase/tests/06_konkurensi_persetujuan.ps1 | PowerShell Konkurensi | Otomatis | 10 iterasi konkurensi paralel konfirmasi vs persetujuan bebas deadlock |
+| TC-68 | supabase/tests/06_persetujuan_harga.sql | SQL | Otomatis | Zero leakage: penolakan akses Penjualan & Gudang ke v_persetujuan_harga_manajer |
+| TC-69 | supabase/tests/06_persetujuan_harga.sql | SQL | Otomatis | Invalidasi otomatis persetujuan harga saat draf pesanan diperbarui |
+| TC-70 | supabase/tests/06_persetujuan_harga.sql | SQL | Otomatis | Pembatalan otomatis persetujuan harga saat draf pesanan dibatalkan |
+| TC-71 | supabase/tests/07_penagihan_piutang.sql | SQL | Otomatis | Klasifikasi umur tagihan: batas tepat 'hari_ini' (Asia/Jakarta) |
+| TC-72 | supabase/tests/07_penagihan_piutang.sql | SQL | Otomatis | Klasifikasi umur tagihan: kategori 'segera' (1-3 hari ke depan) |
+| TC-73 | supabase/tests/07_penagihan_piutang.sql | SQL | Otomatis | Klasifikasi umur tagihan: kategori 'belum_jatuh_tempo' (>3 hari ke depan) |
+| TC-74 | supabase/tests/07_penagihan_piutang.sql | SQL | Otomatis | Klasifikasi umur tagihan: keterlambatan 'overdue_1_7' |
+| TC-75 | supabase/tests/07_penagihan_piutang.sql | SQL | Otomatis | Klasifikasi umur tagihan: keterlambatan 'overdue_8_30' |
+| TC-76 | supabase/tests/07_penagihan_piutang.sql | SQL | Otomatis | Klasifikasi umur tagihan: keterlambatan 'overdue_lebih_30' |
+| TC-77 | supabase/tests/07_penagihan_piutang.sql | SQL | Otomatis | Isolasi visibilitas Penjualan pada daftar v_tagihan (RLS) |
+| TC-78 | supabase/tests/07_penagihan_piutang.sql | SQL | Otomatis | Pemblokiran total akses Staf Gudang pada modul penagihan (E0001) |
+| TC-79 | supabase/tests/07_penagihan_piutang.sql | SQL | Otomatis | Hak baca penuh Manajer pada seluruh faktur terkirim belum lunas |
+| TC-80 | supabase/tests/07_penagihan_piutang.sql | SQL | Otomatis | Sifat append-only tabel catatan_penagihan dilindungi trigger guard (E0051) |
+| TC-81 | supabase/tests/07_penagihan_piutang.sql | SQL | Otomatis | Validasi panjang isi catatan penagihan 3 s.d. 500 karakter (E0047) |
+| TC-82 | supabase/tests/07_penagihan_piutang.sql | SQL | Otomatis | Validasi tanggal janji bayar wajib dan larangan tanggal lampau (E0048/E0049) |
+| TC-83 | supabase/tests/07_penagihan_piutang.sql | SQL | Otomatis | Penentuan dinamis janji bayar terlewat pada tagihan belum lunas |
+| TC-84 | src/features/penagihan/__tests__/utils.test.ts | Vitest | Otomatis | Normalisasi nomor telepon standar internasional Indonesia (628...) |
+| TC-85 | src/features/penagihan/__tests__/utils.test.ts | Vitest | Otomatis | Penolakan nomor telepon rumah/pendek/rusak untuk link WhatsApp |
+| TC-86 | src/features/penagihan/__tests__/utils.test.ts | Vitest | Otomatis | Komposisi pesan penagihan formal dan encoding URL wa.me aman |
+| TC-87 | src/features/penagihan/actions.ts | Integrasi | Otomatis | Auto-recording riwayat interaksi pengingat_wa ke database |
+| TC-88 | supabase/tests/07_penagihan_piutang.sql | SQL | Otomatis | Pelunasan faktur oleh Manajer menghapus seketika dari v_tagihan |
+| TC-89 | supabase/tests/08_impor_csv.sql, src/features/impor/__tests__/utils.test.ts | SQL + Vitest | Otomatis | Impor CSV barang valid (stok 0, tanpa HPP) dengan nomor IMP-YYYY-XXXX |
+| TC-90 | supabase/tests/08_impor_csv.sql, src/features/impor/__tests__/utils.test.ts | SQL + Vitest | Otomatis | Impor CSV barang dengan stok awal & HPP (mutasi saldo awal resmi & invarian terpenuhi) |
+| TC-91 | supabase/tests/08_impor_csv.sql, src/features/impor/__tests__/utils.test.ts | SQL + Vitest | Otomatis | Impor CSV pelanggan valid (batas kredit & termin tempo 0, 7, 14, 30 hari) |
+| TC-92 | supabase/tests/08_impor_csv.sql, src/features/impor/__tests__/utils.test.ts | SQL + Vitest | Otomatis | Deteksi kode duplikat internal berkas CSV membatalkan transaksi (E0056) |
+| TC-93 | supabase/tests/08_impor_csv.sql, src/features/impor/__tests__/utils.test.ts | SQL + Vitest | Otomatis | Penolakan kode yang sudah terdaftar di sistem database (E0057, insert-only) |
+| TC-94 | supabase/tests/08_impor_csv.sql, src/features/impor/__tests__/utils.test.ts | SQL + Vitest | Otomatis | Penolakan harga_jual nol atau negatif (E0028) |
+| TC-95 | src/features/impor/__tests__/utils.test.ts | Vitest | Otomatis | Penolakan format angka pecahan/desimal pada kuantitas & rupiah (E0058) |
+| TC-96 | src/features/impor/__tests__/utils.test.ts | Vitest | Otomatis | Normalisasi pemisah ribuan titik/koma ke integer murni |
+| TC-97 | supabase/tests/08_impor_csv.sql, src/features/impor/__tests__/utils.test.ts | SQL + Vitest | Otomatis | Penolakan nilai termin hari selain 0, 7, 14, 30 (E0024) |
+| TC-98 | src/features/impor/__tests__/utils.test.ts | Vitest | Otomatis | Penolakan struktur kolom header salah atau tidak lengkap (E0053) |
+| TC-99 | supabase/tests/08_impor_csv.sql, src/features/impor/__tests__/utils.test.ts | SQL + Vitest | Otomatis | Penolakan berkas CSV kosong atau hanya baris header (E0054) |
+| TC-100 | src/features/impor/__tests__/utils.test.ts | Vitest | Otomatis | Penolakan berkas melebihi batas 1.000 baris data (E0055) |
+| TC-101 | src/features/impor/actions.ts | Server Action | Otomatis | Penolakan berkas melebihi ukuran 1 MB (E0062) |
+| TC-102 | src/features/impor/__tests__/utils.test.ts | Vitest | Otomatis | Auto-detect pemisah koma (,) vs titik koma (;) standar RFC 4180 |
+| TC-103 | src/features/impor/__tests__/utils.test.ts | Vitest | Otomatis | Pembersihan transparan karakter UTF-8 BOM (\uFEFF) |
+| TC-104 | src/features/impor/actions.ts | Server Action | Otomatis | Penolakan berkas biner non-CSV (.xlsx / .xls) (E0061) |
+| TC-105 | supabase/tests/08_impor_csv.sql | SQL | Otomatis | Atomisitas transaksi (all-or-nothing rollback saat ditemukan 1 galat) |
+| TC-106 | supabase/tests/08_impor_csv.sql | SQL | Otomatis | Validasi ulang lapisan RPC database otoritatif menolak bypass client |
+| TC-107 | supabase/tests/08_impor_csv.sql, src/lib/akses.ts | SQL + Route Guard | Otomatis | Pemblokiran total akses Staf Penjualan & Gudang ke fitur impor (E0001/403) |
+| TC-108 | supabase/tests/08_impor_csv.sql | SQL | Otomatis | Zero-leakage data finansial rahasia pada impor_data dan audit_log |
+| TC-109 | supabase/migrations/20261023023000_impor_csv.sql | SQL / Constraint | Otomatis | Ketahanan balapan dua berkas konkuren berkat constraint unik database |
+| TC-110 | src/features/impor/__tests__/utils.test.ts | End-to-End | Otomatis | Verifikasi siklus templat siap pakai dapat diunduh dan diimpor 100% |
 
 ---
 
