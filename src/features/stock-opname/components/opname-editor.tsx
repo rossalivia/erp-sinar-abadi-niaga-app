@@ -153,9 +153,20 @@ export function OpnameEditor({ katalogBarang, initialData }: OpnameEditorProps) 
       return;
     }
 
+    for (const r of rows) {
+      const fisik = typeof r.stok_fisik === 'number' ? r.stok_fisik : 0;
+      if (fisik !== r.stok_sistem && r.keterangan.trim().length < 10) {
+        setErrorMessage(
+          `Item "${r.nama}" memiliki selisih stok dan wajib memiliki keterangan minimal 10 karakter.`
+        );
+        return;
+      }
+    }
+
     const payloadItems = rows.map((r) => ({
       barang_id: r.barang_id,
       stok_fisik: typeof r.stok_fisik === 'number' ? r.stok_fisik : 0,
+      stok_sistem: r.stok_sistem,
       keterangan: r.keterangan.trim() || null,
     }));
 

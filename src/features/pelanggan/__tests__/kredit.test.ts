@@ -3,22 +3,22 @@ import { getErrorMessage } from '@/lib/errors';
 
 describe('Modul Limit Kredit & Blokir Overdue (D6 & BR-13/14)', () => {
   describe('Pemetaan Pesan Error D6 (Resolusi Tabrakan Kode)', () => {
-    it('memetakan pesan verbatim E0006 batas kredit pelanggan terlampaui', () => {
+    it('memetakan pesan persis batas kredit pelanggan terlampaui (E0012)', () => {
       const err = {
-        message: 'E0006: Batas kredit pelanggan terlampaui',
+        message: 'Batas kredit pelanggan terlampaui',
         code: 'E0012',
       };
       const msg = getErrorMessage(err);
-      expect(msg).toContain('E0006: Batas kredit pelanggan terlampaui');
+      expect(msg).toBe('Batas kredit pelanggan terlampaui');
     });
 
-    it('memetakan pesan verbatim E0007 faktur lewat jatuh tempo', () => {
+    it('memetakan pesan persis faktur lewat jatuh tempo (E0013)', () => {
       const err = {
-        message: 'E0007: Pelanggan memiliki faktur lewat jatuh tempo, transaksi diblokir',
+        message: 'Pelanggan memiliki faktur lewat jatuh tempo, transaksi diblokir',
         code: 'E0013',
       };
       const msg = getErrorMessage(err);
-      expect(msg).toContain('E0007: Pelanggan memiliki faktur lewat jatuh tempo, transaksi diblokir');
+      expect(msg).toBe('Pelanggan memiliki faktur lewat jatuh tempo, transaksi diblokir');
     });
 
     it('tidak merusak kode baseline E0006 untuk barang tidak aktif', () => {

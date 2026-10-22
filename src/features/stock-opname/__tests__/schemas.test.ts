@@ -29,6 +29,39 @@ describe('Stock Opname Schemas', () => {
         expect(res.error.issues[0].message).toContain('Stok fisik riil tidak boleh bernilai negatif');
       }
     });
+
+    it('TC-49 (K3): menolak item berselisih jika keterangan kurang dari 10 karakter', () => {
+      const res = itemOpnameInputSchema.safeParse({
+        barang_id: validUuid1,
+        stok_sistem: 10,
+        stok_fisik: 15, // selisih +5
+        keterangan: '123456789', // 9 karakter
+      });
+      expect(res.success).toBe(false);
+      if (!res.success) {
+        expect(res.error.issues[0].message).toContain('Item dengan selisih stok wajib memiliki keterangan minimal 10 karakter');
+      }
+    });
+
+    it('TC-49 (K3): menerima item berselisih jika keterangan minimal 10 karakter', () => {
+      const res = itemOpnameInputSchema.safeParse({
+        barang_id: validUuid1,
+        stok_sistem: 10,
+        stok_fisik: 15, // selisih +5
+        keterangan: '1234567890', // 10 karakter
+      });
+      expect(res.success).toBe(true);
+    });
+
+    it('TC-49 (K3): menerima item tanpa selisih meski keterangan kosong', () => {
+      const res = itemOpnameInputSchema.safeParse({
+        barang_id: validUuid1,
+        stok_sistem: 10,
+        stok_fisik: 10, // selisih 0
+        keterangan: '',
+      });
+      expect(res.success).toBe(true);
+    });
   });
 
   describe('buatOpnameSchema', () => {

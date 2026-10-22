@@ -2,10 +2,12 @@ import { describe, it, expect } from 'vitest';
 import { getErrorMessage } from '../errors';
 
 describe('Error Mapping & Katalog Pesan', () => {
-  it('memetakan kode error E0001 sampai E0030 ke Bahasa Indonesia', () => {
+  it('memetakan kode error E0001 sampai E0038 ke Bahasa Indonesia', () => {
     expect(getErrorMessage({ code: 'E0001' })).toBe('Akses ditolak');
     expect(getErrorMessage({ code: 'E0012' })).toBe('Batas kredit pelanggan terlampaui');
-    expect(getErrorMessage({ code: 'E0013' })).toBe('Pelanggan memiliki tagihan lewat jatuh tempo');
+    expect(getErrorMessage({ code: 'E0013' })).toBe('Pelanggan memiliki faktur lewat jatuh tempo, transaksi diblokir');
+    expect(getErrorMessage({ code: 'E0037' })).toBe('Item dengan selisih stok wajib memiliki keterangan minimal 10 karakter');
+    expect(getErrorMessage({ code: 'E0038' })).toBe('Stok sistem telah berubah sejak sesi dibuat. Batalkan sesi lalu hitung ulang.');
   });
 
   it('mempertahankan pesan BR-04 secara PERSIS', () => {

@@ -1,13 +1,27 @@
 import { z } from 'zod';
 
-export const itemOpnameInputSchema = z.object({
-  barang_id: z.string().uuid('Barang tidak valid'),
-  stok_fisik: z.coerce
-    .number()
-    .int('Stok fisik harus berupa bilangan bulat')
-    .min(0, 'Stok fisik riil tidak boleh bernilai negatif'),
-  keterangan: z.string().nullable().optional(),
-});
+export const itemOpnameInputSchema = z
+  .object({
+    barang_id: z.string().uuid('Barang tidak valid'),
+    stok_fisik: z.coerce
+      .number()
+      .int('Stok fisik harus berupa bilangan bulat')
+      .min(0, 'Stok fisik riil tidak boleh bernilai negatif'),
+    stok_sistem: z.coerce.number().int().min(0).optional(),
+    keterangan: z.string().nullable().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.stok_sistem !== undefined && data.stok_fisik !== data.stok_sistem) {
+        return typeof data.keterangan === 'string' && data.keterangan.trim().length >= 10;
+      }
+      return true;
+    },
+    {
+      message: 'Item dengan selisih stok wajib memiliki keterangan minimal 10 karakter',
+      path: ['keterangan'],
+    }
+  );
 
 export const buatOpnameSchema = z.object({
   catatan: z.string().trim().optional(),
