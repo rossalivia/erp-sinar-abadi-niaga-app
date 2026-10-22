@@ -201,4 +201,29 @@ Urutan validasi `konfirmasi_pesanan`: (1) akses/kepemilikan → E01/E02, (2) sta
 | **TC-69** | Invalidasi otomatis persetujuan saat draf diperbarui | P1 | SQL | **Lulus** | 2026-10-22 | `supabase/tests/06_persetujuan_harga.sql` | Pemanggilan `rpc_simpan_draf_pesanan` otomatis memperbarui status persetujuan aktif (menunggu/disetujui) menjadi `kedaluwarsa`. |
 | **TC-70** | Pembatalan otomatis persetujuan saat draf dibatalkan | P1 | SQL | **Lulus** | 2026-10-22 | `supabase/tests/06_persetujuan_harga.sql` | Pemanggilan `rpc_batalkan_draf` otomatis memperbarui status persetujuan aktif menjadi `dibatalkan` dan mencatat log audit. |
 
+---
+
+## 11. Test Case Tambahan: Penagihan Piutang & Pengingat Jatuh Tempo (TC-71 s.d. TC-88)
+
+| ID | Fokus Uji | Aktor | Media | Status | Tanggal Uji | Bukti Uji | Ringkasan Verifikasi & Hasil |
+|---|---|---|---|---|---|---|---|
+| **TC-71** | Batas klasifikasi umur: `hari_ini` (jatuh tempo = hari ini Asia/Jakarta) | Sistem | SQL | **Lulus** | 2026-10-22 | `supabase/tests/07_penagihan_piutang.sql` | Tanggal hari ini tepat diklasifikasikan `hari_ini`, `hari_terlambat = 0`, dan diverifikasi belum berstatus overdue. |
+| **TC-72** | Batas klasifikasi umur: `segera` (jatuh tempo 1–3 hari ke depan) | Sistem | SQL | **Lulus** | 2026-10-22 | `supabase/tests/07_penagihan_piutang.sql` | Tanggal `v_today + 1..3` secara konsisten diklasifikasikan sebagai `segera`. |
+| **TC-73** | Batas klasifikasi umur: `belum_jatuh_tempo` (jatuh tempo > 3 hari ke depan) | Sistem | SQL | **Lulus** | 2026-10-22 | `supabase/tests/07_penagihan_piutang.sql` | Tanggal `v_today + 4` diklasifikasikan sebagai `belum_jatuh_tempo`. |
+| **TC-74** | Batas klasifikasi umur: `overdue_1_7` (terlambat 1–7 hari) | Sistem | SQL | **Lulus** | 2026-10-22 | `supabase/tests/07_penagihan_piutang.sql` | Tanggal `v_today - 1` s.d. `v_today - 7` hari menghasilkan `overdue_1_7` dengan perhitungan `hari_terlambat` tepat. |
+| **TC-75** | Batas klasifikasi umur: `overdue_8_30` (terlambat 8–30 hari) | Sistem | SQL | **Lulus** | 2026-10-22 | `supabase/tests/07_penagihan_piutang.sql` | Tanggal `v_today - 8` s.d. `v_today - 30` hari menghasilkan `overdue_8_30`. |
+| **TC-76** | Batas klasifikasi umur: `overdue_lebih_30` (terlambat > 30 hari) | Sistem | SQL | **Lulus** | 2026-10-22 | `supabase/tests/07_penagihan_piutang.sql` | Tanggal `v_today - 31` hari menghasilkan kategori `overdue_lebih_30`. |
+| **TC-77** | Isolasi visibilitas Penjualan pada `v_tagihan` (RLS) | P1 | SQL | **Lulus** | 2026-10-22 | `supabase/tests/07_penagihan_piutang.sql` | Staf Penjualan 1 hanya menerima faktur dari pesanannya sendiri; faktur staf lain terisolasi sempurna. |
+| **TC-78** | Pemblokiran total akses Gudang (v_tagihan & RPC) | G | SQL | **Lulus** | 2026-10-22 | `supabase/tests/07_penagihan_piutang.sql` | Gudang ditolak saat memanggil `rpc_catat_penagihan` (`E0001`) dan menerima 0 baris dari `v_tagihan`. |
+| **TC-79** | Hak akses penuh Manajer pada `v_tagihan` | M | SQL | **Lulus** | 2026-10-22 | `supabase/tests/07_penagihan_piutang.sql` | Manajer membaca seluruh faktur terkirim belum lunas lintas seluruh staf penjualan (2 dari 2 terbaca). |
+| **TC-80** | Sifat append-only tabel `catatan_penagihan` (Trigger Guard) | M, P | SQL | **Lulus** | 2026-10-22 | `supabase/tests/07_penagihan_piutang.sql` | Operasi UPDATE dan DELETE langsung pada tabel ditolak tegas oleh trigger `trg_catatan_penagihan_guard` (E0051). |
+| **TC-81** | Validasi panjang isi catatan penagihan (3–500 karakter) | P, M | SQL | **Lulus** | 2026-10-22 | `supabase/tests/07_penagihan_piutang.sql` | Isi catatan < 3 karakter setelah trim ditolak dengan error `E0047`. |
+| **TC-82** | Validasi tanggal janji bayar wajib dan larangan masa lalu | P, M | SQL | **Lulus** | 2026-10-22 | `supabase/tests/07_penagihan_piutang.sql` | `jenis = 'janji_bayar'` tanpa tanggal ditolak `E0048`; bertanggal sebelum hari ini ditolak `E0049`. |
+| **TC-83** | Deteksi dinamis status janji terlewat | Sistem | SQL | **Lulus** | 2026-10-22 | `supabase/tests/07_penagihan_piutang.sql` | Janji bayar bertanggal kemarin pada faktur belum lunas dideteksi dinamis berstatus `status_janji = 'terlewat'`. |
+| **TC-84** | Normalisasi nomor telepon standar Indonesia | Sistem | Vitest | **Lulus** | 2026-10-22 | `src/features/penagihan/__tests__/utils.test.ts` | Format `08...`, `+62...`, dan spasi berhasil diubah ke format standar `628...` (4 subtes lolos). |
+| **TC-85** | Validasi nomor telepon tidak valid untuk WhatsApp | Sistem | Vitest | **Lulus** | 2026-10-22 | `src/features/penagihan/__tests__/utils.test.ts` | Nomor telepon rumah kabel 021, nomor pendek < 9 digit, nomor kosong ditolak dengan pesan jelas (4 subtes lolos). |
+| **TC-86** | Pembuatan pesan resmi & encoding URL WhatsApp | Sistem | Vitest | **Lulus** | 2026-10-22 | `src/features/penagihan/__tests__/utils.test.ts` | 3 templat pesan terisi lengkap dan URL `wa.me` ter-encode sempurna tanpa karakter rusak (4 subtes lolos). |
+| **TC-87** | Otomatisasi pencatatan riwayat saat buka WhatsApp | P, M | Integrasi | **Lulus** | 2026-10-22 | `src/features/penagihan/actions.ts` | Server Action merekam interaksi `pengingat_wa` ke `catatan_penagihan` sebelum tab WhatsApp dibuka. |
+| **TC-88** | Dampak pelunasan Manajer terhadap daftar tagihan | M | SQL | **Lulus** | 2026-10-22 | `supabase/tests/07_penagihan_piutang.sql` | Pemanggilan `rpc_catat_pelunasan` mengubah status pesanan ke `lunas`; faktur seketika hilang dari `v_tagihan`. |
+
 

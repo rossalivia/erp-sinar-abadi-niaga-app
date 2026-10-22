@@ -102,6 +102,28 @@ export default async function DashboardPage() {
     }
   }
 
+  // Ringkasan Tagihan & Overdue untuk Penjualan & Manajer
+  let tagihanHariIni = 0;
+  let tagihanOverdueCount = 0;
+  let tagihanOverdueTotal = 0;
+
+  if (user?.peran === 'manajer' || user?.peran === 'penjualan') {
+    const { data: tagihanData } = await supabase
+      .from('v_tagihan')
+      .select('total, klasifikasi');
+
+    if (tagihanData) {
+      for (const t of tagihanData) {
+        if (t.klasifikasi === 'hari_ini') {
+          tagihanHariIni += 1;
+        } else if (t.klasifikasi?.startsWith('overdue')) {
+          tagihanOverdueCount += 1;
+          tagihanOverdueTotal += Number(t.total) || 0;
+        }
+      }
+    }
+  }
+
   const columns: Column<BarangMenipis>[] = [
     {
       header: 'Kode Barang',
@@ -204,6 +226,38 @@ export default async function DashboardPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Widget Monitoring Penagihan (Manajer & Penjualan) */}
+      {(user?.peran === 'manajer' || user?.peran === 'penjualan') && (tagihanHariIni > 0 || tagihanOverdueCount > 0) && (
+        <div className="rounded-md border border-amber-200 bg-amber-50/60 p-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs">
+          <div className="flex items-start sm:items-center gap-2.5">
+            <ReceiptText className="h-4 w-4 text-amber-800 shrink-0 mt-0.5 sm:mt-0" />
+            <div>
+              <p className="font-semibold text-amber-950">
+                Monitoring Penagihan Piutang
+              </p>
+              <p className="text-amber-800 text-[11px] mt-0.5">
+                {tagihanHariIni > 0 && (
+                  <span className="font-medium mr-2">
+                    &bull; {tagihanHariIni} faktur jatuh tempo hari ini
+                  </span>
+                )}
+                {tagihanOverdueCount > 0 && (
+                  <span className="font-medium">
+                    &bull; {tagihanOverdueCount} faktur menunggak ({formatRupiah(tagihanOverdueTotal)})
+                  </span>
+                )}
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/penagihan"
+            className="inline-flex items-center gap-1 font-semibold text-amber-900 hover:text-amber-950 underline self-start sm:self-auto text-xs shrink-0"
+          >
+            Buka Penagihan &rarr;
+          </Link>
+        </div>
+      )}
 
       {/* Panel Khusus Manajer: KPI Ringkas Minggu Berjalan & Piutang Jatuh Tempo */}
       {isManajer && (

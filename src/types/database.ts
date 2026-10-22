@@ -1383,8 +1383,157 @@ export type Database = {
         }
         Relationships: []
       }
+      catatan_penagihan: {
+        Row: {
+          id: string
+          pelanggan_id: string
+          pesanan_jual_id: string | null
+          jenis: string
+          isi: string
+          janji_bayar_tanggal: string | null
+          dibuat_oleh: string
+          dibuat_pada: string
+        }
+        Insert: {
+          id?: string
+          pelanggan_id: string
+          pesanan_jual_id?: string | null
+          jenis: string
+          isi: string
+          janji_bayar_tanggal?: string | null
+          dibuat_oleh?: string
+          dibuat_pada?: string
+        }
+        Update: {
+          id?: string
+          pelanggan_id?: string
+          pesanan_jual_id?: string | null
+          jenis?: string
+          isi?: string
+          janji_bayar_tanggal?: string | null
+          dibuat_oleh?: string
+          dibuat_pada?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catatan_penagihan_pelanggan_id_fkey"
+            columns: ["pelanggan_id"]
+            isOneToOne: false
+            referencedRelation: "pelanggan"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catatan_penagihan_pesanan_jual_id_fkey"
+            columns: ["pesanan_jual_id"]
+            isOneToOne: false
+            referencedRelation: "pesanan_jual"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      v_tagihan: {
+        Row: {
+          pesanan_id: string
+          nomor_pesanan: string
+          pelanggan_id: string
+          kode_pelanggan: string
+          nama_toko: string
+          telepon: string | null
+          alamat: string | null
+          termin_hari: number
+          batas_kredit: number
+          total: number
+          dibuat_oleh: string
+          nama_sales: string
+          dibuat_pada: string
+          dikirim_pada: string | null
+          jatuh_tempo: string
+          hari_terlambat: number
+          hari_menuju: number
+          klasifikasi: string
+          janji_bayar_tanggal: string | null
+          janji_catatan: string | null
+          status_janji: string
+        }
+        Insert: {
+          pesanan_id?: string
+          nomor_pesanan?: string
+          pelanggan_id?: string
+          kode_pelanggan?: string
+          nama_toko?: string
+          telepon?: string | null
+          alamat?: string | null
+          termin_hari?: number
+          batas_kredit?: number
+          total?: number
+          dibuat_oleh?: string
+          nama_sales?: string
+          dibuat_pada?: string
+          dikirim_pada?: string | null
+          jatuh_tempo?: string
+          hari_terlambat?: number
+          hari_menuju?: number
+          klasifikasi?: string
+          janji_bayar_tanggal?: string | null
+          janji_catatan?: string | null
+          status_janji?: string
+        }
+        Update: {
+          pesanan_id?: string
+          nomor_pesanan?: string
+          pelanggan_id?: string
+          kode_pelanggan?: string
+          nama_toko?: string
+          telepon?: string | null
+          alamat?: string | null
+          termin_hari?: number
+          batas_kredit?: number
+          total?: number
+          dibuat_oleh?: string
+          nama_sales?: string
+          dibuat_pada?: string
+          dikirim_pada?: string | null
+          jatuh_tempo?: string
+          hari_terlambat?: number
+          hari_menuju?: number
+          klasifikasi?: string
+          janji_bayar_tanggal?: string | null
+          janji_catatan?: string | null
+          status_janji?: string
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      rpc_catat_penagihan: {
+        Args: {
+          p_pelanggan_id: string
+          p_pesanan_jual_id?: string | null
+          p_jenis?: string
+          p_isi?: string
+          p_janji_bayar_tanggal?: string | null
+        }
+        Returns: Json
+      }
+      rpc_baca_catatan_penagihan: {
+        Args: {
+          p_pelanggan_id: string
+          p_pesanan_jual_id?: string | null
+        }
+        Returns: {
+          id: string
+          pelanggan_id: string
+          pesanan_jual_id: string | null
+          nomor_pesanan: string | null
+          jenis: string
+          isi: string
+          janji_bayar_tanggal: string | null
+          status_janji: string
+          dibuat_oleh: string
+          nama_pembuat: string
+          dibuat_pada: string
+        }[]
+      }
       fn_is_manajer: { Args: never; Returns: boolean }
       fn_peran: { Args: never; Returns: string }
       peran_saya: { Args: never; Returns: string }

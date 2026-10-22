@@ -45,6 +45,12 @@ export const MENU_ITEMS: MenuItem[] = [
     roles: ['penjualan', 'gudang', 'manajer'],
   },
   {
+    title: 'Penagihan',
+    href: '/penagihan',
+    icon: 'ReceiptText',
+    roles: ['penjualan', 'manajer'],
+  },
+  {
     title: 'Persetujuan Harga',
     href: '/persetujuan',
     icon: 'ClipboardCheck',
@@ -96,6 +102,7 @@ export const ROUTE_PERMISSIONS: { pattern: RegExp; roles: Peran[] }[] = [
   { pattern: /^\/pemasok/, roles: ['gudang', 'manajer'] },
   { pattern: /^\/pesanan\/(baru|[^\/]+\/ubah)/, roles: ['penjualan', 'manajer'] },
   { pattern: /^\/pesanan/, roles: ['penjualan', 'gudang', 'manajer'] },
+  { pattern: /^\/penagihan/, roles: ['penjualan', 'manajer'] },
   { pattern: /^\/persetujuan/, roles: ['manajer'] },
   { pattern: /^\/pembelian/, roles: ['gudang', 'manajer'] },
   { pattern: /^\/stok\/opname/, roles: ['gudang', 'manajer'] },

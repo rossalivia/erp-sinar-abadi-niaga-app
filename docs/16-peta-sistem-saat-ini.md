@@ -318,6 +318,26 @@ Terdapat 11 tabel di dalam skema public (9 tabel inti + 2 tabel modul stock opna
   * persetujuan_harga_select_policy: FOR SELECT USING (fn_is_manajer() OR diajukan_oleh = auth.uid()). Gudang menerima 0 baris.
   * persetujuan_harga_modify_policy: FOR ALL USING (false) WITH CHECK (false).
 
+### 13. public.catatan_penagihan (Riwayat & Log Interaksi Penagihan)
+* Tujuan: Mencatat riwayat penagihan piutang dan komitmen janji bayar pelanggan (append-only).
+* Kolom:
+  * id (uuid, PRIMARY KEY DEFAULT gen_random_uuid())
+  * pelanggan_id (uuid, NOT NULL, REFERENCES public.pelanggan(id) ON DELETE RESTRICT)
+  * pesanan_jual_id (uuid, nullable, REFERENCES public.pesanan_jual(id) ON DELETE SET NULL)
+  * jenis (text, NOT NULL, CHECK jenis IN ('pengingat_wa', 'telepon', 'kunjungan', 'janji_bayar', 'catatan'))
+  * isi (text, NOT NULL, CHECK length(btrim(isi)) BETWEEN 3 AND 500)
+  * janji_bayar_tanggal (date, nullable, wajib diisi jika jenis = 'janji_bayar')
+  * dibuat_oleh (uuid, NOT NULL, REFERENCES public.profiles(id))
+  * dibuat_pada (timestamptz, NOT NULL, DEFAULT now())
+* Triggers:
+  * trg_catatan_penagihan_guard: BEFORE UPDATE OR DELETE, memblokir seluruh operasi modifikasi/penghapusan (append-only, E0051).
+* Hak Akses Kolom (Grants):
+  * SELECT: seluruh kolom TO authenticated.
+  * INSERT, UPDATE, DELETE: TIDAK DI-GRANT langsung (penulisan via RPC `rpc_catat_penagihan`).
+* Kebijakan RLS:
+  * catatan_penagihan_select: FOR SELECT USING: Manajer melihat semua, Penjualan melihat catatan buatannya sendiri atau pelanggan yang memiliki faktur aktif buatannya. Gudang 0 baris.
+  * catatan_penagihan_modify_block: FOR ALL USING (false) WITH CHECK (false).
+
 ---
 
 ## B. Peta View Basis Data
@@ -329,6 +349,7 @@ Terdapat 11 tabel di dalam skema public (9 tabel inti + 2 tabel modul stock opna
 | v_item_pesanan_jual | Daftar item pesanan jual tanpa nilai snapshot HPP | security_invoker = true | Penjualan (milik sendiri), Gudang (non-draf), Manajer | Tidak ada (hpp_satuan diabaikan) |
 | v_pelanggan_piutang (alias v_piutang_pelanggan) | Agregat piutang berjalan, breakdown terkonfirmasi vs terkirim, dan status faktur overdue | security_invoker = true | Penjualan, Manajer (Gudang via view) | Tidak ada |
 | v_pelanggan_kredit | View status kredit dinamis per pelanggan via fn_hitung_kredit_pelanggan | security_invoker = true | Penjualan, Manajer | Tidak ada |
+| v_tagihan | Daftar seluruh faktur terkirim belum lunas, 6 klasifikasi umur tagihan, selisih hari, dan janji bayar aktif terakhir | security_invoker = true / filter peran | Penjualan (faktur miliknya), Manajer (seluruh faktur). Gudang 0 baris | Tidak ada kolom finansial rahasia |
 | v_barang_manajer | Katalog barang lengkap disertai harga_pokok dan flag harga_pokok_belum_diisi | Owner Rights (Definer) + security_barrier = true + WHERE fn_is_manajer() = true | Hanya Manajer (Peran lain menerima 0 baris) | harga_pokok |
 | v_pembelian_manajer | Daftar PO pembelian lengkap dengan harga_beli_satuan dan total_estimasi_beli | Owner Rights (Definer) + security_barrier = true + WHERE fn_is_manajer() = true | Hanya Manajer (Peran lain menerima 0 baris) | harga_beli_satuan |
 | v_item_pesanan_jual_manajer (alias v_item_pesanan_manajer) | Rincian baris pesanan jual lengkap dengan hpp_satuan dan nominal margin laba | Owner Rights (Definer) + security_barrier = true + WHERE fn_is_manajer() = true | Hanya Manajer (Peran lain menerima 0 baris) | hpp_satuan, margin |
@@ -353,6 +374,8 @@ Terdapat 11 tabel di dalam skema public (9 tabel inti + 2 tabel modul stock opna
 | rpc_ajukan_persetujuan_harga | p_pesanan_id uuid, p_catatan text | Penjualan Saja | persetujuan_harga, audit_log | Ya (pesanan_jual) | Tidak | Ya (ajukan_persetujuan_harga) |
 | rpc_putuskan_persetujuan_harga | p_id uuid, p_setuju boolean, p_catatan text, p_alasan_tolak text | Manajer Saja | persetujuan_harga, audit_log | Ya (persetujuan_harga) | Tidak | Ya (setujui/tolak_persetujuan_harga) |
 | rpc_batalkan_pengajuan_harga | p_id uuid | Penjualan (pemilik) | persetujuan_harga, audit_log | Ya (persetujuan_harga) | Tidak | Ya (batalkan_pengajuan_harga) |
+| rpc_catat_penagihan | p_pelanggan_id uuid, p_pesanan_jual_id uuid, p_jenis text, p_isi text, p_janji_bayar_tanggal date | Penjualan, Manajer | catatan_penagihan | Tidak | Tidak | Tidak (tabel sudah append-only) |
+| rpc_baca_catatan_penagihan | p_pelanggan_id uuid, p_pesanan_jual_id uuid | Penjualan, Manajer | Read-only | Tidak | Tidak | Tidak |
 | rpc_ajukan_pembelian | p_pemasok_id uuid, p_barang_id uuid, p_jumlah int | Gudang, Manajer | pembelian, audit_log | Tidak | Tidak | Ya (ajukan_pembelian) |
 | rpc_setujui_pembelian | p_pembelian_id uuid, p_harga_beli numeric | Manajer Saja | pembelian, audit_log | Ya (pembelian) | Tidak | Ya (setujui_pembelian) |
 | rpc_tolak_pembelian | p_pembelian_id uuid, p_alasan text | Manajer Saja | pembelian, audit_log | Ya (pembelian) | Tidak | Ya (tolak_pembelian) |

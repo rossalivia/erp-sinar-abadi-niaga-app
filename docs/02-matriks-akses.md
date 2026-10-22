@@ -59,6 +59,8 @@ Kolom rahasia: `barang.harga_pokok`, `pembelian.harga_beli_satuan`, `item_pesana
 | | INSERT/UPDATE/DELETE | ❌ | ❌ | ❌ | Ditulis oleh RPC/trigger `SECURITY DEFINER`. Append-only | CG |
 | **persetujuan_harga** | SELECT | ⚠️ | ❌ | ✅ | P: baris diajukan_oleh = auth.uid(); M: semua; G: 0 baris. snapshot_hash disembunyikan dari non-superuser | RLS, CG |
 | | INSERT/UPDATE/DELETE | ❌ | ❌ | ❌ | Hanya via RPC `rpc_ajukan_persetujuan_harga`, `rpc_putuskan_persetujuan_harga`, `rpc_batalkan_pengajuan_harga` | CG, RPC |
+| **catatan_penagihan** | SELECT | ⚠️ | ❌ | ✅ | P: catatan pada pelanggan yang memiliki tagihan miliknya atau dibuat sendiri. G: 0 baris. M: semua | RLS |
+| | INSERT/UPDATE/DELETE | ❌ | ❌ | ❌ | Append-only. UPDATE/DELETE ditolak trigger `trg_catatan_penagihan_guard` (E0051). Penulisan via `rpc_catat_penagihan` | TG, CG, RPC |
 
 ### View
 
@@ -70,6 +72,7 @@ Kolom rahasia: `barang.harga_pokok`, `pembelian.harga_beli_satuan`, `item_pesana
 | `v_pembelian_manajer` | owner + filter peran | 0 baris | 0 baris | ✅ | + `harga_beli_satuan`, total |
 | `v_item_pesanan_manajer` | owner + filter peran | 0 baris | 0 baris | ✅ | + `hpp_satuan`, margin baris |
 | `v_piutang_pelanggan` | owner + filter peran (P, M) | ✅ | 0 baris | ✅ | Agregat per pelanggan: piutang berjalan, ada tagihan lewat jatuh tempo (tanpa detail pesanan milik staf lain) |
+| `v_tagihan` | `security_invoker = true` / filter peran | ⚠️ (miliknya) | 0 baris | ✅ (semua) | Faktur terkirim belum lunas, selisih hari, 6 klasifikasi umur, janji bayar aktif terakhir. Tanpa kolom rahasia |
 | `v_persetujuan_harga` | `security_invoker = true` | ⚠️ | 0 baris | ✅ | Tanpa snapshot_hash, evaluasi status 24 jam via CASE |
 | `v_persetujuan_harga_manajer` | owner + `WHERE fn_is_manajer()` | 0 baris | 0 baris | ✅ | Lengkap dengan HPP satuan, margin satuan, dan margin total per item |
 | `v_laporan_*` / RPC laporan | owner/definer + filter peran | ❌ | ❌ | ✅ | Omzet, HPP, margin mingguan dan per barang, umur piutang |
@@ -110,6 +113,9 @@ Kolom rahasia: `barang.harga_pokok`, `pembelian.harga_beli_satuan`, `item_pesana
 | Terima barang | ❌ | ✅ | ✅ | Status disetujui, sekali, 1 ≤ jumlah ≤ dipesan; stok naik, harga_pokok diperbarui | RPC `terima_pembelian` (FOR UPDATE pada PO & barang) |
 | Penyesuaian stok | ❌ | ✅ | ✅ | Alasan ≥ 10 karakter, hasil ≥ 0, diaudit | RPC `sesuaikan_stok`, audit |
 | Lihat kartu stok | ✅ | ✅ | ✅ | — | RLS |
+| Catat interaksi penagihan / janji bayar | ⚠️ (pelanggan berfaktur miliknya) | ❌ | ✅ | Penulisan append-only, isi 3-500 char, janji bayar wajib tanggal >= hari ini | RPC `rpc_catat_penagihan` (E0046-E0051) |
+| Kirim pengingat WhatsApp & catat log | ⚠️ | ❌ | ✅ | Tautan wa.me murni, nomor seluler 9-15 digit, rekam jejak otomatis | Frontend util & RPC `rpc_catat_penagihan` |
+| Cetak kartu piutang pelanggan | ⚠️ | ❌ | ✅ | Tampilan tanpa kolom rahasia, print-ready (@media print) | RLS, VW `v_tagihan` |
 | Ubah peran / status akun | ❌ | ❌ | ✅ | Minimal satu Manajer aktif tersisa; diaudit | RPC `ubah_peran`, TG, audit |
 | Baca audit log | ❌ | ❌ | ✅ | — | RLS |
 | Lihat laporan omzet/margin/piutang | ❌ | ❌ | ✅ | — | VW/RPC laporan (filter peran), MW |
@@ -122,12 +128,15 @@ Kolom rahasia: `barang.harga_pokok`, `pembelian.harga_beli_satuan`, `item_pesana
 | Rute | Halaman | P | G | M | Catatan tampilan | Lapisan penegak |
 |---|---|---|---|---|---|---|
 | `/masuk` | Masuk | publik | publik | publik | Tidak ada tautan daftar | Supabase Auth (sign-up dimatikan) |
-| `/dashboard` | Dashboard | ✅ | ✅ | ✅ | P: pesanan saya per status, pelanggan lewat jatuh tempo. G: siap kirim, stok menipis, PO menunggu barang. M: omzet, margin, piutang, grafik mingguan, PO menunggu | MW, RLS, VW |
+| `/dashboard` | Dashboard | ✅ | ✅ | ✅ | P: pesanan saya per status, widget penagihan. G: siap kirim, stok menipis, PO. M: omzet, margin, piutang, widget penagihan | MW, RLS, VW |
 | `/barang` | Barang & Stok | ✅ (baca) | ✅ (ubah non-harga, penyesuaian) | ✅ (+ tambah, harga, kolom harga pokok, ubah HPP manual) | Kolom harga pokok hanya dirender untuk M dari `v_barang_manajer` | RLS, CG, TG, VW |
 | `/barang/[id]/kartu-stok` | Kartu Stok | ✅ | ✅ | ✅ | — | RLS |
 | `/pelanggan` | Pelanggan | ✅ | ❌ | ✅ | P tentukan termin_hari saat buat baru; saat edit/update, batas kredit & termin_hari read-only untuk P | MW, RLS, TG |
+| `/pelanggan/[id]` | Detail Pelanggan | ✅ | ❌ | ✅ | Dilengkapi tombol aksi pintas ke Kartu Piutang | MW, RLS |
+| `/pelanggan/[id]/piutang` | Kartu Piutang Pelanggan | ⚠️ (miliknya) | ❌ | ✅ | Siap cetak (@media print), rekap umur piutang, tanpa kolom rahasia | MW, RLS, VW |
 | `/pesanan` | Daftar Pesanan Jual | ✅ (miliknya) | ✅ (non-draf) | ✅ (semua) | Filter status, pelanggan, tanggal | RLS |
 | `/pesanan/[id]` | Detail Pesanan | ✅ | ✅ | ✅ | Tombol sesuai peran & status; panel HPP/margin hanya M | RLS, RPC, VW |
+| `/penagihan` | Penagihan & Monitoring Tagihan | ⚠️ (miliknya) | ❌ | ✅ (semua) | 4 KPI cards, filter tab klasifikasi umur, tombol WA, catat penagihan, pelunasan (M) | MW, RLS, VW |
 | `/pembelian` | Pembelian & Pemasok | ❌ | ✅ | ✅ | Kolom harga beli hanya M; tab Pemasok | MW, RLS, CG, VW |
 | `/laporan` | Laporan | ❌ | ❌ | ✅ | Grafik mingguan, margin per barang, umur piutang, CSV | MW, VW/RPC filter peran |
 | `/pengaturan/akun` | Akun & Peran | ❌ | ❌ | ✅ | — | MW, RPC |

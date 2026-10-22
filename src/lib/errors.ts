@@ -46,6 +46,13 @@ export const ERROR_MESSAGES: Record<string, string> = {
   E0043: 'Persetujuan hanya dapat diputuskan saat berstatus menunggu',
   E0044: 'Alasan penolakan minimal 10 karakter',
   E0045: 'Hanya pengajuan berstatus menunggu yang dapat dibatalkan',
+  E0046: 'Pelanggan tidak memiliki tagihan aktif yang dapat ditagih',
+  E0047: 'Catatan penagihan minimal 3 karakter dan maksimal 500 karakter',
+  E0048: 'Tanggal janji bayar wajib diisi untuk jenis penagihan janji bayar',
+  E0049: 'Tanggal janji bayar tidak boleh di masa lalu',
+  E0050: 'Anda tidak memiliki wewenang menagih pelanggan ini',
+  E0051: 'Catatan penagihan bersifat permanen dan tidak dapat diubah atau dihapus',
+  E0052: 'Faktur tidak valid untuk penagihan pelanggan ini',
 };
 
 interface SupabasePostgresError {

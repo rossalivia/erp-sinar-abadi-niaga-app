@@ -17,6 +17,7 @@ import {
   X,
   Layers,
   ClipboardCheck,
+  ReceiptText,
   LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -30,6 +31,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   ClipboardCheck,
   Users,
   ShoppingCart,
+  ReceiptText,
   Truck,
   Building2,
   BarChart3,
@@ -50,7 +52,7 @@ const SIDEBAR_SECTIONS: { label: string; hrefs: string[] }[] = [
   },
   {
     label: 'Transaksi & Penjualan',
-    hrefs: ['/pelanggan', '/pesanan', '/persetujuan', '/pembelian', '/pemasok'],
+    hrefs: ['/pelanggan', '/pesanan', '/penagihan', '/persetujuan', '/pembelian', '/pemasok'],
   },
   {
     label: 'Keuangan & Laporan',

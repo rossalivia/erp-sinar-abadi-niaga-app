@@ -44,16 +44,27 @@ export default async function DetailPelangganPage({ params }: PageProps) {
         title={`Pelanggan: ${pelanggan.nama_toko}`}
         description={`Kode: ${pelanggan.kode} — Ringkasan piutang, batas kredit, dan pengaturan pelanggan`}
         action={
-          <Link
-            href="/pelanggan"
-            className={cn(
-              buttonVariants({ variant: 'outline', size: 'sm' }),
-              'flex items-center gap-1.5'
-            )}
-          >
-            <ChevronLeft className="h-4 w-4" />
-            <span>Daftar Pelanggan</span>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/pelanggan/${id}/piutang`}
+              className={cn(
+                buttonVariants({ variant: 'outline', size: 'sm' }),
+                'flex items-center gap-1.5 text-slate-800'
+              )}
+            >
+              <span>Kartu Piutang</span>
+            </Link>
+            <Link
+              href="/pelanggan"
+              className={cn(
+                buttonVariants({ variant: 'outline', size: 'sm' }),
+                'flex items-center gap-1.5'
+              )}
+            >
+              <ChevronLeft className="h-4 w-4" />
+              <span>Daftar Pelanggan</span>
+            </Link>
+          </div>
         }
       />
 
