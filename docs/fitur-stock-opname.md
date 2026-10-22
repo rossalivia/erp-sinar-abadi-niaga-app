@@ -398,19 +398,26 @@ Melanjutkan daftar 40 test cases yang sudah ada di `docs/03-test-plan.md`:
 | **TC-47** | Uji pembatalan sesi opname & validasi alasan | Manajer / Gudang | Membatalkan tanpa alasan (< 10 karakter) ditolak (`E0016`). Pembatalan valid mengubah status ke `dibatalkan` dan stok barang sama sekali tidak berubah. |
 | **TC-48** | Isolasi kerahasiaan data nilai selisih HPP | Gudang vs Manajer | Staf Gudang memanggil API / view tidak dapat melihat kolom HPP / `estimasi_nilai_selisih`. Manajer dapat melihat total nilai selisih rupiah di view `v_opname_stok_manajer`. |
 
----
+## 8. Standar Operasional Prosedur (SOP) Pelaksanaan Stock Opname
 
-## 7. Rencana Kerja Bertahap (Execution Plan)
+Untuk menjaga konsistensi data inventaris dan meminimalkan penolakan persetujuan akibat *stock drift*, pelaksanaan audit fisik wajib mematuhi SOP berikut:
 
-Jika spesifikasi ini telah disetujui, pekerjaan akan dibagi menjadi sub-tahap rapi:
-1. **Langkah 1 (Database Migration):** Buat file migrasi `supabase/migrations/20261022000000_stock_opname.sql` (Sequence, Tabel, Indeks, RLS, Views, dan 5 Fungsi RPC).
-2. **Langkah 2 (Test Suite Database):** Tulis berkas uji SQL `supabase/tests/05_stock_opname.sql` untuk memverifikasi TC-41 s.d. TC-48.
-3. **Langkah 3 (Frontend Server Actions & Lib):** Daftarkan kode error di `src/lib/errors.ts`, perbarui izin rute di `src/lib/akses.ts`, dan buat Server Actions di `src/features/stok/actions/opname-actions.ts`.
-4. **Langkah 4 (Frontend UI Components):** Bangun halaman `/stok/opname`, `/stok/opname/baru`, dan `/stok/opname/[id]` beserta komponen tabel dan modal persetujuan.
-5. **Langkah 5 (Verifikasi E2E & Dokumentasi):** Jalankan pengujian lintas peran dengan akun `gudang@sinarabadi.com` dan `manajer@sinarabadi.com`.
+1. **Jadwal Pelaksanaan (Di Luar Jam Transaksi Aktif):**
+   * Kegiatan penghitungan fisik gudang **wajib dilakukan di luar jam operasional transaksi aktif** (misalnya setelah toko tutup, akhir pekan, atau sebelum jam buka operasional pagi hari).
+   * Selama sesi opname berlangsung hingga disetujui Manajer, tidak boleh ada transaksi penjualan (`rpc_konfirmasi_pesanan`), penerimaan pengadaan (`rpc_terima_pembelian`), atau penyesuaian manual lain yang dieksekusi pada barang yang sedang diaudit.
 
----
+2. **Pengisian Keterangan Selisih (Aturan K3 & BR-11):**
+   * Setiap baris barang yang mengalami selisih fisik ($\text{Stok Fisik} \neq \text{Stok Sistem}$) **wajib menyertakan keterangan penjelas minimal 10 karakter** setelah spasi di-trim (misal: "Kemasan bocor di rak B2", "Penyusutan timbangan curah").
+   * Keterangan di bawah 10 karakter akan ditolak di Zod dan database (Error `E0037`).
+   * Alasan ini akan otomatis disematkan pada kartu stok `mutasi_stok` dengan format baku: `"Stock opname <nomor>: <keterangan>"`.
 
-> [!IMPORTANT]
-> Dokumen spesifikasi di atas telah disusun secara komprehensif dan mematuhi seluruh aturan arsitektur di `AGENTS.md`.  
-> Sesuai instruksi, **pengerjaan kode belum dimulai**. Silakan tinjau spesifikasi ini dan beri persetujuan untuk melanjutkan ke tahap implementasi.
+3. **Pengaman Integritas Persetujuan Anti-Drift (Aturan K4):**
+   * Pada saat Manajer menekan tombol `Setujui & Perbarui Stok`, database mengunci data barang dan memvalidasi apakah stok tercatat di sistem masih identik dengan stok awal sesi.
+   * **Bila Terjadi Perubahan Stok di Tengah Sesi:** Persetujuan akan **seketika ditolak** oleh database dengan error `E0038`:
+     `Stok barang "<nama>" (<kode>) telah berubah (sistem tercatat: X, stok sekarang: Y). Batalkan sesi lalu hitung ulang.`
+   * **Tindakan yang Wajib Diambil Tim:** Sesi yang ditolak tersebut **harus dibatalkan** oleh Gudang/Manajer. Tim Gudang wajib mencocokkan mutasi yang baru saja terjadi, lalu membuat sesi opname baru dengan data stok sistem yang mutakhir sebelum diajukan kembali. Pendekatan selisih delta dilarang guna mencegah penimpaan transaksi sah.
+
+4. **Kerahasiaan Data Finansial (Aturan K1):**
+   * Nilai rupiah selisih HPP hanya dapat dilihat oleh peran Manajer melalui view terproteksi `v_opname_stok_manajer` (`WITH (security_barrier = true)`).
+   * Staf Gudang hanya berfokus pada kuantitas fisik dan satuan unit tanpa pernah melihat valuasi HPP/harga pokok.
+

@@ -1,63 +1,62 @@
-# Catatan Perbaikan & Perubahan Spesifikasi: Modul Limit Kredit Dinamis & Blokir Otomatis
+# Catatan Perbaikan & Perubahan Spesifikasi: Resolusi Audit & Harmonisasi Katalog Error
 
-Dokumen ini mencatat perubahan teks pesan harapan pada pengujian baseline BR-05 serta resolusi tabrakan kode error sesuai keputusan D1–D9 pada spesifikasi fitur yang disetujui ([`docs/fitur-kredit-overdue.md`](fitur-kredit-overdue.md)).
-
----
-
-## 1. Latar Belakang Perubahan
-
-Pada implementasi baseline awal tahap rilis:
-- Aturan BR-05 memunculkan pesan error kustom:
-  - Pelanggan lewat batas kredit: `'Batas kredit pelanggan terlampaui'` (SQLSTATE `E0012`).
-  - Pelanggan memiliki tagihan lewat tempo: `'Pelanggan memiliki tagihan lewat jatuh tempo'` (SQLSTATE `E0013`).
-- Pada saat yang sama, kode `E0006` dan `E0007` pada baseline dialokasikan untuk:
-  - `E0006`: *Barang tidak aktif atau tidak ditemukan* (BR-02 / TC-11).
-  - `E0007`: *Pelanggan atau pemasok tidak aktif* (BR-02 / TC-11).
-
-Dalam spesifikasi baru **Modul Limit Kredit Dinamis & Blokir Otomatis (Credit & Overdue Control)** yang disetujui, ditentukan pesan error verbatim:
-- **D6 (Overlimit):** `E0006: Batas kredit pelanggan terlampaui`
-- **D6 (Overdue):** `E0007: Pelanggan memiliki faktur lewat jatuh tempo, transaksi diblokir`
+Dokumen ini mencatat perubahan teks pesan harapan pada pengujian serta resolusi tabrakan kode error dan pengaman stock opname sesuai Keputusan Pemilik Proyek (K1 s.d. K5) per 22 Oktober 2026.
 
 ---
 
-## 2. Resolusi Teknis Tabrakan Kode (D6)
+## 1. Latar Belakang & Analisis Tabrakan Kode (Keputusan K2)
 
-Agar kode baseline master barang dan pelanggan (`E0006` dan `E0007`) tidak rusak, diambil keputusan arsitektural berikut:
-1. **Di Lapisan Database (`rpc_konfirmasi_pesanan`):**
-   - String pesan error di-raise dengan prefix teks persis verbatim sesuai D6, sementara SQLSTATE PostgreSQL tetap mempertahankan `E0012` dan `E0013`:
-     ```sql
-     -- Skenario Overdue (D4 diperiksa terlebih dahulu)
-     IF v_kredit.punya_overdue THEN
-       RAISE EXCEPTION 'E0007: Pelanggan memiliki faktur lewat jatuh tempo, transaksi diblokir'
-         USING ERRCODE = 'E0013';
-     END IF;
+Pada spesifikasi awal modul kredit, sempat ditentukan pesan dengan awalan `E0006:` dan `E0007:`. Namun, dalam katalog resmi sistem di `src/lib/errors.ts`, kode tersebut telah dialokasikan untuk:
+* `E0006`: *Barang tidak aktif atau tidak ditemukan* (BR-02 / TC-11).
+* `E0007`: *Pelanggan atau pemasok tidak aktif* (BR-02 / TC-11).
 
-     -- Skenario Plafon Kredit (D4 diperiksa berikutnya)
-     IF (v_kredit.piutang_berjalan + v_pesanan.total) > v_kredit.batas_kredit THEN
-       RAISE EXCEPTION 'E0006: Batas kredit pelanggan terlampaui'
-         USING ERRCODE = 'E0012';
-     END IF;
-     ```
-2. **Di Lapisan UI / Frontend (`src/lib/errors.ts`):**
-   - Fungsi `getErrorMessage()` mendeteksi substring eksplisit:
-     - `pgError.message.includes('E0006: Batas kredit pelanggan terlampaui')` -> mengembalikan `'E0006: Batas kredit pelanggan terlampaui'`.
-     - `pgError.message.includes('E0007: Pelanggan memiliki faktur lewat jatuh tempo, transaksi diblokir')` -> mengembalikan `'E0007: Pelanggan memiliki faktur lewat jatuh tempo, transaksi diblokir'`.
-   - Jika error berasal dari master barang/pelanggan yang hanya membawa kode `E0006` atau `E0007` tanpa pesan verbatim tersebut, pemetaan kamus baseline tetap menghasilkan:
-     - `E0006`: *Barang tidak aktif atau tidak ditemukan*
-     - `E0007`: *Pelanggan atau pemasok tidak aktif*
+Sedangkan untuk pelanggaran kredit dan jatuh tempo, katalog resmi telah mengalokasikan:
+* `E0012`: *Batas kredit pelanggan terlampaui*
+* `E0013`: *Pelanggan memiliki faktur lewat jatuh tempo, transaksi diblokir*
+
+Adanya prefix `E0006:` atau `E0007:` pada teks error RPC kredit menyebabkan regex `getErrorMessage()` di frontend salah menangkap error transaksi sebagai error master barang/pelanggan nonaktif.
 
 ---
 
-## 3. Perubahan pada Test Suite Baseline BR-05 (`supabase/tests/03_rpc.sql`)
+## 2. Resolusi Kode Error Katalog Resmi (K2)
 
-Hanya teks pesan harapan pada dua test case yang diperbarui agar selaras dengan D6:
-1. **TC-16 (Batas Kredit Terlampaui):**
-   - *Sebelumnya:* `v_msg LIKE '%Batas kredit pelanggan terlampaui%'`
-   - *Sesudahnya:* `v_msg LIKE '%E0006: Batas kredit pelanggan terlampaui%'`
-2. **TC-17 (Tagihan Lewat Jatuh Tempo):**
-   - *Sebelumnya:* `v_msg LIKE '%Pelanggan memiliki tagihan lewat jatuh tempo%'`
-   - *Sesudahnya:* `v_msg LIKE '%E0007: Pelanggan memiliki faktur lewat jatuh tempo, transaksi diblokir%'`
-3. **TC-18 (Batas Kredit Otomatis 0 untuk Staf Penjualan):**
-   - Tidak ada perubahan, tetap memverifikasi pembatasan kredit default 0 saat dibuat oleh Staf Penjualan.
+Berdasarkan Keputusan Pemilik Proyek K2:
+1. **Di Lapisan Basis Data (`rpc_konfirmasi_pesanan`):**
+   * Menghilangkan prefix `E0006:` dan `E0007:` dari string `RAISE EXCEPTION`.
+   * Menggunakan pesan persis verbatim sesuai katalog:
+     - Overdue: `RAISE EXCEPTION 'Pelanggan memiliki faktur lewat jatuh tempo, transaksi diblokir' USING ERRCODE = 'E0013';`
+     - Overlimit: `RAISE EXCEPTION 'Batas kredit pelanggan terlampaui' USING ERRCODE = 'E0012';`
+2. **Di Lapisan Frontend (`src/lib/errors.ts`):**
+   * Mempertahankan kode resmi katalog:
+     - `E0012`: `'Batas kredit pelanggan terlampaui'`
+     - `E0013`: `'Pelanggan memiliki faktur lewat jatuh tempo, transaksi diblokir'`
+   * Menghapus parsing ad-hoc yang menimpa kode baseline master data.
+3. **Pembaruan Test Suite:**
+   * `supabase/tests/03_rpc.sql` (TC-16 & TC-17) dan `supabase/tests/04_kredit_overdue.sql` (TC-30, TC-31, TC-32, TC-37) diselaraskan untuk memeriksa pesan katalog murni tanpa awalan usang `E0006:` / `E0007:`.
 
-Sisa seluruh 25 Test Case baseline (TC-01 s.d. TC-15 dan TC-19 s.d. TC-28) tidak mengalami perubahan apa pun dan tetap lulus 100%.
+---
+
+## 3. Resolusi Aturan Stock Opname (K3 & K4)
+
+1. **BR-11 Keterangan Selisih Minimal 10 Karakter (K3):**
+   * Setiap item opname dengan selisih (`stok_fisik <> stok_sistem`) wajib menyertakan keterangan dengan panjang $\ge 10$ karakter setelah di-trim.
+   * Divalidasi di Zod (`itemOpnameInputSchema`), komponen UI (`opname-editor.tsx`), dan di RPC basis data (`rpc_buat_opname_stok`, `rpc_ubah_draf_opname`, `rpc_ajukan_opname_stok`) dengan kode error baru **`E0037`**: *Keterangan selisih stok minimal 10 karakter*.
+   * Kolom `mutasi_stok.alasan` diformat konsisten: `"Stock opname <nomor>: <keterangan>"`.
+2. **Pengaman Persetujuan Opname Anti-Drift (K4):**
+   * Pada `rpc_setujui_opname_stok`, setelah baris barang dikunci dengan `ORDER BY id ASC FOR UPDATE`, sistem memeriksa apakah `barang.stok` saat ini masih sama dengan `stok_sistem` yang tercatat pada sesi opname.
+   * Jika stok berubah (misalnya ada penjualan atau penerimaan PO di antara pembuatan sesi dan persetujuan), persetujuan DITOLAK dengan kode error baru **`E0038`**:
+     * Format pesan: `E0038: Stok barang "<nama>" (<kode>) telah berubah (sistem tercatat: <stok_sistem>, stok sekarang: <stok_sekarang>). Batalkan sesi lalu hitung ulang.`
+   * Pendekatan selisih (delta) dilarang digunakan agar stok fisik tidak menimpa transaksi yang sah.
+
+---
+
+## 4. Tabel Pelacakan Kode Error Terkait
+
+| Kode | Arti Resmi di Katalog | Fungsi / Migrasi yang Melempar | Pemakai di `src/` | Pengujian Terkait |
+|---|---|---|---|---|
+| **E0006** | Barang tidak aktif atau tidak ditemukan | `rpc_simpan_item_pesanan` | `src/lib/errors.ts` | TC-11 (`03_rpc.sql`) |
+| **E0007** | Pelanggan atau pemasok tidak aktif | `rpc_buat_pesanan`, `rpc_buat_pembelian` | `src/lib/errors.ts` | TC-11 (`03_rpc.sql`) |
+| **E0012** | Batas kredit pelanggan terlampaui | `rpc_konfirmasi_pesanan` | `src/lib/errors.ts`, `src/features/pesanan/` | TC-16 (`03_rpc.sql`), TC-30 & TC-37 (`04_kredit_overdue.sql`) |
+| **E0013** | Pelanggan memiliki faktur lewat jatuh tempo, transaksi diblokir | `rpc_konfirmasi_pesanan` | `src/lib/errors.ts`, `src/features/pesanan/` | TC-17 (`03_rpc.sql`), TC-31 & TC-32 (`04_kredit_overdue.sql`) |
+| **E0037** | Keterangan selisih stok minimal 10 karakter | `rpc_buat_opname_stok`, `rpc_ubah_draf_opname`, `rpc_ajukan_opname_stok` | `src/lib/errors.ts`, `src/features/stock-opname/` | TC-49 (`05_stock_opname.sql`, `schemas.test.ts`) |
+| **E0038** | Stok barang berubah di tengah sesi opname | `rpc_setujui_opname_stok` | `src/lib/errors.ts`, `src/features/stock-opname/` | TC-51 (`05_stock_opname.sql`) |

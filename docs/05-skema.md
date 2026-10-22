@@ -143,6 +143,28 @@ erDiagram
     jsonb nilai_baru
     timestamptz dibuat_pada
   }
+
+  OPNAME_STOK {
+    uuid id PK
+    text nomor UK "OPN-YYYY-XXXX"
+    text keterangan
+    text status "draf | diajukan | disetujui | dibatalkan"
+    text alasan_batal
+    uuid dibuat_oleh FK "-> profiles.id"
+    timestamptz dibuat_pada
+    uuid disetujui_oleh FK "-> profiles.id"
+    timestamptz disetujui_pada
+  }
+
+  ITEM_OPNAME_STOK {
+    uuid id PK
+    uuid opname_id FK "-> opname_stok.id"
+    uuid barang_id FK "-> barang.id"
+    integer stok_sistem
+    integer stok_fisik
+    integer selisih "stok_fisik - stok_sistem"
+    text keterangan "min 10 char jika selisih != 0"
+  }
 ```
 
 ---
@@ -155,10 +177,10 @@ Sistem database menerapkan 7 lapisan perlindungan mandiri di level Postgres:
 |---|---|---|---|
 | **1** | **Jaringan & Auth** | Public sign-up dimatikan, semua akses API mewajibkan token JWT dari `auth.users`. Role `anon` dicabut seluruh izinnya (`REVOKE ALL`). | Akses ilegal anonim ditolak seketika (TC-01). |
 | **2** | **Column-Level Grants (CG)** | Hak akses `SELECT` ke `authenticated` diberikan secara eksplisit per kolom. Kolom rahasia (`barang.harga_pokok`, `pembelian.harga_beli_satuan`, `item_pesanan_jual.hpp_satuan`) sama sekali tidak di-grant. UPDATE pada `barang.stok` dan `barang.kode` juga tidak di-grant. | Non-manajer tidak dapat membaca data rahasia melalui query apa pun (`permission denied`, TC-03, TC-05). |
-| **3** | **Row-Level Security (RLS)** | RLS aktif di seluruh 9 tabel. Kebijakan menggunakan fungsi helper aman `public.fn_peran()` (SECURITY DEFINER, STABLE). Staf Penjualan hanya membaca pesanan miliknya sendiri, Gudang hanya membaca pesanan non-draf, Manajer membaca seluruh baris, dan `audit_log` hanya dapat dibaca Manajer. | Isolasi data horizontal antar peran dan staf penjualan (TC-04, TC-06, TC-28). |
+| **3** | **Row-Level Security (RLS)** | RLS aktif di seluruh 11 tabel. Kebijakan menggunakan fungsi helper aman `public.fn_peran()` (SECURITY DEFINER, STABLE). Staf Penjualan hanya membaca pesanan miliknya sendiri, Gudang hanya membaca pesanan non-draf, Manajer membaca seluruh baris, dan `audit_log` hanya dapat dibaca Manajer. | Isolasi data horizontal antar peran dan staf penjualan (TC-04, TC-06, TC-28, TC-41..48). |
 | **4** | **Trigger Guards (TG)** | Trigger `BEFORE UPDATE OR DELETE` memblokir perubahan kolom terlarang berdasarkan peran: perubahan `harga_jual` & `harga_pokok` hanya Manajer; perubahan `batas_kredit` & `termin_hari` hanya Manajer; perubahan `peran` & `aktif` hanya Manajer. Perubahan `barang.stok` langsung diblokir kecuali flag sesi transaksi `app.mutasi_stok = '1'` aktif. Tabel `mutasi_stok` dan `audit_log` dijaga bersifat *append-only*. | Menjamin integritas stok (BR-01, TC-08) dan mencegah eskalasi wewenang (TC-06, TC-09, TC-18, TC-27, TC-28). |
-| **5** | **Views Khusus** | **View Publik** (`v_barang`, `v_pembelian`, `v_item_pesanan_jual`, `v_pelanggan_piutang`) mengecualikan kolom rahasia dan memasang `security_invoker = true`. **View Manajer** (`v_barang_manajer`, `v_pembelian_manajer`, `v_item_pesanan_jual_manajer`) menyertakan kolom rahasia namun mewajibkan `WHERE public.fn_is_manajer() = true`. | Non-manajer yang memanggil view manajer selalu menerima 0 baris (TC-04). |
-| **6** | **Database Constraints (CK)** | Validasi ketat di level kolom: `harga_jual > 0`, `stok >= 0`, `stok_minimum >= 0` (BR-01); `jumlah >= 1`, `UNIQUE(pesanan_jual_id, barang_id)`, `diskon_persen 0..25`, `subtotal >= 0` (BR-02, BR-03); `termin_hari IN (0,7,14,30)`, `batas_kredit >= 0` (BR-05); `jumlah_dipesan 1..10000`, `jumlah_diterima <= jumlah_dipesan` (BR-09). | Tidak ada data cacat yang bisa masuk meskipun aplikasi memiliki bug logika. |
+| **5** | **Views Khusus & Security Barrier** | **View Publik** (`v_barang`, `v_pembelian`, `v_item_pesanan_jual`, `v_pelanggan_piutang`, `v_pelanggan_kredit`) mengecualikan kolom rahasia dan memasang `security_invoker = true`. **View Manajer** (`v_barang_manajer`, `v_pembelian_manajer`, `v_item_pesanan_jual_manajer`, `v_opname_stok_manajer`) menyertakan kolom rahasia dan berjalan dengan hak pemilik (BUKAN `security_invoker`), wajib memasang `WITH (security_barrier = true)` dan klausa `WHERE public.fn_is_manajer() = true`. | Non-manajer yang memanggil view manajer selalu menerima 0 baris secara deterministik dan anti-leak optimizer (TC-04, TC-48, K1). |
+| **6** | **Database Constraints (CK)** | Validasi ketat di level kolom: `harga_jual > 0`, `stok >= 0`, `stok_minimum >= 0` (BR-01); `jumlah >= 1`, `UNIQUE(pesanan_jual_id, barang_id)`, `diskon_persen 0..25`, `subtotal >= 0` (BR-02, BR-03); `termin_hari IN (0,7,14,30)`, `batas_kredit >= 0` (BR-05); `jumlah_dipesan 1..10000`, `jumlah_diterima <= jumlah_dipesan` (BR-09); `stok_fisik >= 0`, `UNIQUE(opname_id, barang_id)`. | Tidak ada data cacat yang bisa masuk meskipun aplikasi memiliki bug logika. |
 | **7** | **Audit Logging Otomatis** | Trigger `AFTER UPDATE` mencatat perubahan sensitif (`barang.harga_jual`, `pelanggan.batas_kredit`, `pelanggan.termin_hari`, `profiles.peran`, `profiles.aktif`) ke `audit_log` secara otomatis dan permanen (append-only). | Jejak audit akuntabel dan tidak bisa dipalsukan (BR-12, TC-28). |
 
 ---
@@ -176,7 +198,10 @@ Sistem database menerapkan 7 lapisan perlindungan mandiri di level Postgres:
 | `supabase/migrations/20261021120600_rpc.sql` | 18 RPC alur transaksi dan pengelolaan master data. |
 | `supabase/migrations/20261021130000_rpc_laporan_tambahan.sql` | RPC agregat laporan analitik omzet, margin, dan aging piutang khusus Manajer. |
 | `supabase/migrations/20261021140000_kredit_overdue.sql` | Modul Limit Kredit Dinamis & Blokir Otomatis: `fn_hitung_kredit_pelanggan`, view `v_pelanggan_kredit`, pembaruan `v_pelanggan_piutang`, `rpc_get_kredit_pelanggan`, `rpc_get_faktur_overdue_pelanggan`, serta pembaruan `rpc_konfirmasi_pesanan`. |
+| `supabase/migrations/20261022000000_stock_opname.sql` | Modul Stock Opname & Penyesuaian Fisik Gudang: tabel `opname_stok`, `item_opname_stok`, RLS, sequences, dan 5 RPC opname. |
+| `supabase/migrations/20261022110000_perbaikan_audit.sql` | Resolusi Temuan Audit (K1 s.d. K4): `v_opname_stok_manajer` owner rights + `security_barrier = true`, penghapusan prefix usang `E0006`/`E0007` pada `rpc_konfirmasi_pesanan`, validasi keterangan selisih $\ge 10$ char (`E0037`), pengaman anti-drift stok berubah (`E0038`), dan format alasan kartu stok `"Stock opname <nomor>: <keterangan>"`. |
 | `supabase/seed.sql` | Data seed: 5 akun uji dev (3 peran), 2 pemasok, 5 pelanggan, 15 barang (sebagian stok menipis), saldo awal kartu stok. |
 | `supabase/tests/02_keamanan.sql` | Suite uji SQL 20 skenario mencakup RBAC, column grants, trigger guard, append-only, dan penolakan anon. |
 | `supabase/tests/03_rpc.sql` | Suite uji SQL 25 skenario alur transaksi bisnis, invarian stok, batas kredit, dan konkurensi. |
 | `supabase/tests/04_kredit_overdue.sql` | Suite uji SQL TC-29 s.d. TC-38: kalkulasi sisa kredit, prioritas D4, blokir overdue, non-bypassable, dan zero leakage. |
+| `supabase/tests/05_stock_opname.sql` | Suite uji SQL TC-41 s.d. TC-54: stock opname, penyesuaian fisik, kerahasiaan view manajer, validasi selisih 10 char, pengaman anti-drift, dan tanggal bisnis Asia/Jakarta. |

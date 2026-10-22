@@ -4,6 +4,18 @@ Dokumen ini disusun oleh Auditor Sistem Independen berdasarkan inspeksi mendalam
 
 ---
 
+## 0. Verifikasi Fakta Katalog Basis Data (Fact Verification)
+
+Berdasarkan inspeksi langsung terhadap katalog sistem database PostgreSQL (`information_schema.tables`, `information_schema.columns`, dan seluruh file migrasi `supabase/migrations/`), diperoleh fakta otoritatif berikut:
+
+| Entitas / Kolom yang Dipertanyakan | Status di Database | Fakta Lapangan & Arsitektur Sebenarnya | Koreksi Dokumen Lama |
+|---|---|---|---|
+| **Tabel `pembayaran_piutang`** | **TIDAK ADA** | Sistem tidak memiliki tabel `pembayaran_piutang`. Pelunasan transaksi piutang dicatat langsung pada entitas faktur `public.pesanan_jual` melalui fungsi otoritatif `rpc_catat_pelunasan(p_id)` yang mengubah status menjadi `lunas` (100% lunas penuh). Tidak ada pembayaran parsial (BR-07 / PRD §14). | Seluruh spekulasi dokumen lama mengenai tabel `pembayaran_piutang` dinyatakan tidak berlaku. |
+| **Tabel `item_pembelian`** | **TIDAK ADA** | Sistem tidak memiliki tabel `item_pembelian`. Pengadaan barang (`public.pembelian`) menganut struktur dokumen tunggal *single-item* per PO (`barang_id`, `jumlah_dipesan`, `jumlah_diterima`, `harga_beli_satuan`). Tidak ada multi-barang per nomor PO (00-spesifikasi.md III.5). | Koreksi asumsi dokumen lama yang menganggap PO memiliki detail multi-item. |
+| **Kolom `pelanggan.terkunci_kredit` & `alasan_kunci`** | **TIDAK ADA** | Tabel `public.pelanggan` tidak memiliki kolom flag `terkunci_kredit` maupun `alasan_kunci`. Status blokir transaksi dan evaluasi batas kredit dihitung secara *real-time* on-the-fly melalui fungsi `public.fn_hitung_kredit_pelanggan(p_pelanggan_id)` menggunakan zona waktu bisnis Asia/Jakarta. Tidak ada flag statis yang bisa diakali/disinkronkan. | Koreksi dokumen lama yang mengasumsikan adanya kolom flag boolean terkunci pada tabel pelanggan. |
+
+---
+
 ## A. Peta Tabel Basis Data
 
 Terdapat 11 tabel di dalam skema public (9 tabel inti + 2 tabel modul stock opname). Seluruh tabel mewajibkan token JWT authenticated dan mengaktifkan Row-Level Security (RLS). Role anon dan PUBLIC telah dicabut seluruh hak aksesnya (REVOKE ALL).
@@ -289,10 +301,10 @@ Terdapat 11 tabel di dalam skema public (9 tabel inti + 2 tabel modul stock opna
 | v_item_pesanan_jual | Daftar item pesanan jual tanpa nilai snapshot HPP | security_invoker = true | Penjualan (milik sendiri), Gudang (non-draf), Manajer | Tidak ada (hpp_satuan diabaikan) |
 | v_pelanggan_piutang (alias v_piutang_pelanggan) | Agregat piutang berjalan, breakdown terkonfirmasi vs terkirim, dan status faktur overdue | security_invoker = true | Penjualan, Manajer (Gudang via view) | Tidak ada |
 | v_pelanggan_kredit | View status kredit dinamis per pelanggan via fn_hitung_kredit_pelanggan | security_invoker = true | Penjualan, Manajer | Tidak ada |
-| v_barang_manajer | Katalog barang lengkap disertai harga_pokok dan flag harga_pokok_belum_diisi | Owner Rights (Definer) + WHERE fn_is_manajer() = true | Hanya Manajer (Peran lain menerima 0 baris) | harga_pokok |
-| v_pembelian_manajer | Daftar PO pembelian lengkap dengan harga_beli_satuan dan total_estimasi_beli | Owner Rights (Definer) + WHERE fn_is_manajer() = true | Hanya Manajer (Peran lain menerima 0 baris) | harga_beli_satuan |
-| v_item_pesanan_jual_manajer (alias v_item_pesanan_manajer) | Rincian baris pesanan jual lengkap dengan hpp_satuan dan nominal margin laba | Owner Rights (Definer) + WHERE fn_is_manajer() = true | Hanya Manajer (Peran lain menerima 0 baris) | hpp_satuan, margin |
-| v_opname_stok_manajer | Header opname dilengkapi agregasi nilai finansial selisih HPP (estimasi_nilai_selisih) | security_invoker = true (Isu Audit) + WHERE fn_peran() = 'manajer' | Hanya Manajer (Peran lain menerima 0 baris) | estimasi_nilai_selisih (dihitung dari harga_pokok) |
+| v_barang_manajer | Katalog barang lengkap disertai harga_pokok dan flag harga_pokok_belum_diisi | Owner Rights (Definer) + security_barrier = true + WHERE fn_is_manajer() = true | Hanya Manajer (Peran lain menerima 0 baris) | harga_pokok |
+| v_pembelian_manajer | Daftar PO pembelian lengkap dengan harga_beli_satuan dan total_estimasi_beli | Owner Rights (Definer) + security_barrier = true + WHERE fn_is_manajer() = true | Hanya Manajer (Peran lain menerima 0 baris) | harga_beli_satuan |
+| v_item_pesanan_jual_manajer (alias v_item_pesanan_manajer) | Rincian baris pesanan jual lengkap dengan hpp_satuan dan nominal margin laba | Owner Rights (Definer) + security_barrier = true + WHERE fn_is_manajer() = true | Hanya Manajer (Peran lain menerima 0 baris) | hpp_satuan, margin |
+| v_opname_stok_manajer | Header opname dilengkapi agregasi nilai finansial selisih HPP (estimasi_nilai_selisih) | Owner Rights (Definer) + security_barrier = true + WHERE fn_is_manajer() = true | Hanya Manajer (Peran lain menerima 0 baris) | estimasi_nilai_selisih (dihitung dari harga_pokok) |
 
 ---
 

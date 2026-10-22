@@ -61,3 +61,13 @@ Rujukan: [00-spesifikasi.md](00-spesifikasi.md). `PRD_ERP.md` dipakai sebagai ko
 3. **Ubah `harga_pokok` Manual**: Diizinkan khusus Manajer melalui RPC `ubah_harga_pokok`, terutama untuk data awal/koreksi, dan wajib tercatat di `audit_log`.
 4. **Pengecekan Kredit (BR-05) oleh Manajer**: Tidak ada bypass sistem pada `konfirmasi_pesanan`. Manajer yang ingin menyetujui pesanan pelanggan yang melebihi limit harus menaikkan `batas_kredit` pelanggan terlebih dahulu via fungsi khusus Manajer (tercatat di audit log), lalu melanjutkan konfirmasi.
 
+## D. Keputusan Pemilik Proyek (K1 s.d. K5 - 22 Oktober 2026)
+| Kode | Topik Keputusan | Keputusan Resmi & Dampak Teknis |
+|---|---|---|
+| **K1** | Hak Akses View Manajer | View `v_opname_stok_manajer` dan seluruh view manajer yang membuka kolom rahasia (`harga_pokok`, dsb) **wajib berjalan dengan hak pemilik (BUKAN security_invoker)**, wajib memuat klausa `WHERE public.fn_is_manajer()`, dan memakai `WITH (security_barrier = true)`. Tanpa klausa peran, view dilarang dibuat. Non-manajer yang query view ini menerima 0 baris secara deterministik. |
+| **K2** | Harmonisasi Kode Error Kredit & Overdue | Ikuti katalog resmi di `src/lib/errors.ts`: `E0012` (*Batas kredit pelanggan terlampaui*) dan `E0013` (*Pelanggan memiliki faktur lewat jatuh tempo, transaksi diblokir*). Awalan string `E0006:` dan `E0007:` dicabut dari `rpc_konfirmasi_pesanan` untuk mencegah tabrakan dengan master data barang (`E0006`) dan pelanggan/pemasok (`E0007`). |
+| **K3** | Validasi Keterangan Selisih Opname (BR-11) | Setiap item stock opname dengan selisih (`stok_fisik <> stok_sistem`) **wajib** memiliki keterangan minimal 10 karakter setelah trim, divalidasi di Zod (`itemOpnameInputSchema`), UI, dan RPC (`rpc_buat_opname_stok`, `rpc_ubah_draf_opname`, `rpc_ajukan_opname_stok`) dengan error `E0037`. Mutasi stok mencatat format alasan: `"Stock opname <nomor>: <keterangan>"`. |
+| **K4** | Pengaman Anti-Drift Persetujuan Opname | Pada `rpc_setujui_opname_stok`, setelah baris barang dikunci (`ORDER BY id ASC FOR UPDATE`), jika stok barang saat ini (`barang.stok`) berbeda dari `stok_sistem` sesi item mana pun, **TOLAK seluruh persetujuan** dengan error `E0038` yang menyebutkan nama barang, stok sistem tercatat, dan stok sekarang, dengan petunjuk "Batalkan sesi lalu hitung ulang". Pendekatan delta dilarang digunakan. |
+| **K5** | Pembatasan Modul Pembayaran & PO | Tidak ada tabel `pembayaran_piutang` (pelunasan penuh 100% per dokumen pesanan jual via `rpc_catat_pelunasan`). Tidak ada PO multi-barang / tabel `item_pembelian` (1 dokumen PO = 1 barang pengadaan). Tidak ditambahkan. |
+
+

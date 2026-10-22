@@ -141,15 +141,44 @@ Urutan validasi `konfirmasi_pesanan`: (1) akses/kepemilikan → E01/E02, (2) sta
 | ID | Fokus Uji | Aktor | Media | Status | Tanggal Uji | Bukti Uji | Ringkasan Verifikasi & Hasil |
 |---|---|---|---|---|---|---|---|
 | **TC-29** | BR-13: Nilai pesanan = sisa kredit persis (D7) | P1 | SQL | **Lulus** | 2026-10-21 | `supabase/tests/04_kredit_overdue.sql` | Pesanan baru bernilai tepat sama dengan sisa plafon kredit pelanggan berhasil dikonfirmasi tanpa error. |
-| **TC-30** | BR-13: Nilai pesanan melampaui sisa plafon kredit (D7) | P1 | SQL + Unit | **Lulus** | 2026-10-21 | `supabase/tests/04_kredit_overdue.sql`<br>`src/features/pelanggan/__tests__/kredit.test.ts` | Konfirmasi pesanan yang membuat total piutang melebihi batas kredit ditolak bersih dengan pesan `E0006: Batas kredit pelanggan terlampaui`. |
-| **TC-31** | BR-14: Ada faktur overdue sisa kredit cukup (D4) | P1 | SQL + Unit | **Lulus** | 2026-10-21 | `supabase/tests/04_kredit_overdue.sql`<br>`src/features/pelanggan/__tests__/kredit.test.ts` | Meskipun sisa limit kredit masih tersedia, konfirmasi pesanan ditolak dengan pesan `E0007: Pelanggan memiliki faktur lewat jatuh tempo, transaksi diblokir`. |
-| **TC-32** | BR-14: Prioritas D4 (Overdue & Overlimit sekaligus) | P1 | SQL | **Lulus** | 2026-10-21 | `supabase/tests/04_kredit_overdue.sql` | Saat kedua kondisi pelanggaran terpenuhi sekaligus, sistem konsisten mengevaluasi dan memunculkan error overdue `E0007` terlebih dahulu. |
-| **TC-33** | BR-14: Batas tanggal jatuh tempo hari ini (D2) | P1 | SQL | **Lulus** | 2026-10-21 | `supabase/tests/04_kredit_overdue.sql` | Pesanan berstatus `dikirim` dengan `jatuh_tempo = (now() AT TIME ZONE 'Asia/Jakarta')::date` belum dianggap lewat jatuh tempo; pesanan baru dapat dikonfirmasi. |
+| **TC-30** | BR-13: Nilai pesanan melampaui sisa plafon kredit (D7) | P1 | SQL + Unit | **Lulus** | 2026-10-22 | `supabase/tests/04_kredit_overdue.sql`<br>`src/features/pelanggan/__tests__/kredit.test.ts` | Konfirmasi pesanan yang membuat total piutang melebihi batas kredit ditolak bersih dengan pesan `Batas kredit pelanggan terlampaui` (E0012). |
+| **TC-31** | BR-14: Ada faktur overdue sisa kredit cukup (D4) | P1 | SQL + Unit | **Lulus** | 2026-10-22 | `supabase/tests/04_kredit_overdue.sql`<br>`src/features/pelanggan/__tests__/kredit.test.ts` | Meskipun sisa limit kredit masih tersedia, konfirmasi pesanan ditolak dengan pesan `Pelanggan memiliki faktur lewat jatuh tempo, transaksi diblokir` (E0013). |
+| **TC-32** | BR-14: Prioritas D4 (Overdue & Overlimit sekaligus) | P1 | SQL | **Lulus** | 2026-10-22 | `supabase/tests/04_kredit_overdue.sql` | Saat kedua kondisi pelanggaran terpenuhi sekaligus, sistem konsisten mengevaluasi dan memunculkan error overdue `E0013` terlebih dahulu. |
+| **TC-33** | BR-14: Batas tanggal jatuh tempo hari ini (D2) | P1 | SQL | **Lulus** | 2026-10-22 | `supabase/tests/04_kredit_overdue.sql` | Pesanan berstatus `dikirim` dengan `jatuh_tempo = (now() AT TIME ZONE 'Asia/Jakarta')::date` belum dianggap lewat jatuh tempo; pesanan baru dapat dikonfirmasi. |
 | **TC-34** | BR-13: Dikonfirmasi belum dikirim masuk piutang (D1) | P1 | SQL | **Lulus** | 2026-10-21 | `supabase/tests/04_kredit_overdue.sql` | Pesanan berstatus `dikonfirmasi` mengurangi sisa plafon kredit namun tidak memicu blokir overdue. |
 | **TC-35** | BR-14: Pelunasan faktur overdue membuka blokir (Alur B2) | M, P1 | SQL | **Lulus** | 2026-10-21 | `supabase/tests/04_kredit_overdue.sql` | Manajer melunasi faktur menunggak via `rpc_catat_pelunasan`, status pelanggan kembali `boleh_transaksi = true` dan pesanan berikutnya sukses. |
 | **TC-36** | BR-13: Penaikan limit kredit membuka blokir overlimit (Alur B1) | M, P1 | SQL | **Lulus** | 2026-10-21 | `supabase/tests/04_kredit_overdue.sql` | Manajer menaikkan batas kredit via `rpc_set_batas_kredit`, pesanan yang sebelumnya melebihi limit langsung dapat dikonfirmasi. |
-| **TC-37** | BR-13/14: Non-bypassable untuk Manajer (D5) | M | SQL | **Lulus** | 2026-10-21 | `supabase/tests/04_kredit_overdue.sql` | Manajer yang mencoba langsung mengonfirmasi pesanan pelanggan bermasalah kredit tetap diblokir oleh `rpc_konfirmasi_pesanan`. Override hanya legal melalui B1/B2. |
+| **TC-37** | BR-13/14: Non-bypassable untuk Manajer (D5) | M | SQL | **Lulus** | 2026-10-22 | `supabase/tests/04_kredit_overdue.sql` | Manajer yang mencoba langsung mengonfirmasi pesanan pelanggan bermasalah kredit tetap diblokir oleh `rpc_konfirmasi_pesanan` dengan error E0012/E0013. Override hanya legal melalui B1/B2. |
 | **TC-38** | Kerahasiaan data view & RPC baru (Zero Leakage) | P1, G | SQL | **Lulus** | 2026-10-21 | `supabase/tests/04_kredit_overdue.sql` | View `v_pelanggan_kredit` dan RPC `rpc_get_faktur_overdue_pelanggan` bebas dari kolom rahasia (`harga_pokok`, `harga_beli_satuan`, `hpp_satuan`). |
 | **TC-39** | UI Pesanan Editor: Panel Dinamis & Alert Live | P1 | UI / E2E | **Lulus** | 2026-10-21 | `tests/e2e/04-kredit-overdue.spec.ts` | Form editor pesanan menampilkan 4 kartu ringkasan kredit, estimasi sisa plafon live, banner alert saat overlimit/overdue, dan tombol draf tetap aktif (D3). |
 | **TC-40** | UI Detail Pelanggan: Rincian Piutang & Tabel Overdue | P1, M | UI / E2E | **Lulus** | 2026-10-21 | `tests/e2e/04-kredit-overdue.spec.ts` | Halaman `/pelanggan/[id]` merender rincian terkonfirmasi vs terkirim, serta Tabel Faktur Overdue lengkap dengan tombol pelunasan khusus Manajer. |
+
+---
+
+## 8. Test Case Tambahan: Manajemen Stock Opname & Penyesuaian Fisik (TC-41 s.d. TC-48)
+
+| ID | Fokus Uji | Aktor | Media | Status | Tanggal Uji | Bukti Uji | Ringkasan Verifikasi & Hasil |
+|---|---|---|---|---|---|---|---|
+| **TC-41** | Pembuatan Draf Sesi Opname oleh Gudang | G | SQL + Unit | **Lulus** | 2026-10-22 | `supabase/tests/05_stock_opname.sql`<br>`src/features/stock-opname/__tests__/schemas.test.ts` | Gudang berhasil membuat sesi opname berstatus draf dengan sequence nomor OPN-YYYY-XXXX. |
+| **TC-42** | Penolakan Akses Staf Penjualan (RBAC) | P1 | SQL | **Lulus** | 2026-10-22 | `supabase/tests/05_stock_opname.sql` | Staf Penjualan ditolak saat membuat opname dengan error E0001 (Akses ditolak). |
+| **TC-43** | Validasi Stok Fisik Negatif & Duplikat Item | G | SQL + Unit | **Lulus** | 2026-10-22 | `supabase/tests/05_stock_opname.sql`<br>`src/features/stock-opname/__tests__/schemas.test.ts` | Stok fisik negatif ditolak (E0033), duplikat barang_id dalam satu sesi ditolak (E0035). |
+| **TC-44** | Pengajuan Sesi Opname (draf -> diajukan) | G | SQL | **Lulus** | 2026-10-22 | `supabase/tests/05_stock_opname.sql` | Status sesi bertransisi dari draf ke diajukan, dikunci dari pengubahan item. |
+| **TC-45** | Larangan Staf Gudang Menyetujui Opname Sendiri | G | SQL | **Lulus** | 2026-10-22 | `supabase/tests/05_stock_opname.sql` | Pemanggilan rpc_setujui_opname_stok oleh Staf Gudang ditolak bersih (E0036). |
+| **TC-46** | Persetujuan Manajer & Koreksi Fisik Stok Otomatis | M | SQL | **Lulus** | 2026-10-22 | `supabase/tests/05_stock_opname.sql` | Manajer menyetujui, stok master barang terkoreksi ke stok fisik, mutasi_stok jenis penyesuaian dicatat. |
+| **TC-47** | Pembatalan Sesi & Validasi Alasan Minimal 10 Karakter | G, M | SQL | **Lulus** | 2026-10-22 | `supabase/tests/05_stock_opname.sql` | Pembatalan sesi opname dengan alasan < 10 karakter ditolak (E0016), alasan valid berhasil. |
+| **TC-48** | Kerahasiaan Finansial View v_opname_stok_manajer | G, M | SQL | **Lulus** | 2026-10-22 | `supabase/tests/05_stock_opname.sql` | Gudang membaca 0 baris dari view manajer; Manajer membaca seluruh nominal selisih finansial. |
+
+---
+
+## 9. Test Case Tambahan: Pengaman Audit & Anti-Drift (TC-49 s.d. TC-54)
+
+| ID | Fokus Uji | Aktor | Media | Status | Tanggal Uji | Bukti Uji | Ringkasan Verifikasi & Hasil |
+|---|---|---|---|---|---|---|---|
+| **TC-49** | K3: Validasi Keterangan Selisih 9 vs 10 Karakter | G | SQL + Unit | **Lulus** | 2026-10-22 | `supabase/tests/05_stock_opname.sql`<br>`src/features/stock-opname/__tests__/schemas.test.ts` | Item selisih dengan keterangan 9 karakter setelah trim ditolak E0037 di RPC & Zod; keterangan 10 karakter berhasil. |
+| **TC-50** | K3: Format Alasan Mutasi Stok Opname | M | SQL | **Lulus** | 2026-10-22 | `supabase/tests/05_stock_opname.sql` | Kolom `mutasi_stok.alasan` tercatat persis `"Stock opname <nomor>: <keterangan>"`. |
+| **TC-51** | K4: Pengaman Anti-Drift Persetujuan Opname | M | SQL | **Lulus** | 2026-10-22 | `supabase/tests/05_stock_opname.sql` | Persetujuan ditolak dengan E0038 jika `barang.stok` berubah setelah sesi dibuat, menyebut nama barang & stok sekarang. |
+| **TC-52** | K4: Persetujuan Sukses Bila Stok Stabil | M | SQL | **Lulus** | 2026-10-22 | `supabase/tests/05_stock_opname.sql` | Persetujuan berjalan sukses dan mutasi tercatat bila stok barang tidak berubah di tengah sesi. |
+| **TC-53** | K4: Persetujuan Ganda Tetap Ditolak | M | SQL | **Lulus** | 2026-10-22 | `supabase/tests/05_stock_opname.sql` | Pemanggilan kedua rpc_setujui_opname_stok pada sesi yang sudah disetujui ditolak E0034. |
+| **TC-54** | Tanggal Bisnis Asia/Jakarta fn_hitung_kredit_pelanggan | P1 | SQL | **Lulus** | 2026-10-22 | `supabase/tests/05_stock_opname.sql`<br>`supabase/tests/04_kredit_overdue.sql` | Faktur jatuh_tempo = hari ini (Asia/Jakarta) aman (punya_overdue = false); kemarin langsung overdue (true). |
+
 

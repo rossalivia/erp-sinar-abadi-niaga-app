@@ -213,15 +213,15 @@ Dokumen ini disusun oleh Auditor Sistem Independen berdasarkan pengujian terarah
 
 ---
 
-## Bagian III: 5 Hal yang Paling Perlu Diputuskan Pemilik Proyek
+---
 
-1. **Perbaikan Definisi Security Invoker pada v_opname_stok_manajer**:
-   Menyetujui penghapusan klausa security_invoker = true pada view manajer stock opname agar Manajer dapat melihat ringkasan nominal finansial selisih persediaan di dashboard.
-2. **Standardisasi Kode Error Katalog E0012 & E0013**:
-   Menyetujui normalisasi kode error batas kredit dan overdue di RPC rpc_konfirmasi_pesanan agar tidak tumpang tindih dengan kode E0006 dan E0007.
-3. **Penetapan Kebijakan Bisnis: Pelunasan Parsial vs Lunas Penuh**:
-   Memastikan apakah model pembayaran saat ini (hanya lunas penuh 100% per pesanan) sudah cukup untuk operasional CV Sinar Abadi Niaga, atau perlu mengalokasikan sprint mendatang untuk membuat tabel pembayaran_piutang guna mendukung cicilan/pembayaran bertahap.
-4. **Kebijakan Sinkronisasi Waktu Eksekusi Stock Opname**:
-   Menetapkan SOP operasional gudang bahwa stock opname fisik hanya dilakukan saat tidak ada konfirmasi pesanan berjalan, guna menghindari penimpaan stok riil akibat jeda waktu antara hitung rak fisik dan klik persetujuan Manajer.
-5. **Kebutuhan Purchase Order Multi-Barang**:
-   Mengonfirmasi apakah proses pengadaan dari pemasok cukup 1 PO untuk 1 jenis barang (kondisi saat ini sesuai spesifikasi awal), atau memerlukan relasi header-detail multi-item untuk efisiensi pengiriman faktur pemasok.
+## Bagian IV: Status Penyelesaian Temuan Pasca-Keputusan Pemilik Proyek (K1 s.d. K5)
+
+| Kode Temuan | Deskripsi & Keputusan Pemilik | Status | File Implementasi | Bukti Uji & Hasil Verifikasi |
+|---|---|---|---|---|
+| **H-01 (K1)** | View `v_opname_stok_manajer` salah memakai `security_invoker = true`. Pemilik memutuskan view wajib Owner Rights + `security_barrier = true` + `WHERE fn_is_manajer()`. | **TERSELESAIKAN** | `supabase/migrations/20261022110000_perbaikan_audit.sql` | TC-48: Staf Penjualan dan Gudang query `v_opname_stok_manajer` menerima 0 baris secara deterministik; Manajer membaca data lengkap beserta nilai selisih rupiah. |
+| **M-01 (K2)** | Tabrakan penomoran kode error kredit `E0006`/`E0007` vs master data. Pemilik memutuskan ikuti katalog resmi `E0012` dan `E0013`, awalan usang dihapus. | **TERSELESAIKAN** | `supabase/migrations/20261022110000_perbaikan_audit.sql`, `src/lib/errors.ts` | TC-30, TC-31, TC-32, TC-37 (`04_kredit_overdue.sql` & `kredit.test.ts`): Pesan error bersih persis katalog tanpa prefix usang. UI menampilkan pesan kredit/overdue yang tepat. |
+| **M-02 (K3)** | Celah panjang keterangan selisih item opname < 10 karakter. Pemilik memutuskan wajib $\ge 10$ karakter setelah trim jika selisih $\neq 0$. | **TERSELESAIKAN** | `supabase/migrations/20261022110000_perbaikan_audit.sql`, `src/features/stock-opname/schemas.ts`, `src/lib/errors.ts` | TC-49 & TC-50 (`05_stock_opname.sql`, `schemas.test.ts`): Keterangan 9 karakter ditolak `E0037`, 10 karakter sukses. `mutasi_stok.alasan` berformat `"Stock opname <nomor>: <keterangan>"`. |
+| **Pengaman (K4)** | Pengaman anti-drift stok: jika stok sistem berubah sebelum persetujuan Manajer, tolak persetujuan. | **TERSELESAIKAN** | `supabase/migrations/20261022110000_perbaikan_audit.sql`, `src/lib/errors.ts` | TC-51, TC-52, TC-53 (`05_stock_opname.sql`): Penjualan di tengah sesi opname memicu penolakan `E0038` dengan menyebut nama barang & stok sekarang. Sesi tanpa perubahan sukses disetujui. |
+| **Konfirmasi (K5)** | Pembayaran piutang parsial & PO multi-barang. Pemilik memutuskan sistem tetap single-item PO dan lunas penuh 100%. | **TERKONFIRMASI** | `docs/04-asumsi-dan-celah.md`, `docs/16-peta-sistem-saat-ini.md` | Terverifikasi langsung dari katalog: tabel `pembayaran_piutang` & `item_pembelian` tidak ada; pelanggan tidak punya kolom `terkunci_kredit`. |
+
