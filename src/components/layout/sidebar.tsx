@@ -16,6 +16,7 @@ import {
   Building2,
   X,
   Layers,
+  ClipboardCheck,
   LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -26,6 +27,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   LayoutDashboard,
   Package,
   Layers,
+  ClipboardCheck,
   Users,
   ShoppingCart,
   Truck,

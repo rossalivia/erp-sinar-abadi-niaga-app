@@ -31,6 +31,12 @@ export const ERROR_MESSAGES: Record<string, string> = {
   E0027: 'Kode barang sudah digunakan',
   E0028: 'Harga jual harus lebih dari 0',
   E0029: 'Stok minimum harus bilangan bulat >= 0',
+  E0031: 'Sesi opname harus berisi minimal 1 item barang',
+  E0032: 'Sesi opname hanya dapat diubah saat berstatus draf',
+  E0033: 'Stok fisik riil tidak boleh bernilai negatif',
+  E0034: 'Sesi opname hanya dapat disetujui atau ditolak pada status diajukan',
+  E0035: 'Barang sudah ada di sesi opname ini',
+  E0036: 'Hanya Manajer yang berwenang menyetujui stock opname',
 };
 
 interface SupabasePostgresError {
