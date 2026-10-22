@@ -59,9 +59,8 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_item_opname_barang ON public.item_opname_st
 CREATE INDEX IF NOT EXISTS idx_item_opname_opname_id ON public.item_opname_stok (opname_stok_id);
 CREATE INDEX IF NOT EXISTS idx_opname_stok_status ON public.opname_stok (status);
 
--- 4. VIEW MANAJER (security_invoker): Isolasi Kerahasiaan Nilai Finansial HPP
+-- 4. VIEW MANAJER: Isolasi Kerahasiaan Nilai Finansial HPP
 CREATE OR REPLACE VIEW public.v_opname_stok_manajer
-WITH (security_invoker = true)
 AS
 SELECT
   o.id,

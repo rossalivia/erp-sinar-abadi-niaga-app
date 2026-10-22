@@ -291,6 +291,8 @@ BEGIN
   -- TC-54: Tanggal Bisnis fn_hitung_kredit_pelanggan (now() AT TIME ZONE 'Asia/Jakarta')
   -- ------------------------------------------------------------
   v_today := (now() AT TIME ZONE 'Asia/Jakarta')::date;
+  -- Set role postgres untuk menyisipkan fixture transaksi uji
+  PERFORM set_config('role', 'postgres', true);
   -- Buat pesanan terkirim jatuh tempo HARI INI
   INSERT INTO public.pesanan_jual (
     id, nomor, pelanggan_id, status, total, dibuat_oleh, dibuat_pada, dikirim_pada, jatuh_tempo

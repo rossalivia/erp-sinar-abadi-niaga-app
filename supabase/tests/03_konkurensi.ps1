@@ -28,13 +28,17 @@ function Run-Psql {
 
 Write-Host "============================================================"
 Write-Host "MEMULAI PENGUJIAN KONKURENSI ERP CV SINAR ABADI NIAGA (PS1)"
-Write-Host "Koneksi: $PGUSER@$PGHOST:$PGPORT/$PGDATABASE"
+Write-Host "Koneksi: ${PGUSER}@${PGHOST}:${PGPORT}/${PGDATABASE}"
 Write-Host "============================================================"
 
 $tmpDir = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), [System.IO.Path]::GetRandomFileName())
 New-Item -ItemType Directory -Path $tmpDir -Force | Out-Null
 $outA = Join-Path $tmpDir "out_a.txt"
+$errA = Join-Path $tmpDir "err_a.txt"
 $outB = Join-Path $tmpDir "out_b.txt"
+$errB = Join-Path $tmpDir "err_b.txt"
+$fileA = Join-Path $tmpDir "job_a.sql"
+$fileB = Join-Path $tmpDir "job_b.sql"
 
 try {
     # ------------------------------------------------------------
@@ -90,14 +94,17 @@ END `$do`$;
         $p1 = (Run-Psql "SELECT id FROM public.pesanan_jual WHERE nomor = 'SO-K1-A-$i';").Trim()
         $p2 = (Run-Psql "SELECT id FROM public.pesanan_jual WHERE nomor = 'SO-K1-B-$i';").Trim()
 
-        $jobA = Start-Process -FilePath $PSQL_CMD -ArgumentList "-h", $PGHOST, "-p", $PGPORT, "-U", $PGUSER, "-d", $PGDATABASE, "-q", "-X", "-t", "-A", "-c", "BEGIN; SET LOCAL request.jwt.claims = '{""sub"":""11111111-1111-1111-1111-111111111111""}'; SELECT public.rpc_konfirmasi_pesanan('$p1'), pg_sleep(0.03); COMMIT;" -RedirectStandardOutput $outA -RedirectStandardError $outA -PassThru
-        $jobB = Start-Process -FilePath $PSQL_CMD -ArgumentList "-h", $PGHOST, "-p", $PGPORT, "-U", $PGUSER, "-d", $PGDATABASE, "-q", "-X", "-t", "-A", "-c", "BEGIN; SET LOCAL request.jwt.claims = '{""sub"":""11111111-1111-1111-1111-111111111111""}'; SELECT public.rpc_konfirmasi_pesanan('$p2'); COMMIT;" -RedirectStandardOutput $outB -RedirectStandardError $outB -PassThru
+        "BEGIN; SET LOCAL request.jwt.claims = '{""sub"":""11111111-1111-1111-1111-111111111111""}'; SELECT public.rpc_konfirmasi_pesanan('$p1'), pg_sleep(0.03); COMMIT;" | Set-Content $fileA -Encoding UTF8
+        "BEGIN; SET LOCAL request.jwt.claims = '{""sub"":""11111111-1111-1111-1111-111111111111""}'; SELECT public.rpc_konfirmasi_pesanan('$p2'); COMMIT;" | Set-Content $fileB -Encoding UTF8
+
+        $jobA = Start-Process -FilePath $PSQL_CMD -ArgumentList "-h", $PGHOST, "-p", $PGPORT, "-U", $PGUSER, "-d", $PGDATABASE, "-q", "-X", "-t", "-A", "-f", $fileA -RedirectStandardOutput $outA -RedirectStandardError $errA -PassThru
+        $jobB = Start-Process -FilePath $PSQL_CMD -ArgumentList "-h", $PGHOST, "-p", $PGPORT, "-U", $PGUSER, "-d", $PGDATABASE, "-q", "-X", "-t", "-A", "-f", $fileB -RedirectStandardOutput $outB -RedirectStandardError $errB -PassThru
 
         $jobA.WaitForExit()
         $jobB.WaitForExit()
 
-        $textA = if (Test-Path $outA) { Get-Content $outA -Raw } else { "" }
-        $textB = if (Test-Path $outB) { Get-Content $outB -Raw } else { "" }
+        $textA = (Get-Content $outA, $errA -ErrorAction SilentlyContinue) -join "`n"
+        $textB = (Get-Content $outB, $errB -ErrorAction SilentlyContinue) -join "`n"
 
         $failStok = if ($textA.Contains("Stok tidak cukup") -or $textB.Contains("Stok tidak cukup")) { 1 } else { 0 }
         $confirmedCount = [int](Run-Psql "SELECT count(*) FROM public.pesanan_jual WHERE nomor IN ('SO-K1-A-$i', 'SO-K1-B-$i') AND status = 'dikonfirmasi';").Trim()
@@ -165,14 +172,17 @@ END `$do`$;
         $p1 = (Run-Psql "SELECT id FROM public.pesanan_jual WHERE nomor = 'SO-K2-A-$i';").Trim()
         $p2 = (Run-Psql "SELECT id FROM public.pesanan_jual WHERE nomor = 'SO-K2-B-$i';").Trim()
 
-        $jobA = Start-Process -FilePath $PSQL_CMD -ArgumentList "-h", $PGHOST, "-p", $PGPORT, "-U", $PGUSER, "-d", $PGDATABASE, "-q", "-X", "-t", "-A", "-c", "BEGIN; SET LOCAL request.jwt.claims = '{""sub"":""11111111-1111-1111-1111-111111111111""}'; SELECT public.rpc_konfirmasi_pesanan('$p1'), pg_sleep(0.03); COMMIT;" -RedirectStandardOutput $outA -RedirectStandardError $outA -PassThru
-        $jobB = Start-Process -FilePath $PSQL_CMD -ArgumentList "-h", $PGHOST, "-p", $PGPORT, "-U", $PGUSER, "-d", $PGDATABASE, "-q", "-X", "-t", "-A", "-c", "BEGIN; SET LOCAL request.jwt.claims = '{""sub"":""11111111-1111-1111-1111-111111111111""}'; SELECT public.rpc_konfirmasi_pesanan('$p2'); COMMIT;" -RedirectStandardOutput $outB -RedirectStandardError $outB -PassThru
+        "BEGIN; SET LOCAL request.jwt.claims = '{""sub"":""11111111-1111-1111-1111-111111111111""}'; SELECT public.rpc_konfirmasi_pesanan('$p1'), pg_sleep(0.03); COMMIT;" | Set-Content $fileA -Encoding UTF8
+        "BEGIN; SET LOCAL request.jwt.claims = '{""sub"":""11111111-1111-1111-1111-111111111111""}'; SELECT public.rpc_konfirmasi_pesanan('$p2'); COMMIT;" | Set-Content $fileB -Encoding UTF8
+
+        $jobA = Start-Process -FilePath $PSQL_CMD -ArgumentList "-h", $PGHOST, "-p", $PGPORT, "-U", $PGUSER, "-d", $PGDATABASE, "-q", "-X", "-t", "-A", "-f", $fileA -RedirectStandardOutput $outA -RedirectStandardError $errA -PassThru
+        $jobB = Start-Process -FilePath $PSQL_CMD -ArgumentList "-h", $PGHOST, "-p", $PGPORT, "-U", $PGUSER, "-d", $PGDATABASE, "-q", "-X", "-t", "-A", "-f", $fileB -RedirectStandardOutput $outB -RedirectStandardError $errB -PassThru
 
         $jobA.WaitForExit()
         $jobB.WaitForExit()
 
-        $textA = if (Test-Path $outA) { Get-Content $outA -Raw } else { "" }
-        $textB = if (Test-Path $outB) { Get-Content $outB -Raw } else { "" }
+        $textA = (Get-Content $outA, $errA -ErrorAction SilentlyContinue) -join "`n"
+        $textB = (Get-Content $outB, $errB -ErrorAction SilentlyContinue) -join "`n"
 
         $failKredit = if ($textA.Contains("Batas kredit pelanggan terlampaui") -or $textB.Contains("Batas kredit pelanggan terlampaui")) { 1 } else { 0 }
         $confirmedCount = [int](Run-Psql "SELECT count(*) FROM public.pesanan_jual WHERE nomor IN ('SO-K2-A-$i', 'SO-K2-B-$i') AND status = 'dikonfirmasi';").Trim()
@@ -249,14 +259,17 @@ END `$do`$;
         $p1 = (Run-Psql "SELECT id FROM public.pesanan_jual WHERE nomor = 'SO-K3-A-$i';").Trim()
         $p2 = (Run-Psql "SELECT id FROM public.pesanan_jual WHERE nomor = 'SO-K3-B-$i';").Trim()
 
-        $jobA = Start-Process -FilePath $PSQL_CMD -ArgumentList "-h", $PGHOST, "-p", $PGPORT, "-U", $PGUSER, "-d", $PGDATABASE, "-q", "-X", "-t", "-A", "-c", "BEGIN; SET LOCAL request.jwt.claims = '{""sub"":""11111111-1111-1111-1111-111111111111""}'; SELECT public.rpc_konfirmasi_pesanan('$p1'), pg_sleep(0.03); COMMIT;" -RedirectStandardOutput $outA -RedirectStandardError $outA -PassThru
-        $jobB = Start-Process -FilePath $PSQL_CMD -ArgumentList "-h", $PGHOST, "-p", $PGPORT, "-U", $PGUSER, "-d", $PGDATABASE, "-q", "-X", "-t", "-A", "-c", "BEGIN; SET LOCAL request.jwt.claims = '{""sub"":""11111111-1111-1111-1111-111111111111""}'; SELECT public.rpc_konfirmasi_pesanan('$p2'); COMMIT;" -RedirectStandardOutput $outB -RedirectStandardError $outB -PassThru
+        "BEGIN; SET LOCAL request.jwt.claims = '{""sub"":""11111111-1111-1111-1111-111111111111""}'; SELECT public.rpc_konfirmasi_pesanan('$p1'), pg_sleep(0.03); COMMIT;" | Set-Content $fileA -Encoding UTF8
+        "BEGIN; SET LOCAL request.jwt.claims = '{""sub"":""11111111-1111-1111-1111-111111111111""}'; SELECT public.rpc_konfirmasi_pesanan('$p2'); COMMIT;" | Set-Content $fileB -Encoding UTF8
+
+        $jobA = Start-Process -FilePath $PSQL_CMD -ArgumentList "-h", $PGHOST, "-p", $PGPORT, "-U", $PGUSER, "-d", $PGDATABASE, "-q", "-X", "-t", "-A", "-f", $fileA -RedirectStandardOutput $outA -RedirectStandardError $errA -PassThru
+        $jobB = Start-Process -FilePath $PSQL_CMD -ArgumentList "-h", $PGHOST, "-p", $PGPORT, "-U", $PGUSER, "-d", $PGDATABASE, "-q", "-X", "-t", "-A", "-f", $fileB -RedirectStandardOutput $outB -RedirectStandardError $errB -PassThru
 
         $jobA.WaitForExit()
         $jobB.WaitForExit()
 
-        $textA = if (Test-Path $outA) { Get-Content $outA -Raw } else { "" }
-        $textB = if (Test-Path $outB) { Get-Content $outB -Raw } else { "" }
+        $textA = (Get-Content $outA, $errA -ErrorAction SilentlyContinue) -join "`n"
+        $textB = (Get-Content $outB, $errB -ErrorAction SilentlyContinue) -join "`n"
 
         $deadlock = if ($textA.Contains("deadlock detected") -or $textB.Contains("deadlock detected")) { 1 } else { 0 }
         $confirmedCount = [int](Run-Psql "SELECT count(*) FROM public.pesanan_jual WHERE nomor IN ('SO-K3-A-$i', 'SO-K3-B-$i') AND status = 'dikonfirmasi';").Trim()
