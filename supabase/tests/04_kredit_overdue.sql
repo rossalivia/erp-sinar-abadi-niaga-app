@@ -108,16 +108,16 @@ BEGIN
     v_err := true; v_msg := SQLERRM;
   END;
 
-  IF v_err AND v_msg LIKE '%E0006: Batas kredit pelanggan terlampaui%' THEN
+  IF v_err AND v_msg LIKE '%Batas kredit pelanggan terlampaui%' THEN
     INSERT INTO hasil_uji_kredit (kode_br, kode_tc, deskripsi, status, pesan)
-    VALUES ('BR-13', 'TC-30', 'Total pesanan melebihi sisa kredit ditolak dengan E0006', 'PASS', v_msg);
+    VALUES ('BR-13', 'TC-30', 'Total pesanan melebihi sisa kredit ditolak dengan E0012', 'PASS', v_msg);
   ELSE
     INSERT INTO hasil_uji_kredit (kode_br, kode_tc, deskripsi, status, pesan)
-    VALUES ('BR-13', 'TC-30', 'Total pesanan melebihi sisa kredit ditolak dengan E0006', 'FAIL', COALESCE(v_msg, 'Berhasil konfirmasi melebihi plafon!'));
+    VALUES ('BR-13', 'TC-30', 'Total pesanan melebihi sisa kredit ditolak dengan E0012', 'FAIL', COALESCE(v_msg, 'Berhasil konfirmasi melebihi plafon!'));
   END IF;
 
   -- ============================================================
-  -- TC-31: Ada faktur overdue padahal sisa kredit cukup -> Ditolak E0007
+  -- TC-31: Ada faktur overdue padahal sisa kredit cukup -> Ditolak E0013
   -- ============================================================
   -- Set fixture pesanan dikirim dengan jatuh_tempo = kemarin pada PLG-KREDIT-2
   RESET ROLE;
@@ -145,16 +145,16 @@ BEGIN
     v_err := true; v_msg := SQLERRM;
   END;
 
-  IF v_err AND v_msg LIKE '%E0007: Pelanggan memiliki faktur lewat jatuh tempo, transaksi diblokir%' THEN
+  IF v_err AND v_msg LIKE '%Pelanggan memiliki faktur lewat jatuh tempo, transaksi diblokir%' THEN
     INSERT INTO hasil_uji_kredit (kode_br, kode_tc, deskripsi, status, pesan)
-    VALUES ('BR-14', 'TC-31', 'Ada faktur overdue sisa kredit cukup ditolak E0007', 'PASS', v_msg);
+    VALUES ('BR-14', 'TC-31', 'Ada faktur overdue sisa kredit cukup ditolak E0013', 'PASS', v_msg);
   ELSE
     INSERT INTO hasil_uji_kredit (kode_br, kode_tc, deskripsi, status, pesan)
-    VALUES ('BR-14', 'TC-31', 'Ada faktur overdue sisa kredit cukup ditolak E0007', 'FAIL', COALESCE(v_msg, 'Berhasil konfirmasi saat ada overdue!'));
+    VALUES ('BR-14', 'TC-31', 'Ada faktur overdue sisa kredit cukup ditolak E0013', 'FAIL', COALESCE(v_msg, 'Berhasil konfirmasi saat ada overdue!'));
   END IF;
 
   -- ============================================================
-  -- TC-32: Kedua kondisi sekaligus (Overdue + Melebihi Plafon) -> Ditolak E0007 (D4)
+  -- TC-32: Kedua kondisi sekaligus (Overdue + Melebihi Plafon) -> Ditolak E0013 (D4)
   -- ============================================================
   -- Buat pesanan baru Rp600.000 (60 unit > batas Rp500.000) pada PLG-KREDIT-2 (yang punya overdue)
   v_so := public.rpc_buat_pesanan(v_plg_overdue);
@@ -168,12 +168,12 @@ BEGIN
     v_err := true; v_msg := SQLERRM;
   END;
 
-  IF v_err AND v_msg LIKE '%E0007: Pelanggan memiliki faktur lewat jatuh tempo, transaksi diblokir%' THEN
+  IF v_err AND v_msg LIKE '%Pelanggan memiliki faktur lewat jatuh tempo, transaksi diblokir%' THEN
     INSERT INTO hasil_uji_kredit (kode_br, kode_tc, deskripsi, status, pesan)
-    VALUES ('BR-14', 'TC-32', 'Prioritas D4: Overdue dan overlimit sekaligus -> Error E0007', 'PASS', v_msg);
+    VALUES ('BR-14', 'TC-32', 'Prioritas D4: Overdue dan overlimit sekaligus -> Error E0013', 'PASS', v_msg);
   ELSE
     INSERT INTO hasil_uji_kredit (kode_br, kode_tc, deskripsi, status, pesan)
-    VALUES ('BR-14', 'TC-32', 'Prioritas D4: Overdue dan overlimit sekaligus -> Error E0007', 'FAIL', COALESCE(v_msg, 'Tidak menghasilkan E0007'));
+    VALUES ('BR-14', 'TC-32', 'Prioritas D4: Overdue dan overlimit sekaligus -> Error E0013', 'FAIL', COALESCE(v_msg, 'Tidak menghasilkan E0013'));
   END IF;
 
   -- ============================================================
@@ -316,12 +316,12 @@ BEGIN
     v_err := true; v_msg := SQLERRM;
   END;
 
-  IF v_err AND v_msg LIKE '%E0006: Batas kredit pelanggan terlampaui%' THEN
+  IF v_err AND v_msg LIKE '%Batas kredit pelanggan terlampaui%' THEN
     INSERT INTO hasil_uji_kredit (kode_br, kode_tc, deskripsi, status, pesan)
-    VALUES ('BR-13', 'TC-37', 'Manajer juga ditolak E0006 tanpa bypass peran (D5)', 'PASS', v_msg);
+    VALUES ('BR-13', 'TC-37', 'Manajer juga ditolak E0012 tanpa bypass peran (D5)', 'PASS', v_msg);
   ELSE
     INSERT INTO hasil_uji_kredit (kode_br, kode_tc, deskripsi, status, pesan)
-    VALUES ('BR-13', 'TC-37', 'Manajer juga ditolak E0006 tanpa bypass peran (D5)', 'FAIL', COALESCE(v_msg, 'Manajer berhasil bypass limit kredit!'));
+    VALUES ('BR-13', 'TC-37', 'Manajer juga ditolak E0012 tanpa bypass peran (D5)', 'FAIL', COALESCE(v_msg, 'Manajer berhasil bypass limit kredit!'));
   END IF;
 
   -- ============================================================
