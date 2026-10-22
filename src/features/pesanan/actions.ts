@@ -6,7 +6,13 @@ import { getErrorMessage } from '@/lib/errors';
 import {
   pesananDrafSchema,
   batalTerkonfirmasiSchema,
+  ajukanPersetujuanSchema,
+  putuskanPersetujuanSchema,
+  batalkanPersetujuanSchema,
   type PesananDrafInput,
+  type AjukanPersetujuanInput,
+  type PutuskanPersetujuanInput,
+  type BatalkanPersetujuanInput,
 } from './schemas';
 
 export interface ActionResult<T = unknown> {
@@ -284,6 +290,129 @@ export async function getKreditPelangganAction(
   return {
     success: true,
     data: data as unknown as KreditPelangganInfo,
+  };
+}
+
+/**
+ * Mengajukan permohonan persetujuan harga di bawah HPP untuk draf pesanan.
+ * Memanggil rpc_ajukan_persetujuan_harga (Penjualan/Manajer).
+ */
+export async function ajukanPersetujuanHargaAction(
+  payload: AjukanPersetujuanInput
+): Promise<ActionResult<{ id: string; status: string }>> {
+  const parsed = ajukanPersetujuanSchema.safeParse(payload);
+  if (!parsed.success) {
+    return {
+      success: false,
+      message: parsed.error.issues[0]?.message || 'Input pengajuan tidak valid',
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  const supabase = await createServerClient();
+  const { data, error } = await supabase.rpc('rpc_ajukan_persetujuan_harga', {
+    p_pesanan_id: parsed.data.pesanan_id,
+    p_catatan: parsed.data.catatan_pengaju || null,
+  });
+
+  if (error) {
+    return {
+      success: false,
+      message: getErrorMessage(error),
+    };
+  }
+
+  revalidatePath('/pesanan');
+  revalidatePath(`/pesanan/${parsed.data.pesanan_id}`);
+  revalidatePath('/persetujuan');
+
+  const res = data as { id: string; status: string };
+  return {
+    success: true,
+    message: 'Pengajuan persetujuan harga berhasil dikirim ke Manajer',
+    data: res,
+  };
+}
+
+/**
+ * Memberikan keputusan persetujuan harga: 'setuju' (true) atau 'tolak' (false) (Manajer only).
+ * Memanggil rpc_putuskan_persetujuan_harga.
+ */
+export async function putuskanPersetujuanHargaAction(
+  payload: PutuskanPersetujuanInput
+): Promise<ActionResult<{ status: string; pesanan_id?: string }>> {
+  const parsed = putuskanPersetujuanSchema.safeParse(payload);
+  if (!parsed.success) {
+    return {
+      success: false,
+      message: parsed.error.issues[0]?.message || 'Input keputusan tidak valid',
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  const supabase = await createServerClient();
+  const { data, error } = await supabase.rpc('rpc_putuskan_persetujuan_harga', {
+    p_id: parsed.data.persetujuan_id,
+    p_setuju: parsed.data.setuju,
+    p_catatan: parsed.data.catatan_keputusan || null,
+    p_alasan_tolak: parsed.data.alasan_tolak || null,
+  });
+
+  if (error) {
+    return {
+      success: false,
+      message: getErrorMessage(error),
+    };
+  }
+
+  const res = data as { status: string; pesanan_id?: string };
+
+  revalidatePath('/pesanan');
+  revalidatePath('/persetujuan');
+
+  const label = parsed.data.setuju ? 'disetujui' : 'ditolak';
+  return {
+    success: true,
+    message: `Pengajuan harga berhasil ${label}`,
+    data: res,
+  };
+}
+
+/**
+ * Membatalkan pengajuan persetujuan harga yang sedang menunggu.
+ * Memanggil rpc_batalkan_pengajuan_harga (Penjualan).
+ */
+export async function batalkanPengajuanHargaAction(
+  payload: BatalkanPersetujuanInput
+): Promise<ActionResult<{ id: string }>> {
+  const parsed = batalkanPersetujuanSchema.safeParse(payload);
+  if (!parsed.success) {
+    return {
+      success: false,
+      message: parsed.error.issues[0]?.message || 'ID persetujuan tidak valid',
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  const supabase = await createServerClient();
+  const { error } = await supabase.rpc('rpc_batalkan_pengajuan_harga', {
+    p_id: parsed.data.persetujuan_id,
+  });
+
+  if (error) {
+    return {
+      success: false,
+      message: getErrorMessage(error),
+    };
+  }
+
+  revalidatePath('/pesanan');
+  revalidatePath('/persetujuan');
+
+  return {
+    success: true,
+    message: 'Pengajuan persetujuan harga berhasil dibatalkan',
+    data: { id: parsed.data.persetujuan_id },
   };
 }
 

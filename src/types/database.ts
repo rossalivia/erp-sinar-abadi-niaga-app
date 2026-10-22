@@ -528,6 +528,76 @@ export type Database = {
         }
         Relationships: []
       }
+      persetujuan_harga: {
+        Row: {
+          id: string
+          pesanan_jual_id: string
+          status: string
+          diajukan_oleh: string
+          diajukan_pada: string
+          catatan_pengaju: string | null
+          keputusan_oleh: string | null
+          keputusan_pada: string | null
+          catatan_keputusan: string | null
+          alasan_tolak: string | null
+          snapshot_hash: string
+          berlaku_sampai: string | null
+          dipakai_pada: string | null
+        }
+        Insert: {
+          id?: string
+          pesanan_jual_id: string
+          status?: string
+          diajukan_oleh: string
+          diajukan_pada?: string
+          catatan_pengaju?: string | null
+          keputusan_oleh?: string | null
+          keputusan_pada?: string | null
+          catatan_keputusan?: string | null
+          alasan_tolak?: string | null
+          snapshot_hash: string
+          berlaku_sampai?: string | null
+          dipakai_pada?: string | null
+        }
+        Update: {
+          id?: string
+          pesanan_jual_id?: string
+          status?: string
+          diajukan_oleh?: string
+          diajukan_pada?: string
+          catatan_pengaju?: string | null
+          keputusan_oleh?: string | null
+          keputusan_pada?: string | null
+          catatan_keputusan?: string | null
+          alasan_tolak?: string | null
+          snapshot_hash?: string
+          berlaku_sampai?: string | null
+          dipakai_pada?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "persetujuan_harga_pesanan_jual_id_fkey"
+            columns: ["pesanan_jual_id"]
+            isOneToOne: false
+            referencedRelation: "pesanan_jual"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "persetujuan_harga_diajukan_oleh_fkey"
+            columns: ["diajukan_oleh"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "persetujuan_harga_keputusan_oleh_fkey"
+            columns: ["keputusan_oleh"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       v_barang: {
@@ -1143,6 +1213,176 @@ export type Database = {
         }
         Relationships: []
       }
+      v_persetujuan_harga: {
+        Row: {
+          id: string | null
+          pesanan_jual_id: string | null
+          nomor_pesanan: string | null
+          total_pesanan: number | null
+          pelanggan_id: string | null
+          nama_pelanggan: string | null
+          status: string | null
+          diajukan_oleh: string | null
+          nama_pengaju: string | null
+          diajukan_pada: string | null
+          catatan_pengaju: string | null
+          keputusan_oleh: string | null
+          nama_pemutus: string | null
+          keputusan_pada: string | null
+          catatan_keputusan: string | null
+          alasan_tolak: string | null
+          berlaku_sampai: string | null
+          dipakai_pada: string | null
+        }
+        Insert: {
+          id?: string | null
+          pesanan_jual_id?: string | null
+          nomor_pesanan?: string | null
+          total_pesanan?: number | null
+          pelanggan_id?: string | null
+          nama_pelanggan?: string | null
+          status?: string | null
+          diajukan_oleh?: string | null
+          nama_pengaju?: string | null
+          diajukan_pada?: string | null
+          catatan_pengaju?: string | null
+          keputusan_oleh?: string | null
+          nama_pemutus?: string | null
+          keputusan_pada?: string | null
+          catatan_keputusan?: string | null
+          alasan_tolak?: string | null
+          berlaku_sampai?: string | null
+          dipakai_pada?: string | null
+        }
+        Update: {
+          id?: string | null
+          pesanan_jual_id?: string | null
+          nomor_pesanan?: string | null
+          total_pesanan?: number | null
+          pelanggan_id?: string | null
+          nama_pelanggan?: string | null
+          status?: string | null
+          diajukan_oleh?: string | null
+          nama_pengaju?: string | null
+          diajukan_pada?: string | null
+          catatan_pengaju?: string | null
+          keputusan_oleh?: string | null
+          nama_pemutus?: string | null
+          keputusan_pada?: string | null
+          catatan_keputusan?: string | null
+          alasan_tolak?: string | null
+          berlaku_sampai?: string | null
+          dipakai_pada?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "persetujuan_harga_pesanan_jual_id_fkey"
+            columns: ["pesanan_jual_id"]
+            isOneToOne: false
+            referencedRelation: "pesanan_jual"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      v_persetujuan_harga_manajer: {
+        Row: {
+          persetujuan_id: string | null
+          pesanan_jual_id: string | null
+          nomor_pesanan: string | null
+          total_pesanan: number | null
+          pelanggan_id: string | null
+          nama_pelanggan: string | null
+          status: string | null
+          diajukan_oleh: string | null
+          nama_pengaju: string | null
+          diajukan_pada: string | null
+          catatan_pengaju: string | null
+          keputusan_oleh: string | null
+          nama_pemutus: string | null
+          keputusan_pada: string | null
+          catatan_keputusan: string | null
+          alasan_tolak: string | null
+          snapshot_hash: string | null
+          berlaku_sampai: string | null
+          dipakai_pada: string | null
+          item_id: string | null
+          barang_id: string | null
+          kode_barang: string | null
+          nama_barang: string | null
+          jumlah: number | null
+          harga_satuan: number | null
+          diskon_persen: number | null
+          subtotal: number | null
+          hpp_satuan: number | null
+          margin_satuan: number | null
+          margin_total: number | null
+        }
+        Insert: {
+          persetujuan_id?: string | null
+          pesanan_jual_id?: string | null
+          nomor_pesanan?: string | null
+          total_pesanan?: number | null
+          pelanggan_id?: string | null
+          nama_pelanggan?: string | null
+          status?: string | null
+          diajukan_oleh?: string | null
+          nama_pengaju?: string | null
+          diajukan_pada?: string | null
+          catatan_pengaju?: string | null
+          keputusan_oleh?: string | null
+          nama_pemutus?: string | null
+          keputusan_pada?: string | null
+          catatan_keputusan?: string | null
+          alasan_tolak?: string | null
+          snapshot_hash?: string | null
+          berlaku_sampai?: string | null
+          dipakai_pada?: string | null
+          item_id?: string | null
+          barang_id?: string | null
+          kode_barang?: string | null
+          nama_barang?: string | null
+          jumlah?: number | null
+          harga_satuan?: number | null
+          diskon_persen?: number | null
+          subtotal?: number | null
+          hpp_satuan?: number | null
+          margin_satuan?: number | null
+          margin_total?: number | null
+        }
+        Update: {
+          persetujuan_id?: string | null
+          pesanan_jual_id?: string | null
+          nomor_pesanan?: string | null
+          total_pesanan?: number | null
+          pelanggan_id?: string | null
+          nama_pelanggan?: string | null
+          status?: string | null
+          diajukan_oleh?: string | null
+          nama_pengaju?: string | null
+          diajukan_pada?: string | null
+          catatan_pengaju?: string | null
+          keputusan_oleh?: string | null
+          nama_pemutus?: string | null
+          keputusan_pada?: string | null
+          catatan_keputusan?: string | null
+          alasan_tolak?: string | null
+          snapshot_hash?: string | null
+          berlaku_sampai?: string | null
+          dipakai_pada?: string | null
+          item_id?: string | null
+          barang_id?: string | null
+          kode_barang?: string | null
+          nama_barang?: string | null
+          jumlah?: number | null
+          harga_satuan?: number | null
+          diskon_persen?: number | null
+          subtotal?: number | null
+          hpp_satuan?: number | null
+          margin_satuan?: number | null
+          margin_total?: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       fn_is_manajer: { Args: never; Returns: boolean }
@@ -1150,6 +1390,28 @@ export type Database = {
       peran_saya: { Args: never; Returns: string }
       rpc_ajukan_pembelian: {
         Args: { p_barang_id: string; p_jumlah: number; p_pemasok_id: string }
+        Returns: Json
+      }
+      rpc_ajukan_persetujuan_harga: {
+        Args: {
+          p_pesanan_id: string
+          p_catatan?: string | null
+        }
+        Returns: Json
+      }
+      rpc_batalkan_pengajuan_harga: {
+        Args: {
+          p_id: string
+        }
+        Returns: undefined
+      }
+      rpc_putuskan_persetujuan_harga: {
+        Args: {
+          p_id: string
+          p_setuju: boolean
+          p_catatan?: string | null
+          p_alasan_tolak?: string | null
+        }
         Returns: Json
       }
       rpc_batalkan_draf: { Args: { p_pesanan_id: string }; Returns: undefined }

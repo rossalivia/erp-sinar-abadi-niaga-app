@@ -70,4 +70,25 @@ Rujukan: [00-spesifikasi.md](00-spesifikasi.md). `PRD_ERP.md` dipakai sebagai ko
 | **K4** | Pengaman Anti-Drift Persetujuan Opname | Pada `rpc_setujui_opname_stok`, setelah baris barang dikunci (`ORDER BY id ASC FOR UPDATE`), jika stok barang saat ini (`barang.stok`) berbeda dari `stok_sistem` sesi item mana pun, **TOLAK seluruh persetujuan** dengan error `E0038` yang menyebutkan nama barang, stok sistem tercatat, dan stok sekarang, dengan petunjuk "Batalkan sesi lalu hitung ulang". Pendekatan delta dilarang digunakan. |
 | **K5** | Pembatasan Modul Pembayaran & PO | Tidak ada tabel `pembayaran_piutang` (pelunasan penuh 100% per dokumen pesanan jual via `rpc_catat_pelunasan`). Tidak ada PO multi-barang / tabel `item_pembelian` (1 dokumen PO = 1 barang pengadaan). Tidak ditambahkan. |
 
+## E. Keputusan Desain & Spesifikasi: Persetujuan Harga di Bawah HPP (22 Oktober 2026)
+| Kode | Topik Keputusan | Keputusan Resmi & Dampak Teknis |
+|---|---|---|
+| **P1** | Pesan Penolakan BR-04 | Pesan error tetap persis verbatim: `"Harga di bawah batas, minta persetujuan Manajer"` (`E0011`). |
+| **P2** | Urutan Kunci Baris (Deadlock Prevention) | Urutan penguncian konsisten di seluruh RPC: `pesanan_jual` -> `persetujuan_harga` -> `pelanggan` -> `barang` (semua `ORDER BY id FOR UPDATE`). |
+| **P3** | Deteksi Hash Snapshot (Anti-Drift) | Menggunakan fungsi deterministik `fn_hitung_hash_pesanan(uuid)` (MD5 dari pelanggan_id + item pesanan). Kolom `snapshot_hash` tidak di-grant ke publik/klien (zero leakage). |
+| **P4** | Masa Berlaku Persetujuan | Disetujui berlaku 24 jam (`berlaku_sampai = (now() AT TIME ZONE 'Asia/Jakarta') + interval '24 hour'`). Evaluasi status `kedaluwarsa` bersifat lazy via CASE statement di view dan diupdate saat konfirmasi/pengajuan baru. |
+| **P5** | Cascading Draf | Pengubahan draf pesanan (`rpc_simpan_draf_pesanan`) membatalkan/mengedaluwarsa persetujuan aktif. Pembatalan draf (`rpc_batalkan_draf`) membatalkan persetujuan aktif. |
+| **P6** | Zero Leakage Nilai Finansial | View `v_persetujuan_harga_manajer` berjalan dengan owner rights + `WHERE fn_is_manajer()`. Staf Penjualan dan Gudang tidak pernah menerima nilai HPP/margin. |
+| **Q1-Q5** | Resolusi Pertanyaan Terbuka | Q1: Tidak ada pembatalan mandiri oleh Manajer setelah disetujui (cukup anulir draf); Q2: Pola standar tanpa realtime subscription; Q3: Badge antrean di Dashboard Manajer; Q4: Tidak ada timeout pengajuan selain masa draf; Q5: Hash snapshot tidak terpengaruh perubahan master HPP. |
+
+### Kode Error Baru (E0039 s.d. E0045)
+- **E0039**: Hanya Staf Penjualan yang dapat mengajukan persetujuan harga
+- **E0040**: Pengajuan hanya dapat dilakukan pada pesanan berstatus draf
+- **E0041**: Pesanan sudah memiliki pengajuan persetujuan yang aktif
+- **E0042**: Tidak ada harga yang memerlukan persetujuan
+- **E0043**: Persetujuan hanya dapat diputuskan saat berstatus menunggu
+- **E0044**: Alasan penolakan minimal 10 karakter
+- **E0045**: Hanya pengajuan berstatus menunggu yang dapat dibatalkan
+*(Kode berikutnya yang tersedia: E0046 s.d. E0048)*
+
 

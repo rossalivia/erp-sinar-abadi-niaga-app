@@ -50,7 +50,7 @@ const SIDEBAR_SECTIONS: { label: string; hrefs: string[] }[] = [
   },
   {
     label: 'Transaksi & Penjualan',
-    hrefs: ['/pelanggan', '/pesanan', '/pembelian', '/pemasok'],
+    hrefs: ['/pelanggan', '/pesanan', '/persetujuan', '/pembelian', '/pemasok'],
   },
   {
     label: 'Keuangan & Laporan',

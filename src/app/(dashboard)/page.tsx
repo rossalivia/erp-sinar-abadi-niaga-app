@@ -16,6 +16,7 @@ import {
   DollarSign,
   ReceiptText,
   ArrowRight,
+  ShieldAlert,
 } from 'lucide-react';
 import type { LaporanRingkasan, LaporanAgingPiutang } from '@/features/laporan/types';
 
@@ -55,6 +56,7 @@ export default async function DashboardPage() {
   // Jika Manajer, ambil KPI ringkas minggu berjalan & piutang tempo
   let kpiMinggu: LaporanRingkasan | null = null;
   let agingPiutang: LaporanAgingPiutang | null = null;
+  let jumlahPersetujuanMenunggu = 0;
 
   if (isManajer) {
     const now = new Date();
@@ -66,10 +68,12 @@ export default async function DashboardPage() {
     const mondayStr = monday.toISOString().split('T')[0];
     const todayStr = now.toISOString().split('T')[0];
 
-    const [ringkasanRes, agingRes] = await Promise.all([
+    const [ringkasanRes, agingRes, persetujuanRes] = await Promise.all([
       supabase.rpc('rpc_laporan_ringkasan', { p_dari: mondayStr, p_sampai: todayStr }),
       supabase.rpc('rpc_laporan_aging_piutang'),
+      supabase.from('v_persetujuan_harga').select('id', { count: 'exact', head: true }).eq('status', 'menunggu'),
     ]);
+    jumlahPersetujuanMenunggu = persetujuanRes.count ?? 0;
 
     const ringkasanRaw = Array.isArray(ringkasanRes.data) ? ringkasanRes.data[0] : ringkasanRes.data;
     if (ringkasanRaw) {
@@ -217,7 +221,7 @@ export default async function DashboardPage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             {/* Omzet Minggu Ini */}
             <Card className="border-slate-200 bg-white">
               <CardContent className="p-4">
@@ -290,6 +294,31 @@ export default async function DashboardPage() {
                   className="mt-1 text-[11px] text-red-700 font-medium hover:underline block"
                 >
                   Periksa penagihan piutang &rarr;
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Persetujuan Harga Menunggu */}
+            <Card className={`border-slate-200 ${
+              jumlahPersetujuanMenunggu > 0 ? 'bg-amber-50/50 border-amber-300' : 'bg-white'
+            }`}>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between text-xs font-medium text-slate-500">
+                  <span>Persetujuan Menunggu</span>
+                  <ShieldAlert className={`h-4 w-4 ${
+                    jumlahPersetujuanMenunggu > 0 ? 'text-amber-600' : 'text-slate-400'
+                  }`} />
+                </div>
+                <div className={`mt-2 text-lg font-bold tabular-nums ${
+                  jumlahPersetujuanMenunggu > 0 ? 'text-amber-800' : 'text-slate-700'
+                }`}>
+                  {jumlahPersetujuanMenunggu} <span className="text-xs font-normal text-slate-500">pengajuan</span>
+                </div>
+                <Link
+                  href="/persetujuan"
+                  className="mt-1 text-[11px] text-amber-800 font-medium hover:underline block"
+                >
+                  Buka antrean persetujuan &rarr;
                 </Link>
               </CardContent>
             </Card>

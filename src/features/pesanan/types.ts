@@ -84,3 +84,31 @@ export interface PelangganOption {
   termin_hari: number;
   batas_kredit: number;
 }
+
+export type StatusPersetujuan =
+  | 'menunggu'
+  | 'disetujui'
+  | 'ditolak'
+  | 'terpakai'
+  | 'dibatalkan'
+  | 'kedaluwarsa';
+
+export interface PersetujuanHargaRow {
+  id: string;
+  pesanan_jual_id: string;
+  nomor_pesanan: string;
+  status: StatusPersetujuan;
+  diajukan_oleh?: string;
+  nama_pengaju?: string | null;
+  diajukan_pada: string;
+  catatan_pengaju?: string | null;
+  keputusan_oleh?: string | null;
+  nama_pemutus?: string | null;
+  keputusan_pada?: string | null;
+  catatan_keputusan?: string | null;
+  alasan_tolak?: string | null;
+  berlaku_sampai?: string | null;
+  dipakai_pada?: string | null;
+  nama_toko?: string | null;
+  total_pesanan?: number | null;
+}

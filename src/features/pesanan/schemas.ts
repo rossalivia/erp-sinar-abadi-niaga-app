@@ -36,6 +36,42 @@ export const batalTerkonfirmasiSchema = z.object({
     .min(10, 'Alasan pembatalan minimal 10 karakter'),
 });
 
+const uuidSchema = (msg: string) =>
+  z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, msg);
+
+export const ajukanPersetujuanSchema = z.object({
+  pesanan_id: uuidSchema('ID pesanan tidak valid'),
+  catatan_pengaju: z.string().optional(),
+});
+
+export const putuskanPersetujuanSchema = z
+  .object({
+    persetujuan_id: uuidSchema('ID persetujuan tidak valid'),
+    setuju: z.boolean(),
+    catatan_keputusan: z.string().optional(),
+    alasan_tolak: z.string().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (!data.setuju) {
+      const alasan = (data.alasan_tolak ?? '').trim();
+      if (alasan.length < 10) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Alasan penolakan minimal 10 karakter',
+          path: ['alasan_tolak'],
+        });
+      }
+    }
+  });
+
+export const batalkanPersetujuanSchema = z.object({
+  persetujuan_id: uuidSchema('ID persetujuan tidak valid'),
+});
+
 export type PesananItemInput = z.infer<typeof pesananItemInputSchema>;
 export type PesananDrafInput = z.infer<typeof pesananDrafSchema>;
 export type BatalTerkonfirmasiInput = z.infer<typeof batalTerkonfirmasiSchema>;
+export type AjukanPersetujuanInput = z.infer<typeof ajukanPersetujuanSchema>;
+export type PutuskanPersetujuanInput = z.infer<typeof putuskanPersetujuanSchema>;
+export type BatalkanPersetujuanInput = z.infer<typeof batalkanPersetujuanSchema>;
+

@@ -57,6 +57,8 @@ Kolom rahasia: `barang.harga_pokok`, `pembelian.harga_beli_satuan`, `item_pesana
 | | INSERT/UPDATE/DELETE | ❌ | ❌ | ❌ | Hanya ditulis RPC mutasi. Append-only | CG, RPC |
 | **audit_log** | SELECT | ❌ | ❌ | ✅ | Semua kolom | RLS |
 | | INSERT/UPDATE/DELETE | ❌ | ❌ | ❌ | Ditulis oleh RPC/trigger `SECURITY DEFINER`. Append-only | CG |
+| **persetujuan_harga** | SELECT | ⚠️ | ❌ | ✅ | P: baris diajukan_oleh = auth.uid(); M: semua; G: 0 baris. snapshot_hash disembunyikan dari non-superuser | RLS, CG |
+| | INSERT/UPDATE/DELETE | ❌ | ❌ | ❌ | Hanya via RPC `rpc_ajukan_persetujuan_harga`, `rpc_putuskan_persetujuan_harga`, `rpc_batalkan_pengajuan_harga` | CG, RPC |
 
 ### View
 
@@ -68,6 +70,8 @@ Kolom rahasia: `barang.harga_pokok`, `pembelian.harga_beli_satuan`, `item_pesana
 | `v_pembelian_manajer` | owner + filter peran | 0 baris | 0 baris | ✅ | + `harga_beli_satuan`, total |
 | `v_item_pesanan_manajer` | owner + filter peran | 0 baris | 0 baris | ✅ | + `hpp_satuan`, margin baris |
 | `v_piutang_pelanggan` | owner + filter peran (P, M) | ✅ | 0 baris | ✅ | Agregat per pelanggan: piutang berjalan, ada tagihan lewat jatuh tempo (tanpa detail pesanan milik staf lain) |
+| `v_persetujuan_harga` | `security_invoker = true` | ⚠️ | 0 baris | ✅ | Tanpa snapshot_hash, evaluasi status 24 jam via CASE |
+| `v_persetujuan_harga_manajer` | owner + `WHERE fn_is_manajer()` | 0 baris | 0 baris | ✅ | Lengkap dengan HPP satuan, margin satuan, dan margin total per item |
 | `v_laporan_*` / RPC laporan | owner/definer + filter peran | ❌ | ❌ | ✅ | Omzet, HPP, margin mingguan dan per barang, umur piutang |
 
 ---
@@ -90,7 +94,11 @@ Kolom rahasia: `barang.harga_pokok`, `pembelian.harga_beli_satuan`, `item_pesana
 | Diskon 0–10% | ✅ | — | ✅ | — | RPC `simpan_item_pesanan` |
 | Diskon >10% s.d. 25% | ❌ | — | ✅ | >25% ditolak untuk semua | RPC, CK (`diskon_persen BETWEEN 0 AND 25`) |
 | Konfirmasi draf | ⚠️ milik sendiri | ❌ | ✅ semua | BR-04 s.d. BR-06; kunci pelanggan + barang (tanpa bypass batas kredit untuk M) | RPC `konfirmasi_pesanan` |
-| Konfirmasi dengan harga di bawah HPP | ❌ | ❌ | ✅ | Pesan persis BR-04 untuk P | RPC |
+| Konfirmasi dengan harga di bawah HPP | ❌ | ❌ | ✅ | Pesan persis BR-04 untuk P jika tanpa persetujuan efektif | RPC `konfirmasi_pesanan` |
+| Ajukan persetujuan harga | ⚠️ milik sendiri | ❌ | ❌ | Draf miliknya, minimal ada satu baris di bawah HPP | RPC `rpc_ajukan_persetujuan_harga`, audit |
+| Setujui / tolak persetujuan harga | ❌ | ❌ | ✅ | Tolak wajib alasan ≥ 10 char; setuju berlaku 24 jam | RPC `rpc_putuskan_persetujuan_harga`, audit |
+| Batalkan pengajuan persetujuan | ⚠️ milik sendiri | ❌ | ❌ | Hanya status menunggu | RPC `rpc_batalkan_pengajuan_harga`, audit |
+| Konfirmasi dengan persetujuan efektif | ⚠️ milik sendiri | ❌ | ✅ | Snapshot hash cocok, status disetujui, belum kedaluwarsa | RPC `konfirmasi_pesanan` |
 | Batalkan draf | ⚠️ milik sendiri | ❌ | ✅ | — | RPC `batalkan_pesanan` |
 | Batalkan pesanan dikonfirmasi | ❌ | ❌ | ✅ | Alasan ≥ 10 karakter, stok kembali, diaudit | RPC, audit |
 | Batalkan pesanan dikirim/lunas | ❌ | ❌ | ❌ | — | RPC (validasi transisi) |

@@ -8,10 +8,11 @@ import { Button } from '@/components/ui/button';
 import { PesananActions } from '@/features/pesanan/components/pesanan-actions';
 import { PesananTimeline } from '@/features/pesanan/components/pesanan-timeline';
 import { PesananItemsTable } from '@/features/pesanan/components/pesanan-items-table';
+import { PersetujuanPanel } from '@/features/pesanan/components/persetujuan-panel';
 import { createServerClient } from '@/lib/supabase/server';
 import { getProfil } from '@/lib/profil';
 import { formatRupiah, formatTanggal, formatTanggalWaktu } from '@/lib/format';
-import type { ItemPesananJualRow, PesananJualDetail, StatusPesanan } from '@/features/pesanan/types';
+import type { ItemPesananJualRow, PesananJualDetail, StatusPesanan, PersetujuanHargaRow } from '@/features/pesanan/types';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -125,6 +126,23 @@ export default async function DetailPesananPage({ params }: PageProps) {
       };
     });
   }
+
+  // 3. Ambil riwayat / persetujuan harga aktif (bila ada)
+  const { data: persetujuanRaw } = await supabase
+    .from('v_persetujuan_harga')
+    .select(`
+      id, pesanan_jual_id, nomor_pesanan, status, diajukan_pada,
+      keputusan_pada, berlaku_sampai, dipakai_pada, catatan_pengaju,
+      catatan_keputusan, alasan_tolak, nama_pengaju, nama_pemutus
+    `)
+    .eq('pesanan_jual_id', id)
+    .order('diajukan_pada', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const persetujuan: PersetujuanHargaRow | null = persetujuanRaw
+    ? (persetujuanRaw as unknown as PersetujuanHargaRow)
+    : null;
 
   return (
     <div className="space-y-5 max-w-6xl mx-auto">
@@ -245,6 +263,17 @@ export default async function DetailPesananPage({ params }: PageProps) {
           </div>
         </div>
       </div>
+
+      {/* Panel Alur Persetujuan Harga di Bawah HPP */}
+      <PersetujuanPanel
+        pesananId={pesanan.id}
+        nomor={pesanan.nomor}
+        statusPesanan={pesanan.status}
+        peran={peran}
+        userId={userId}
+        dibuatOleh={pesanan.dibuat_oleh}
+        persetujuan={persetujuan}
+      />
 
       {/* Tabel Baris Item */}
       <PesananItemsTable

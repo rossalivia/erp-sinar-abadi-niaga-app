@@ -39,6 +39,13 @@ export const ERROR_MESSAGES: Record<string, string> = {
   E0036: 'Hanya Manajer yang berwenang menyetujui stock opname',
   E0037: 'Item dengan selisih stok wajib memiliki keterangan minimal 10 karakter',
   E0038: 'Stok sistem telah berubah sejak sesi dibuat. Batalkan sesi lalu hitung ulang.',
+  E0039: 'Hanya Staf Penjualan yang dapat mengajukan persetujuan harga',
+  E0040: 'Pengajuan hanya dapat dilakukan pada pesanan berstatus draf',
+  E0041: 'Pesanan sudah memiliki pengajuan persetujuan yang aktif',
+  E0042: 'Tidak ada harga yang memerlukan persetujuan',
+  E0043: 'Persetujuan hanya dapat diputuskan saat berstatus menunggu',
+  E0044: 'Alasan penolakan minimal 10 karakter',
+  E0045: 'Hanya pengajuan berstatus menunggu yang dapat dibatalkan',
 };
 
 interface SupabasePostgresError {

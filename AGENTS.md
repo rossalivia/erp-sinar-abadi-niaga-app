@@ -88,6 +88,93 @@ Setiap sesi/tahap **wajib diakhiri dengan ringkasan** yang memuat:
 
 Commit memakai format Conventional Commits (lihat `docs/01-rencana-kerja.md`).
 
+## 8. Aturan Fitur Baru
+
+Bagian ini wajib dipatuhi setiap kali menambah atau mengubah fitur apa pun. Baca bersama [`docs/04-asumsi-dan-celah.md`](docs/04-asumsi-dan-celah.md) dan [`docs/16-peta-sistem-saat-ini.md`](docs/16-peta-sistem-saat-ini.md) sebelum menulis kode atau SQL apa pun.
+
+### 8.1 Database & Migrasi
+- **Migrasi**: setiap perubahan skema hanya lewat file migrasi baru di `supabase/migrations/` dengan nama berprefix timestamp ISO (contoh: `20260101120000_nama_fitur.sql`). Dilarang mengedit file migrasi lama.
+- **Logika bisnis di database**: semua logika bisnis (validasi, mutasi stok, kalkulasi) berada di fungsi RPC/Postgres, bukan di Next.js. Next.js hanya memanggil RPC atau membaca view/tabel.
+- **Fungsi `SECURITY DEFINER`**: wajib menetapkan `SET search_path = public, pg_temp` secara eksplisit dan memeriksa peran pemanggil (`fn_is_manajer()`, `fn_is_penjualan()`, dst.) di baris pertama badan fungsi sebelum melakukan operasi apa pun.
+- **Urutan penguncian baris** (untuk mencegah deadlock): selalu kunci baris dalam urutan ini:
+  1. `pesanan_jual` (ORDER BY id)
+  2. `persetujuan_harga` (jika ada, ORDER BY id)
+  3. `pelanggan` (ORDER BY id)
+  4. `barang` (ORDER BY id)
+
+### 8.2 Kerahasiaan Data
+Kolom rahasia: `harga_pokok`, `harga_beli_satuan`, `hpp_satuan`, `margin`, dan semua turunannya (HPP total, dll.).
+- Kolom-kolom ini **tidak boleh bocor** ke peran Penjualan atau Gudang melalui cara apa pun: respons HTTP/RSC, Server Component props, Server Action return value, log browser/server, pesan error, hasil ekspor CSV/Excel, atau bundle klien.
+- **`SELECT *` dilarang** pada tabel/view yang mengandung kolom rahasia. Selalu sebutkan kolom secara eksplisit, atau gunakan view yang sudah menyaring kolom (contoh: `v_barang`, `v_*_manajer`).
+- View atau RPC yang memuat nilai rahasia harus berjalan dengan hak pemilik (`SECURITY DEFINER`), wajib memuat `WHERE public.fn_is_manajer()` (atau setara), dan **wajib diuji dengan ketiga peran** (manajer, penjualan, gudang) — pastikan penjualan dan gudang menerima error atau baris tanpa kolom rahasia.
+- Dilarang `console.log` objek baris dari view/RPC manajer.
+
+### 8.3 Tanggal & Waktu Bisnis
+- Gunakan `(now() AT TIME ZONE 'Asia/Jakarta')::date` untuk tanggal bisnis; **jangan** memakai `CURRENT_DATE` mentah karena server database bisa berada di zona UTC.
+- Minggu dimulai **Senin** (ISO week). Gunakan `date_trunc('week', ...) + INTERVAL '0'` dengan setting `SET datestyle = 'ISO'` jika perlu.
+
+### 8.4 Kode Error
+- Pakai kode bebas **berikutnya** dari katalog [`src/lib/errors.ts`](src/lib/errors.ts).
+  - Kode terakhir yang terpakai saat dokumen ini ditulis: **E0038**.
+  - Kode berikut yang tersedia: E0039, E0040, dst.
+- **Periksa tabrakan** sebelum mendaftarkan kode baru: grep seluruh repo untuk kode yang dipilih.
+- **Jangan mengubah arti kode lama**; jika perilaku berubah, daftarkan kode baru dan tandai kode lama sebagai deprecated dengan komentar.
+- Setiap kode baru wajib ditambahkan ke `ERROR_MESSAGES` di `src/lib/errors.ts` dan ke katalog kode di `docs/04-asumsi-dan-celah.md`.
+
+### 8.5 Pengujian (TC)
+- Setiap fitur baru **menambah TC baru** dengan melanjutkan penomoran terakhir di [`docs/03-test-plan.md`](docs/03-test-plan.md) (format TC-29, TC-30, dst.) menggunakan SQL, vitest, atau Playwright sesuai jenis pengujian.
+- **28 TC baseline (TC-01 s.d. TC-28) tidak boleh diubah** selain memperbarui kolom "Bukti" jika tes ulang dijalankan.
+- Jika perubahan fitur mengubah perilaku TC lama, catat di [`docs/15-catatan-perbaikan.md`](docs/15-catatan-perbaikan.md) dengan penjelasan: TC mana, mengapa perilaku berubah, dan TC pengganti (jika ada).
+
+### 8.6 Dokumentasi per Fitur
+Setiap fitur baru wajib disertai pembaruan dokumen berikut sebelum commit:
+| Dokumen | Yang diperbarui |
+|---|---|
+| `docs/fitur-<slug>.md` | Dibuat baru: deskripsi, alur, aturan bisnis, TC, keputusan desain |
+| [`docs/02-matriks-akses.md`](docs/02-matriks-akses.md) | Tambah baris/kolom hak akses baru |
+| [`docs/03-test-plan.md`](docs/03-test-plan.md) | Tambah TC baru (lanjut nomor terakhir) |
+| [`docs/05-skema.md`](docs/05-skema.md) | Perbarui skema tabel/view/fungsi |
+| [`docs/16-peta-sistem-saat-ini.md`](docs/16-peta-sistem-saat-ini.md) | Perbarui peta komponen & alur |
+| [`src/lib/akses.ts`](src/lib/akses.ts) | Tambah menu/rute baru beserta peran yang diizinkan |
+
+### 8.7 UI & Navigasi
+- Gunakan Tailwind CSS yang bersih bergaya **enterprise/ERP profesional** (lihat Bagian 6 untuk token warna dan komponen).
+- Komponen navigasi Sidebar ([`src/components/layout/Sidebar.tsx`](src/components/layout/Sidebar.tsx)) **wajib** mengelompokkan menu ke dalam 5 kategori section:
+  - **Menu Utama** — Dashboard
+  - **Inventory & Gudang** — Barang & Stok, Kartu Stok, Stock Opname
+  - **Transaksi & Penjualan** — Pelanggan, Pesanan Jual, Pembelian, Pemasok
+  - **Keuangan & Laporan** — Laporan
+  - **Administrasi Sistem** — Akun & Peran, Profil Saya, Audit Log
+- Gunakan komponen dan token yang sudah ada: `DataTable`, `BadgeStatus`, `ConfirmDialog`, `FormField`, `EmptyState`. **Jangan membuat gaya baru per halaman.**
+- Halaman yang bisa dicetak (struk, laporan) menggunakan CSS `@media print` — sembunyikan sidebar/header, atur ukuran font dan margin kertas.
+
+### 8.8 Regresi Wajib Setelah Setiap Fitur
+Jalankan seluruh suite ini sebelum membuat PR. Laporkan jumlah **lulus/gagal per jenis tes** dan sertakan **output asli** untuk setiap yang gagal.
+
+```
+1. supabase db reset                  # reset + migrasi dari nol
+2. tes SQL (semua, termasuk konkurensi)
+3. npm run lint                       # ESLint
+4. npx tsc --noEmit                   # TypeScript strict
+5. npx vitest run                     # unit & integrasi
+6. npm run build                      # Next.js production build
+7. npx playwright test                # E2E (bila tersedia)
+8. pemeriksaan jaringan:              # Penjualan & Gudang tidak menerima kolom rahasia
+   - buka DevTools Network tab, login sebagai penjualan/gudang,
+     verifikasi respons JSON tidak mengandung harga_pokok/harga_beli_satuan/hpp_satuan/margin
+```
+
+### 8.9 Git
+- Satu fitur → satu branch: `fitur/<slug>` (contoh: `fitur/diskon-bertingkat`).
+- Satu langkah logis → satu commit dengan format Conventional Commits.
+- Jangan menggabungkan perubahan skema, logika bisnis, dan UI dalam satu commit.
+
+### 8.10 Hal yang Tidak Terdefinisi atau Bertentangan
+- **Jangan menebak.** Jika menemukan hal yang belum terdefinisi atau bertentangan antar dokumen:
+  1. Catat di bagian "Pertanyaan Terbuka" di `docs/fitur-<slug>.md`.
+  2. Pilih **opsi paling konservatif** (izin lebih ketat, validasi lebih strict, tidak ada perubahan default).
+  3. Laporkan di penutup sesi agar Tech Lead/Manajer dapat memutuskan.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 ## This is NOT the Next.js you know

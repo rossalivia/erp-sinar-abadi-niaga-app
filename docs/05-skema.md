@@ -24,6 +24,8 @@ erDiagram
 
   PELANGGAN ||--o{ PESANAN_JUAL : "pelanggan_id"
   PESANAN_JUAL ||--|{ ITEM_PESANAN_JUAL : "pesanan_jual_id (1..20)"
+  PESANAN_JUAL ||--o{ PERSETUJUAN_HARGA : "pesanan_jual_id"
+  PROFILES ||--o{ PERSETUJUAN_HARGA : "diajukan_oleh / keputusan_oleh"
 
   AUTH_USERS {
     uuid id PK
@@ -165,6 +167,22 @@ erDiagram
     integer selisih "stok_fisik - stok_sistem"
     text keterangan "min 10 char jika selisih != 0"
   }
+
+  PERSETUJUAN_HARGA {
+    uuid id PK
+    uuid pesanan_jual_id FK "-> pesanan_jual.id"
+    text status "menunggu | disetujui | ditolak | terpakai | dibatalkan | kedaluwarsa"
+    uuid diajukan_oleh FK "-> profiles.id"
+    timestamptz diajukan_pada
+    text catatan_pengaju
+    uuid keputusan_oleh FK "-> profiles.id"
+    timestamptz keputusan_pada
+    text catatan_keputusan
+    text alasan_tolak "min 10 char jika ditolak"
+    text snapshot_hash "RAHASIA (internal)"
+    timestamptz berlaku_sampai "keputusan_pada + 24 jam"
+    timestamptz dipakai_pada
+  }
 ```
 
 ---
@@ -200,8 +218,11 @@ Sistem database menerapkan 7 lapisan perlindungan mandiri di level Postgres:
 | `supabase/migrations/20261021140000_kredit_overdue.sql` | Modul Limit Kredit Dinamis & Blokir Otomatis: `fn_hitung_kredit_pelanggan`, view `v_pelanggan_kredit`, pembaruan `v_pelanggan_piutang`, `rpc_get_kredit_pelanggan`, `rpc_get_faktur_overdue_pelanggan`, serta pembaruan `rpc_konfirmasi_pesanan`. |
 | `supabase/migrations/20261022000000_stock_opname.sql` | Modul Stock Opname & Penyesuaian Fisik Gudang: tabel `opname_stok`, `item_opname_stok`, RLS, sequences, dan 5 RPC opname. |
 | `supabase/migrations/20261022110000_perbaikan_audit.sql` | Resolusi Temuan Audit (K1 s.d. K4): `v_opname_stok_manajer` owner rights + `security_barrier = true`, penghapusan prefix usang `E0006`/`E0007` pada `rpc_konfirmasi_pesanan`, validasi keterangan selisih $\ge 10$ char (`E0037`), pengaman anti-drift stok berubah (`E0038`), dan format alasan kartu stok `"Stock opname <nomor>: <keterangan>"`. |
+| `supabase/migrations/20261022200000_persetujuan_harga.sql` | Alur Persetujuan Harga di Bawah HPP: tabel `persetujuan_harga`, partial unique index aktif, hash snapshot pesanan, view publik `v_persetujuan_harga` & owner `v_persetujuan_harga_manajer`, RPC ajukan/putuskan/batalkan, serta pembaruan `rpc_konfirmasi_pesanan`, `rpc_simpan_draf_pesanan`, `rpc_batalkan_draf` dengan urutan kunci baris bebas deadlock. |
 | `supabase/seed.sql` | Data seed: 5 akun uji dev (3 peran), 2 pemasok, 5 pelanggan, 15 barang (sebagian stok menipis), saldo awal kartu stok. |
 | `supabase/tests/02_keamanan.sql` | Suite uji SQL 20 skenario mencakup RBAC, column grants, trigger guard, append-only, dan penolakan anon. |
 | `supabase/tests/03_rpc.sql` | Suite uji SQL 25 skenario alur transaksi bisnis, invarian stok, batas kredit, dan konkurensi. |
 | `supabase/tests/04_kredit_overdue.sql` | Suite uji SQL TC-29 s.d. TC-38: kalkulasi sisa kredit, prioritas D4, blokir overdue, non-bypassable, dan zero leakage. |
 | `supabase/tests/05_stock_opname.sql` | Suite uji SQL TC-41 s.d. TC-54: stock opname, penyesuaian fisik, kerahasiaan view manajer, validasi selisih 10 char, pengaman anti-drift, dan tanggal bisnis Asia/Jakarta. |
+| `supabase/tests/06_persetujuan_harga.sql` | Suite uji SQL TC-55 s.d. TC-70: 15 skenario pengujian lengkap alur persetujuan harga, validasi RBAC, BR-04, hash drift, 24 jam expiry, zero leakage, dan cascading draf. |
+| `supabase/tests/06_konkurensi_persetujuan.ps1` | Suite uji konkurensi PowerShell (TC-67): 10 iterasi eksekusi paralel simultan konfirmasi pesanan vs persetujuan harga (bebas deadlock). |

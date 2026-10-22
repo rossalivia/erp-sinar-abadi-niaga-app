@@ -292,6 +292,34 @@ Terdapat 11 tabel di dalam skema public (9 tabel inti + 2 tabel modul stock opna
 
 ---
 
+### 12. public.persetujuan_harga (Dispensasi Harga di Bawah HPP)
+* Tujuan: Menyimpan pengajuan permohonan dispensasi harga jual khusus di bawah HPP beserta keputusan Manajer dan hash snapshot pesanan.
+* Kolom:
+  * id (uuid, PRIMARY KEY DEFAULT gen_random_uuid())
+  * pesanan_jual_id (uuid, NOT NULL, REFERENCES public.pesanan_jual(id) ON DELETE CASCADE)
+  * status (text, NOT NULL, DEFAULT 'menunggu', CHECK status IN ('menunggu', 'disetujui', 'ditolak', 'terpakai', 'dibatalkan', 'kedaluwarsa'))
+  * diajukan_oleh (uuid, NOT NULL, REFERENCES public.profiles(id))
+  * diajukan_pada (timestamptz, NOT NULL, DEFAULT now())
+  * catatan_pengaju (text, nullable)
+  * keputusan_oleh (uuid, nullable, REFERENCES public.profiles(id))
+  * keputusan_pada (timestamptz, nullable)
+  * catatan_keputusan (text, nullable)
+  * alasan_tolak (text, nullable)
+  * snapshot_hash (text, NOT NULL)
+  * berlaku_sampai (timestamptz, nullable)
+  * dipakai_pada (timestamptz, nullable)
+* Indeks Unik Parsial:
+  * uq_persetujuan_aktif_per_pesanan: UNIQUE (pesanan_jual_id) WHERE status IN ('menunggu', 'disetujui').
+* Kolom Rahasia: snapshot_hash tidak di-grant ke authenticated (akses internal RPC SECURITY DEFINER).
+* Hak Akses Kolom (Grants):
+  * SELECT: (id, pesanan_jual_id, status, diajukan_oleh, diajukan_pada, catatan_pengaju, keputusan_oleh, keputusan_pada, catatan_keputusan, alasan_tolak, berlaku_sampai, dipakai_pada) TO authenticated.
+  * INSERT, UPDATE, DELETE: TIDAK DI-GRANT (seluruh mutasi via RPC).
+* Kebijakan RLS:
+  * persetujuan_harga_select_policy: FOR SELECT USING (fn_is_manajer() OR diajukan_oleh = auth.uid()). Gudang menerima 0 baris.
+  * persetujuan_harga_modify_policy: FOR ALL USING (false) WITH CHECK (false).
+
+---
+
 ## B. Peta View Basis Data
 
 | Nama View | Definisi Singkat | Security Option | Peran yang Dapat Membaca | Kolom Sensitif / Rahasia |
@@ -305,6 +333,8 @@ Terdapat 11 tabel di dalam skema public (9 tabel inti + 2 tabel modul stock opna
 | v_pembelian_manajer | Daftar PO pembelian lengkap dengan harga_beli_satuan dan total_estimasi_beli | Owner Rights (Definer) + security_barrier = true + WHERE fn_is_manajer() = true | Hanya Manajer (Peran lain menerima 0 baris) | harga_beli_satuan |
 | v_item_pesanan_jual_manajer (alias v_item_pesanan_manajer) | Rincian baris pesanan jual lengkap dengan hpp_satuan dan nominal margin laba | Owner Rights (Definer) + security_barrier = true + WHERE fn_is_manajer() = true | Hanya Manajer (Peran lain menerima 0 baris) | hpp_satuan, margin |
 | v_opname_stok_manajer | Header opname dilengkapi agregasi nilai finansial selisih HPP (estimasi_nilai_selisih) | Owner Rights (Definer) + security_barrier = true + WHERE fn_is_manajer() = true | Hanya Manajer (Peran lain menerima 0 baris) | estimasi_nilai_selisih (dihitung dari harga_pokok) |
+| v_persetujuan_harga | Daftar pengajuan persetujuan harga publik dengan nomor pesanan, nama pelanggan, dan status 24 jam lazy | security_invoker = true | Penjualan (milik sendiri via RLS), Manajer (Gudang 0 baris) | Tidak ada (snapshot_hash tidak disertakan) |
+| v_persetujuan_harga_manajer | Antrean & riwayat persetujuan lengkap dengan item pesanan, HPP satuan, dan margin laba per item | Owner Rights (Definer) + security_barrier = true + WHERE fn_is_manajer() = true | Hanya Manajer (Peran lain menerima 0 baris) | hpp_satuan, margin_satuan, margin_total |
 
 ---
 
@@ -313,13 +343,16 @@ Terdapat 11 tabel di dalam skema public (9 tabel inti + 2 tabel modul stock opna
 | Nama RPC | Parameter Input | Peran yang Diizinkan | Tabel yang Dimodifikasi | Row Locking (FOR UPDATE) | Mutasi Stok? | Audit Log? |
 |---|---|---|---|---|---|---|
 | rpc_buat_pesanan | p_pelanggan_id uuid | Penjualan, Manajer | pesanan_jual | Tidak | Tidak | Tidak |
-| rpc_simpan_draf_pesanan | p_pelanggan_id uuid, p_items jsonb, p_pesanan_id uuid | Penjualan, Manajer | pesanan_jual, item_pesanan_jual | Ya (pesanan_jual) | Tidak | Tidak |
+| rpc_simpan_draf_pesanan | p_pelanggan_id uuid, p_items jsonb, p_pesanan_id uuid | Penjualan, Manajer | pesanan_jual, item_pesanan_jual, persetujuan_harga | Ya (pesanan_jual) | Tidak | Ya (jika anulir persetujuan) |
 | rpc_simpan_item_pesanan | p_pesanan_id uuid, p_barang_id uuid, p_jumlah int, p_diskon numeric | Penjualan, Manajer | pesanan_jual, item_pesanan_jual | Ya (pesanan_jual) | Tidak | Tidak |
-| rpc_batalkan_draf | p_pesanan_id uuid | Penjualan, Manajer | pesanan_jual | Ya (pesanan_jual) | Tidak | Ya (batalkan_draf_pesanan) |
-| rpc_konfirmasi_pesanan | p_pesanan_id uuid | Penjualan, Manajer | pesanan_jual, barang, mutasi_stok, item_pesanan_jual, audit_log | Ya (pesanan_jual, pelanggan, barang ORDER BY id) | Ya (jenis 'keluar') | Ya (konfirmasi_pesanan) |
+| rpc_batalkan_draf | p_pesanan_id uuid | Penjualan, Manajer | pesanan_jual, persetujuan_harga | Ya (pesanan_jual) | Tidak | Ya (batalkan_draf_pesanan & batalkan_persetujuan) |
+| rpc_konfirmasi_pesanan | p_pesanan_id uuid | Penjualan, Manajer | pesanan_jual, barang, mutasi_stok, item_pesanan_jual, persetujuan_harga, audit_log | Ya (pesanan_jual -> persetujuan_harga -> pelanggan -> barang ORDER BY id) | Ya (jenis 'keluar') | Ya (konfirmasi_pesanan & pakai_persetujuan_harga) |
 | rpc_kirim_pesanan | p_pesanan_id uuid | Gudang, Manajer | pesanan_jual | Ya (pesanan_jual, pelanggan) | Tidak | Ya (kirim_pesanan) |
 | rpc_catat_pelunasan (alias rpc_lunasi_pesanan) | p_pesanan_id uuid | Manajer Saja | pesanan_jual, audit_log | Ya (pesanan_jual) | Tidak | Ya (lunasi_pesanan) |
 | rpc_batalkan_pesanan_terkonfirmasi (alias rpc_batalkan_pesanan) | p_pesanan_id uuid, p_alasan text | Manajer Saja | pesanan_jual, barang, mutasi_stok, audit_log | Ya (pesanan_jual, barang ORDER BY id) | Ya (jenis 'batal') | Ya (batalkan_pesanan_terkonfirmasi) |
+| rpc_ajukan_persetujuan_harga | p_pesanan_id uuid, p_catatan text | Penjualan Saja | persetujuan_harga, audit_log | Ya (pesanan_jual) | Tidak | Ya (ajukan_persetujuan_harga) |
+| rpc_putuskan_persetujuan_harga | p_id uuid, p_setuju boolean, p_catatan text, p_alasan_tolak text | Manajer Saja | persetujuan_harga, audit_log | Ya (persetujuan_harga) | Tidak | Ya (setujui/tolak_persetujuan_harga) |
+| rpc_batalkan_pengajuan_harga | p_id uuid | Penjualan (pemilik) | persetujuan_harga, audit_log | Ya (persetujuan_harga) | Tidak | Ya (batalkan_pengajuan_harga) |
 | rpc_ajukan_pembelian | p_pemasok_id uuid, p_barang_id uuid, p_jumlah int | Gudang, Manajer | pembelian, audit_log | Tidak | Tidak | Ya (ajukan_pembelian) |
 | rpc_setujui_pembelian | p_pembelian_id uuid, p_harga_beli numeric | Manajer Saja | pembelian, audit_log | Ya (pembelian) | Tidak | Ya (setujui_pembelian) |
 | rpc_tolak_pembelian | p_pembelian_id uuid, p_alasan text | Manajer Saja | pembelian, audit_log | Ya (pembelian) | Tidak | Ya (tolak_pembelian) |
