@@ -670,6 +670,26 @@ Terdapat 14 tabel di dalam skema public (9 tabel inti + 2 modul stock opname + 1
 | TC-123 | supabase/tests/09_pusat_tugas.sql, src/features/pusat-tugas/types.ts | SQL + DOM | Otomatis | Zero-leakage data finansial rahasia pada respons JSON & UI picking |
 | TC-124 | src/features/pusat-tugas/components/picking-workspace.tsx | UI Inspection | Otomatis | Kelengkapan cetak resmi kop, waktu WIB, petugas, ceklis (@media print) |
 | TC-125 | src/features/pusat-tugas/components/tugas-hari-ini.tsx | UI Inspection | Otomatis | Netralitas angka 0 (slate-400) dan penanganan empty state |
+| TC-126 | supabase/tests/10_analitik.sql | SQL | Otomatis | Akurasi agregat performa sales (omzet, HPP, margin kotor, pesanan selesai) |
+| TC-127 | supabase/tests/10_analitik.sql | SQL | Otomatis | Penanganan staf penjualan dengan 0 transaksi (omzet 0, margin % = 0) |
+| TC-128 | supabase/tests/10_analitik.sql | SQL | Otomatis | Akurasi perhitungan piutang berjalan per staf penjualan |
+| TC-129 | supabase/tests/10_analitik.sql | SQL | Otomatis | Akurasi kontribusi omzet top pelanggan terhadap total periode perusahaan |
+| TC-130 | supabase/tests/10_analitik.sql | SQL | Otomatis | Penentuan status kelayakan kredit dinamis (overdue / overlimit / lancar) |
+| TC-131 | supabase/tests/10_analitik.sql | SQL | Otomatis | Pembatasan kuota baris top pelanggan (safe limit guard maks 50) |
+| TC-132 | supabase/tests/10_analitik.sql | SQL | Otomatis | Deteksi pelanggan tidak aktif (dormant customer) >= ambang hari |
+| TC-133 | supabase/tests/10_analitik.sql | SQL | Otomatis | Penanganan pelanggan baru tanpa order (pesanan_terakhir NULL, hitung hari dibuat) |
+| TC-134 | supabase/tests/10_analitik.sql | SQL | Otomatis | Eksklusi pelanggan berstatus nonaktif (aktif = false) dari daftar dormant |
+| TC-135 | supabase/tests/10_analitik.sql | SQL | Otomatis | Deteksi barang tidak bergerak (dead stock) dengan stok fisik > 0 |
+| TC-136 | supabase/tests/10_analitik.sql | SQL | Otomatis | Kalkulasi modal tertahan (dead capital = stok * harga_pokok) |
+| TC-137 | supabase/tests/10_analitik.sql | SQL | Otomatis | Eksklusi barang dengan stok fisik nol dari analitik dead stock |
+| TC-138 | supabase/tests/10_analitik.sql | SQL | Otomatis | Penanganan barang baru belum pernah terjual (hitung hari dari mutasi masuk) |
+| TC-139 | supabase/tests/10_analitik.sql | SQL | Otomatis | Pemblokiran total akses Staf Penjualan pada seluruh RPC analitik (E0001) |
+| TC-140 | supabase/tests/10_analitik.sql | SQL | Otomatis | Pemblokiran total akses Staf Gudang pada seluruh RPC analitik (E0001) |
+| TC-141 | supabase/migrations/20261023043000_analitik.sql | SQL | Otomatis | Pemblokiran pengguna anonim / non-authenticated (REVOKE ALL) |
+| TC-142 | src/lib/akses.ts | Route Guard | Otomatis | Proteksi route guard halaman /analitik (HTTP 403 untuk non-Manajer) |
+| TC-143 | src/app/api/analitik/csv/route.ts | Server Route | Otomatis | Proteksi endpoint ekspor CSV analitik (HTTP 403 untuk non-Manajer) |
+| TC-144 | src/features/analitik/types.ts | DOM / Network | Otomatis | Zero-leakage data rahasia HPP, margin, dan modal tertahan pada non-Manajer |
+| TC-145 | src/features/analitik/__tests__/utils.test.ts | Vitest | Otomatis | Integritas ekspor CSV UTF-8 BOM dan pencegahan spreadsheet formula injection |
 
 ---
 

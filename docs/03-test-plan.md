@@ -277,5 +277,32 @@ Urutan validasi `konfirmasi_pesanan`: (1) akses/kepemilikan → E01/E02, (2) sta
 | **TC-124** | Kelengkapan Tata Letak Cetak Resmi (@media print) | G, M | UI Inspection | **Lulus** | 2026-10-23 | `src/features/pusat-tugas/components/picking-workspace.tsx` | Tampilan cetak memuat kop resmi perusahaan, tanggal & jam cetak Asia/Jakarta, nama pencetak, dan kotak centang ceklis fisik. |
 | **TC-125** | Penanganan State Kosong & Netralitas Angka Nol | All | UI Inspection | **Lulus** | 2026-10-23 | `src/features/pusat-tugas/components/tugas-hari-ini.tsx` | Saat angka = 0, widget tampil netral (slate-400) tanpa warna alarm. Halaman picking list menampilkan EmptyState jika tidak ada pesanan dikonfirmasi. |
 
+---
+
+## 14. Test Case Tambahan: Analitik Pelanggan dan Performa Sales (TC-126 s.d. TC-145)
+
+| ID | Fokus Uji | Aktor | Media | Status | Tanggal Uji | Bukti Uji | Ringkasan Verifikasi & Hasil |
+|---|---|---|---|---|---|---|---|
+| **TC-126** | Akurasi Agregat Performa Sales (`rpc_analitik_performa_sales`) | M | SQL | **Lulus** | 2026-10-23 | `supabase/tests/10_analitik.sql` | Omzet, HPP, margin kotor, dan jumlah pesanan per sales terhitung presisi sesuai pesanan dikirim/lunas. |
+| **TC-127** | Penanganan Staf Penjualan dengan 0 Transaksi | M | SQL | **Lulus** | 2026-10-23 | `supabase/tests/10_analitik.sql` | Staf penjualan tanpa transaksi tetap muncul dengan omzet Rp0, margin Rp0, tanpa error pembagian nol (`margin_persen = 0`). |
+| **TC-128** | Akurasi Perhitungan Piutang Berjalan per Sales | M | SQL | **Lulus** | 2026-10-23 | `supabase/tests/10_analitik.sql` | Nilai pesanan berstatus `'dikirim'` yang belum lunas terakumulasi presisi pada kolom `piutang_berjalan`. |
+| **TC-129** | Akurasi Kontribusi Omzet Top Pelanggan (`rpc_analitik_top_pelanggan`) | M | SQL | **Lulus** | 2026-10-23 | `supabase/tests/10_analitik.sql` | Persentase kontribusi omzet terhadap total periode terhitung akurat (`(omzet_pelanggan / total_omzet_semua) * 100`). |
+| **TC-130** | Penentuan Status Kredit Dinamis Top Pelanggan | M | SQL | **Lulus** | 2026-10-23 | `supabase/tests/10_analitik.sql` | Pelanggan dengan faktur jatuh tempo mendapat status `'overdue'`, limit habis `'overlimit'`, lainnya `'lancar'`. |
+| **TC-131** | Pembatasan Limit Baris Top Pelanggan (Safe Limit Guard) | M | SQL | **Lulus** | 2026-10-23 | `supabase/tests/10_analitik.sql` | Parameter `p_limit` dibatasi maksimal 50 baris meskipun pemanggil meminta nilai lebih besar. |
+| **TC-132** | Deteksi Pelanggan Tidak Aktif $\ge 30$ Hari (`rpc_analitik_pelanggan_tidak_aktif`) | M | SQL | **Lulus** | 2026-10-23 | `supabase/tests/10_analitik.sql` | Pelanggan dengan order terakhir $\ge 30$ hari lalu muncul terurut dari hari inaktivitas terlama. |
+| **TC-133** | Penanganan Pelanggan Baru yang Belum Pernah Bertransaksi | M | SQL | **Lulus** | 2026-10-23 | `supabase/tests/10_analitik.sql` | Pelanggan dengan 0 riwayat order tetap muncul dengan `pesanan_terakhir_pada = NULL` dan hari inaktivitas dihitung sejak tanggal dibuat. |
+| **TC-134** | Eksklusi Pelanggan Nonaktif (`aktif = false`) pada Dormant List | M | SQL | **Lulus** | 2026-10-23 | `supabase/tests/10_analitik.sql` | Pelanggan nonaktif tidak dimasukkan ke dalam daftar retensi pelanggan pasif. |
+| **TC-135** | Deteksi Barang Tidak Bergerak $\ge 30$ Hari (`rpc_analitik_barang_tidak_bergerak`) | M | SQL | **Lulus** | 2026-10-23 | `supabase/tests/10_analitik.sql` | Barang dengan stok $> 0$ yang tidak laku dalam $\ge 30$ hari terdeteksi akurat. |
+| **TC-136** | Kalkulasi Nilai Modal Tertahan (Dead Capital) | M | SQL | **Lulus** | 2026-10-23 | `supabase/tests/10_analitik.sql` | `nilai_stok_mengendap` terhitung presisi (`stok * harga_pokok`). |
+| **TC-137** | Eksklusi Barang Stok Nol dari Analitik Dead Stock | M | SQL | **Lulus** | 2026-10-23 | `supabase/tests/10_analitik.sql` | Barang tanpa transaksi tetapi memiliki `stok = 0` tidak masuk ke daftar dead stock. |
+| **TC-138** | Penanganan Barang Baru Belum Pernah Terjual | M | SQL | **Lulus** | 2026-10-23 | `supabase/tests/10_analitik.sql` | Barang belum pernah terjual memiliki `penjualan_terakhir_pada = NULL` dan hari mengendap dihitung dari mutasi stok masuk pertama. |
+| **TC-139** | Pemblokiran Akses Staf Penjualan pada Semua RPC Analitik | P | SQL | **Lulus** | 2026-10-23 | `supabase/tests/10_analitik.sql` | Eksekusi seluruh 4 RPC analitik oleh Staf Penjualan ditolak tegas dengan kode error `E0001` (Akses ditolak). |
+| **TC-140** | Pemblokiran Akses Staf Gudang pada Semua RPC Analitik | G | SQL | **Lulus** | 2026-10-23 | `supabase/tests/10_analitik.sql` | Eksekusi seluruh 4 RPC analitik oleh Staf Gudang ditolak tegas dengan kode error `E0001` (Akses ditolak). |
+| **TC-141** | Pemblokiran Akses Pengguna Anonim | Anon | SQL | **Lulus** | 2026-10-23 | `supabase/migrations/20261023043000_analitik.sql` | Pemanggilan tanpa token auth ditolak izin eksekusi (`REVOKE ALL FROM PUBLIC, anon`). |
+| **TC-142** | Proteksi Route Guard & Middleware Halaman `/analitik` | P, G | Route Guard | **Lulus** | 2026-10-23 | `src/lib/akses.ts` | Penjualan dan Gudang yang mengakses URL `/analitik` dialihkan ke `/tidak-berwenang` (HTTP 403). |
+| **TC-143** | Proteksi Route Handler Ekspor CSV `/api/analitik/csv` | P, G | Server Route | **Lulus** | 2026-10-23 | `src/app/api/analitik/csv/route.ts` | Permintaan GET oleh non-Manajer menerima respon `403 Forbidden`. |
+| **TC-144** | Zero-Leakage Data Rahasia HPP & Modal Tertahan | Network / DOM | Inspection | **Lulus** | 2026-10-23 | `src/features/analitik/types.ts` | Verifikasi respon JSON jaringan browser pada akun non-Manajer tidak mengandung `harga_pokok`, `total_hpp`, atau `nilai_stok_mengendap`. |
+| **TC-145** | Validasi Integritas Ekspor Berkas CSV & Anti-Formula Injection | M | Vitest | **Lulus** | 2026-10-23 | `src/features/analitik/__tests__/utils.test.ts` | Berkas CSV memuat BOM `\uFEFF`, baris header lengkap, pemisah koma ter-escape, dan karakter formula berbahaya (`=`, `+`, `-`, `@`, `\t`, `\r`) diproteksi tanda petik tunggal (`'`). |
+
 
 

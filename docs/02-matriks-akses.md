@@ -141,6 +141,7 @@ Kolom rahasia: `barang.harga_pokok`, `pembelian.harga_beli_satuan`, `item_pesana
 | `/penagihan` | Penagihan & Monitoring Tagihan | ⚠️ (miliknya) | ❌ | ✅ (semua) | 4 KPI cards, filter tab klasifikasi umur, tombol WA, catat penagihan, pelunasan (M) | MW, RLS, VW |
 | `/pembelian` | Pembelian & Pemasok | ❌ | ✅ | ✅ | Kolom harga beli hanya M; tab Pemasok | MW, RLS, CG, VW |
 | `/laporan` | Laporan | ❌ | ❌ | ✅ | Grafik mingguan, margin per barang, umur piutang, CSV | MW, VW/RPC filter peran |
+| `/analitik` | Analitik Pelanggan & Sales | ❌ | ❌ | ✅ | Performa sales, top pelanggan, akun dormant, dead stock, dan ekspor CSV aman | MW, Server Component, RPC |
 | `/impor` | Impor Data Master | ❌ | ❌ | ✅ | Halaman unggah, validasi dry-run, tabel galat, pratinjau, dan eksekusi impor | MW, RLS, RPC |
 | `/impor/riwayat` | Riwayat Impor Data | ❌ | ❌ | ✅ | Rekam jejak seluruh transaksi impor data CSV | MW, RLS |
 | `/gudang/picking` | Daftar Ambil Barang (Picking) | ❌ | ✅ | ✅ | Konsolidasi barang pesanan terkonfirmasi, cetak siap fisik (@media print), bebas nilai uang | MW, RLS, RPC `rpc_ambil_daftar_picking` |
@@ -193,5 +194,19 @@ Kolom rahasia: `barang.harga_pokok`, `pembelian.harga_beli_satuan`, `item_pesana
 | RPC `rpc_ambil_daftar_picking` | ❌ | ✅ | ✅ | Validasi peran (`E0065`), validasi pesanan dikonfirmasi (`E0064`), agregasi kuantitas barang, rincian per pesanan. Zero-leakage data uang |
 | Halaman `/gudang/picking` | ❌ | ✅ | ✅ | Konsolidasi barang siap ambil, seleksi pesanan, format cetak fisik `@media print` |
 | Dasbor "Tugas Hari Ini" (`/`) | ✅ | ✅ | ✅ | Widget ringkasan tugas harian dinamis per peran pemanggil |
+
+---
+
+## G. Modul Analitik Pelanggan dan Performa Sales
+
+| Objek / Fitur | P | G | M | Aturan & Lapisan Penegak |
+|---|---|---|---|---|
+| Halaman `/analitik` | ❌ | ❌ | ✅ | Proteksi 3 lapis: Route Guard (403), Server Component redirect (`/tidak-berwenang`), dan RPC |
+| Route Handler `/api/analitik/csv` | ❌ | ❌ | ✅ | Endpoint ekspor CSV dengan sanitasi formula injection (OWASP), khusus Manajer |
+| RPC `rpc_analitik_performa_sales` | ❌ | ❌ | ✅ | Evaluasi omzet, margin kotor, HPP, piutang berjalan sales. Ditolak E0001 untuk P/G |
+| RPC `rpc_analitik_top_pelanggan` | ❌ | ❌ | ✅ | Pareto pelanggan, kontribusi omzet %, status kredit. Ditolak E0001 untuk P/G |
+| RPC `rpc_analitik_pelanggan_tidak_aktif` | ❌ | ❌ | ✅ | Deteksi akun pasif/dormant, hari inaktivitas. Ditolak E0001 untuk P/G |
+| RPC `rpc_analitik_barang_tidak_bergerak` | ❌ | ❌ | ✅ | Deteksi dead stock & modal tertahan (HPP). Ditolak E0001 untuk P/G |
+
 
 
