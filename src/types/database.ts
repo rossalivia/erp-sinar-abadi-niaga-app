@@ -1550,6 +1550,84 @@ export type Database = {
         }
         Relationships: []
       }
+      v_surat_jalan: {
+        Row: {
+          catatan: string | null
+          dibuat_oleh: string
+          dibuat_pada: string
+          dikirim_pada: string | null
+          id: string
+          nomor: string
+          pelanggan_alamat: string | null
+          pelanggan_id: string
+          pelanggan_kode: string
+          pelanggan_nama: string
+          pelanggan_telepon: string | null
+          pembuat_nama: string
+          status: string
+        }
+        Insert: {
+          catatan?: string | null
+          dibuat_oleh: string
+          dibuat_pada?: string
+          dikirim_pada?: string | null
+          id?: string
+          nomor: string
+          pelanggan_alamat?: string | null
+          pelanggan_id: string
+          pelanggan_kode: string
+          pelanggan_nama: string
+          pelanggan_telepon?: string | null
+          pembuat_nama: string
+          status: string
+        }
+        Update: {
+          catatan?: string | null
+          dibuat_oleh?: string
+          dibuat_pada?: string
+          dikirim_pada?: string | null
+          id?: string
+          nomor?: string
+          pelanggan_alamat?: string | null
+          pelanggan_id?: string
+          pelanggan_kode?: string
+          pelanggan_nama?: string
+          pelanggan_telepon?: string | null
+          pembuat_nama?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      v_surat_jalan_item: {
+        Row: {
+          barang_id: string
+          id: string
+          jumlah: number
+          kode_barang: string
+          nama_barang: string
+          pesanan_jual_id: string
+          satuan: string
+        }
+        Insert: {
+          barang_id: string
+          id?: string
+          jumlah: number
+          kode_barang: string
+          nama_barang: string
+          pesanan_jual_id: string
+          satuan: string
+        }
+        Update: {
+          barang_id?: string
+          id?: string
+          jumlah?: number
+          kode_barang?: string
+          nama_barang?: string
+          pesanan_jual_id?: string
+          satuan?: string
+        }
+        Relationships: []
+      }
     }
     Functions: {
       rpc_impor_barang: {
