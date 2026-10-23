@@ -1613,6 +1613,87 @@ export type Database = {
         Args: { p_pesanan_ids: string[] }
         Returns: Json
       }
+      rpc_analitik_performa_sales: {
+        Args: {
+          p_dari?: string | null
+          p_sampai?: string | null
+        }
+        Returns: {
+          sales_id: string
+          nama_sales: string
+          email: string
+          aktif: boolean
+          jumlah_pesanan: number
+          pesanan_dikirim: number
+          pesanan_lunas: number
+          total_omzet: number
+          total_hpp: number
+          total_margin: number
+          margin_persen: number
+          piutang_berjalan: number
+          jumlah_draf: number
+        }[]
+      }
+      rpc_analitik_top_pelanggan: {
+        Args: {
+          p_dari?: string | null
+          p_sampai?: string | null
+          p_limit?: number | null
+        }
+        Returns: {
+          pelanggan_id: string
+          kode: string
+          nama_toko: string
+          telepon: string
+          jumlah_pesanan: number
+          total_omzet: number
+          total_hpp: number
+          total_margin: number
+          margin_persen: number
+          kontribusi_omzet_persen: number
+          batas_kredit: number
+          sisa_kredit: number
+          status_kredit: string
+        }[]
+      }
+      rpc_analitik_pelanggan_tidak_aktif: {
+        Args: {
+          p_ambang_hari?: number | null
+        }
+        Returns: {
+          pelanggan_id: string
+          kode: string
+          nama_toko: string
+          telepon: string
+          alamat: string
+          terdaftar_pada: string
+          pesanan_terakhir_pada: string | null
+          nomor_pesanan_terakhir: string | null
+          hari_tidak_aktif: number
+          total_pesanan_historis: number
+          total_omzet_historis: number
+          piutang_berjalan: number
+        }[]
+      }
+      rpc_analitik_barang_tidak_bergerak: {
+        Args: {
+          p_ambang_hari?: number | null
+        }
+        Returns: {
+          barang_id: string
+          kode: string
+          nama: string
+          satuan: string
+          stok_saat_ini: number
+          stok_minimum: number
+          harga_pokok: number
+          harga_jual: number
+          nilai_stok_mengendap: number
+          penjualan_terakhir_pada: string | null
+          nomor_pesanan_terakhir: string | null
+          hari_mengendap: number
+        }[]
+      }
       rpc_batalkan_pengajuan_harga: {
         Args: {
           p_id: string

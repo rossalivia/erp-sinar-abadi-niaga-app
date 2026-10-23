@@ -81,6 +81,12 @@ export const MENU_ITEMS: MenuItem[] = [
     roles: ['manajer'],
   },
   {
+    title: 'Analitik',
+    href: '/analitik',
+    icon: 'TrendingUp',
+    roles: ['manajer'],
+  },
+  {
     title: 'Akun & Peran',
     href: '/akun',
     icon: 'UserCog',
@@ -121,6 +127,7 @@ export const ROUTE_PERMISSIONS: { pattern: RegExp; roles: Peran[] }[] = [
   { pattern: /^\/stok\/opname/, roles: ['gudang', 'manajer'] },
   { pattern: /^\/stok/, roles: ['penjualan', 'gudang', 'manajer'] },
   { pattern: /^\/laporan/, roles: ['manajer'] },
+  { pattern: /^\/analitik/, roles: ['manajer'] },
   { pattern: /^\/impor/, roles: ['manajer'] },
   { pattern: /^\/audit/, roles: ['manajer'] },
   { pattern: /^\/akun/, roles: ['manajer'] },

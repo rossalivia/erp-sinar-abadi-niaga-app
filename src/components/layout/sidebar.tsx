@@ -20,6 +20,7 @@ import {
   ClipboardList,
   ReceiptText,
   Upload,
+  TrendingUp,
   LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -38,6 +39,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Truck,
   Building2,
   BarChart3,
+  TrendingUp,
   UserCog,
   User,
   ShieldAlert,
@@ -60,7 +62,7 @@ const SIDEBAR_SECTIONS: { label: string; hrefs: string[] }[] = [
   },
   {
     label: 'Keuangan & Laporan',
-    hrefs: ['/laporan'],
+    hrefs: ['/laporan', '/analitik'],
   },
   {
     label: 'Administrasi Sistem',
