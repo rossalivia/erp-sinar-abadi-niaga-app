@@ -690,6 +690,16 @@ Terdapat 14 tabel di dalam skema public (9 tabel inti + 2 modul stock opname + 1
 | TC-143 | src/app/api/analitik/csv/route.ts | Server Route | Otomatis | Proteksi endpoint ekspor CSV analitik (HTTP 403 untuk non-Manajer) |
 | TC-144 | src/features/analitik/types.ts | DOM / Network | Otomatis | Zero-leakage data rahasia HPP, margin, dan modal tertahan pada non-Manajer |
 | TC-145 | src/features/analitik/__tests__/utils.test.ts | Vitest | Otomatis | Integritas ekspor CSV UTF-8 BOM dan pencegahan spreadsheet formula injection |
+| TC-146 | supabase/tests/11_surat_jalan.sql, src/features/pesanan/__tests__/surat-jalan.test.ts | SQL + Vitest | Otomatis | Akses surat jalan pesanan dikirim oleh Staf Gudang |
+| TC-147 | supabase/tests/11_surat_jalan.sql, src/features/pesanan/__tests__/surat-jalan.test.ts | SQL + Vitest | Otomatis | Akses surat jalan pesanan dikirim oleh Manajer |
+| TC-148 | supabase/tests/11_surat_jalan.sql, src/features/pesanan/__tests__/surat-jalan.test.ts | SQL + Vitest | Otomatis | Akses surat jalan pesanan dikirim oleh Sales pemilik pesanan |
+| TC-149 | supabase/tests/11_surat_jalan.sql, src/features/pesanan/__tests__/surat-jalan.test.ts | SQL + Vitest | Otomatis | Penolakan akses surat jalan pesanan dikirim oleh Sales non-pemilik |
+| TC-150 | supabase/tests/11_surat_jalan.sql, src/features/pesanan/__tests__/surat-jalan.test.ts | SQL + Vitest | Otomatis | Penolakan surat jalan untuk pesanan berstatus draf (pesan netral) |
+| TC-151 | supabase/tests/11_surat_jalan.sql, src/features/pesanan/__tests__/surat-jalan.test.ts | SQL + Vitest | Otomatis | Penolakan surat jalan untuk pesanan berstatus dikonfirmasi |
+| TC-152 | supabase/tests/11_surat_jalan.sql, src/features/pesanan/__tests__/surat-jalan.test.ts | SQL + Vitest | Otomatis | Penolakan surat jalan untuk pesanan berstatus lunas dan dibatalkan |
+| TC-153 | supabase/tests/11_surat_jalan.sql, src/features/pesanan/__tests__/surat-jalan.test.ts | SQL + Vitest | Otomatis | Verifikasi katalog kolom view v_surat_jalan 100% bebas dari data uang |
+| TC-154 | src/app/(dashboard)/pesanan/[id]/surat-jalan/page.tsx | UI Inspection | Otomatis | Kelengkapan cetak A4 kop CV Sinar Abadi Niaga, tgl WIB, 3 kotak TTD |
+| TC-155 | src/features/pesanan/components/pesanan-actions.tsx | UI + Vitest | Otomatis | Tombol Cetak Surat Jalan hanya muncul pada pesanan berstatus dikirim |
 
 ---
 

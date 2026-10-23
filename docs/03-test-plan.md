@@ -304,5 +304,22 @@ Urutan validasi `konfirmasi_pesanan`: (1) akses/kepemilikan → E01/E02, (2) sta
 | **TC-144** | Zero-Leakage Data Rahasia HPP & Modal Tertahan | Network / DOM | Inspection | **Lulus** | 2026-10-23 | `src/features/analitik/types.ts` | Verifikasi respon JSON jaringan browser pada akun non-Manajer tidak mengandung `harga_pokok`, `total_hpp`, atau `nilai_stok_mengendap`. |
 | **TC-145** | Validasi Integritas Ekspor Berkas CSV & Anti-Formula Injection | M | Vitest | **Lulus** | 2026-10-23 | `src/features/analitik/__tests__/utils.test.ts` | Berkas CSV memuat BOM `\uFEFF`, baris header lengkap, pemisah koma ter-escape, dan karakter formula berbahaya (`=`, `+`, `-`, `@`, `\t`, `\r`) diproteksi tanda petik tunggal (`'`). |
 
+---
+
+## 15. Test Case Tambahan: Cetak Surat Jalan (TC-146 s.d. TC-155)
+
+| ID | Fokus Uji | Aktor | Media | Status | Tanggal Uji | Bukti Uji | Ringkasan Verifikasi & Hasil |
+|---|---|---|---|---|---|---|---|
+| **TC-146** | Akses Surat Jalan Status `dikirim` oleh Gudang | G | SQL + Vitest | **Lulus** | 2026-10-23 | `supabase/tests/11_surat_jalan.sql`<br>`src/features/pesanan/__tests__/surat-jalan.test.ts` | Gudang berhasil memuat header dan item pesanan berstatus dikirim. |
+| **TC-147** | Akses Surat Jalan Status `dikirim` oleh Manajer | M | SQL + Vitest | **Lulus** | 2026-10-23 | `supabase/tests/11_surat_jalan.sql`<br>`src/features/pesanan/__tests__/surat-jalan.test.ts` | Manajer berhasil memuat seluruh pesanan berstatus dikirim dan rincian item. |
+| **TC-148** | Akses Surat Jalan Status `dikirim` oleh Sales Pemilik | P | SQL + Vitest | **Lulus** | 2026-10-23 | `supabase/tests/11_surat_jalan.sql`<br>`src/features/pesanan/__tests__/surat-jalan.test.ts` | Sales pembuat pesanan berhasil memuat surat jalan pesanan miliknya yang berstatus dikirim. |
+| **TC-149** | Penolakan Sales Bukan Pemilik pada Surat Jalan | P | SQL + Vitest | **Lulus** | 2026-10-23 | `supabase/tests/11_surat_jalan.sql`<br>`src/features/pesanan/__tests__/surat-jalan.test.ts` | Kueri `v_surat_jalan` dan `v_surat_jalan_item` mengembalikan 0 baris bagi sales non-pemilik. |
+| **TC-150** | Penolakan Surat Jalan untuk Pesanan Status `draf` | All | SQL + Vitest | **Lulus** | 2026-10-23 | `supabase/tests/11_surat_jalan.sql`<br>`src/features/pesanan/__tests__/surat-jalan.test.ts` | Kueri mengembalikan 0 baris; UI menampilkan pesan netral *"Surat jalan hanya tersedia untuk pesanan berstatus dikirim"*. |
+| **TC-151** | Penolakan Surat Jalan untuk Pesanan Status `dikonfirmasi` | All | SQL + Vitest | **Lulus** | 2026-10-23 | `supabase/tests/11_surat_jalan.sql`<br>`src/features/pesanan/__tests__/surat-jalan.test.ts` | Kueri mengembalikan 0 baris; UI menampilkan pesan netral tanpa membocorkan isi data pesanan. |
+| **TC-152** | Penolakan Surat Jalan untuk Pesanan Status `lunas` dan `dibatalkan` | All | SQL + Vitest | **Lulus** | 2026-10-23 | `supabase/tests/11_surat_jalan.sql`<br>`src/features/pesanan/__tests__/surat-jalan.test.ts` | Kueri mengembalikan 0 baris; akses diblokir dengan pesan netral. |
+| **TC-153** | Verifikasi Zero-Leakage Data Uang pada Katalog Kolom View | Net / SQL | SQL Catalog + Vitest | **Lulus** | 2026-10-23 | `supabase/tests/11_surat_jalan.sql`<br>`src/features/pesanan/__tests__/surat-jalan.test.ts` | Kolom `v_surat_jalan` dan `v_surat_jalan_item` 100% bebas dari kolom finansial (harga, diskon, subtotal, total, hpp, margin, jatuh_tempo). |
+| **TC-154** | Kelengkapan Format Cetak Surat Jalan (@media print) | G, M | UI Inspection | **Lulus** | 2026-10-23 | `src/app/(dashboard)/pesanan/[id]/surat-jalan/page.tsx` | Dokumen A4 memuat kop CV Sinar Abadi Niaga, nomor pesanan, tgl kirim WIB, tabel barang, total jenis & kuantitas, 3 kotak TTD, jam cetak & nama pencetak. |
+| **TC-155** | Visibilitas Tombol "Cetak Surat Jalan" di `/pesanan/[id]` | All | UI Inspection + Vitest | **Lulus** | 2026-10-23 | `src/features/pesanan/components/pesanan-actions.tsx` | Tombol "Cetak Surat Jalan" hanya muncul ketika pesanan berstatus `dikirim`. |
+
 
 

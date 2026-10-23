@@ -138,6 +138,7 @@ Kolom rahasia: `barang.harga_pokok`, `pembelian.harga_beli_satuan`, `item_pesana
 | `/pelanggan/[id]/piutang` | Kartu Piutang Pelanggan | ⚠️ (miliknya) | ❌ | ✅ | Siap cetak (@media print), rekap umur piutang, tanpa kolom rahasia | MW, RLS, VW |
 | `/pesanan` | Daftar Pesanan Jual | ✅ (miliknya) | ✅ (non-draf) | ✅ (semua) | Filter status, pelanggan, tanggal | RLS |
 | `/pesanan/[id]` | Detail Pesanan | ✅ | ✅ | ✅ | Tombol sesuai peran & status; panel HPP/margin hanya M | RLS, RPC, VW |
+| `/pesanan/[id]/surat-jalan` | Cetak Surat Jalan | ⚠️ (miliknya) | ✅ (dikirim) | ✅ (dikirim) | Khusus status dikirim, bebas kolom uang/finansial, format cetak A4 3 TTD | MW, RLS, VW `v_surat_jalan` |
 | `/penagihan` | Penagihan & Monitoring Tagihan | ⚠️ (miliknya) | ❌ | ✅ (semua) | 4 KPI cards, filter tab klasifikasi umur, tombol WA, catat penagihan, pelunasan (M) | MW, RLS, VW |
 | `/pembelian` | Pembelian & Pemasok | ❌ | ✅ | ✅ | Kolom harga beli hanya M; tab Pemasok | MW, RLS, CG, VW |
 | `/laporan` | Laporan | ❌ | ❌ | ✅ | Grafik mingguan, margin per barang, umur piutang, CSV | MW, VW/RPC filter peran |
@@ -207,6 +208,17 @@ Kolom rahasia: `barang.harga_pokok`, `pembelian.harga_beli_satuan`, `item_pesana
 | RPC `rpc_analitik_top_pelanggan` | ❌ | ❌ | ✅ | Pareto pelanggan, kontribusi omzet %, status kredit. Ditolak E0001 untuk P/G |
 | RPC `rpc_analitik_pelanggan_tidak_aktif` | ❌ | ❌ | ✅ | Deteksi akun pasif/dormant, hari inaktivitas. Ditolak E0001 untuk P/G |
 | RPC `rpc_analitik_barang_tidak_bergerak` | ❌ | ❌ | ✅ | Deteksi dead stock & modal tertahan (HPP). Ditolak E0001 untuk P/G |
+
+---
+
+## H. Modul Cetak Surat Jalan (PRD 11.2)
+
+| Objek / Fitur | P | G | M | Aturan & Lapisan Penegak |
+|---|---|---|---|---|
+| Halaman `/pesanan/[id]/surat-jalan` | ⚠️ (miliknya) | ✅ | ✅ | Hanya aktif jika pesanan berstatus `dikirim`. Status lain menampilkan pesan netral tanpa membocorkan data. Bebas nilai finansial |
+| View `public.v_surat_jalan` | ⚠️ (miliknya) | ✅ | ✅ | Filter status = 'dikirim', hanya memuat kolom non-uang (kode, nama pelanggan, alamat, telepon, nomor, tgl kirim) |
+| View `public.v_surat_jalan_item` | ⚠️ (miliknya) | ✅ | ✅ | Filter status = 'dikirim', hanya memuat kuantitas fisik (kode, nama barang, satuan, jumlah). Zero-leakage data uang |
+| Tombol "Cetak Surat Jalan" | ⚠️ (miliknya) | ✅ | ✅ | Ditampilkan di `/pesanan/[id]` hanya pada pesanan berstatus `dikirim` |
 
 
 
