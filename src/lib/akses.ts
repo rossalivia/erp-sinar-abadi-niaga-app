@@ -110,6 +110,12 @@ export const MENU_ITEMS: MenuItem[] = [
     icon: 'Upload',
     roles: ['manajer'],
   },
+  {
+    title: 'Log Notifikasi',
+    href: '/notifikasi',
+    icon: 'Mail',
+    roles: ['manajer'],
+  },
 ];
 
 export const ROUTE_PERMISSIONS: { pattern: RegExp; roles: Peran[] }[] = [
@@ -130,6 +136,7 @@ export const ROUTE_PERMISSIONS: { pattern: RegExp; roles: Peran[] }[] = [
   { pattern: /^\/laporan/, roles: ['manajer'] },
   { pattern: /^\/analitik/, roles: ['manajer'] },
   { pattern: /^\/impor/, roles: ['manajer'] },
+  { pattern: /^\/notifikasi/, roles: ['manajer'] },
   { pattern: /^\/audit/, roles: ['manajer'] },
   { pattern: /^\/akun/, roles: ['manajer'] },
   { pattern: /^\/profil/, roles: ['penjualan', 'gudang', 'manajer'] },

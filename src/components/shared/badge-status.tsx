@@ -60,6 +60,12 @@ const STATUS_VARIANT_MAP: Record<string, BadgeProps['variant']> = {
   nonaktif: 'neutral',
   true: 'success',
   false: 'neutral',
+
+  // Status Log Notifikasi Email
+  terkirim: 'success',
+  dilewati: 'neutral',
+  diklaim: 'info',
+  gagal: 'danger',
 };
 
 const STATUS_LABEL_MAP: Record<string, string> = {
@@ -88,6 +94,10 @@ const STATUS_LABEL_MAP: Record<string, string> = {
   penyesuaian: 'Penyesuaian',
   aktif: 'Aktif',
   nonaktif: 'Nonaktif',
+  terkirim: 'Terkirim',
+  dilewati: 'Dilewati',
+  diklaim: 'Diproses',
+  gagal: 'Gagal',
 };
 
 export function BadgeStatus({ status, label, className }: BadgeStatusProps) {

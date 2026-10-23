@@ -21,6 +21,7 @@ import {
   ReceiptText,
   Upload,
   TrendingUp,
+  Mail,
   LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -44,6 +45,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   User,
   ShieldAlert,
   Upload,
+  Mail,
 };
 
 /** Definisi urutan dan pengelompokan section sidebar */
@@ -66,7 +68,7 @@ const SIDEBAR_SECTIONS: { label: string; hrefs: string[] }[] = [
   },
   {
     label: 'Administrasi Sistem',
-    hrefs: ['/akun', '/profil', '/audit', '/impor'],
+    hrefs: ['/akun', '/profil', '/audit', '/impor', '/notifikasi'],
   },
 ];
 
