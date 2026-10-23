@@ -75,8 +75,11 @@ export function PesananActions({
   // Manajer boleh melunasi pesanan berstatus dikirim
   const canMarkPaid = status === 'dikirim' && isManajer;
 
-  // Cetak dokumen: Penjualan & Manajer cetak Faktur, Gudang cetak Surat Jalan
-  const canPrint = status !== 'draf' && status !== 'dibatalkan';
+  // Cetak Dokumen:
+  // - Surat Jalan HANYA pada status 'dikirim' untuk Gudang, Manajer, & Sales pemilik (S1)
+  const canPrintSuratJalan = status === 'dikirim' && (isGudang || isManajer || (isOwner && peran === 'penjualan'));
+  // - Faktur untuk Penjualan & Manajer pada pesanan non-draf non-batal
+  const canPrintFaktur = (isManajer || (isOwner && peran === 'penjualan')) && status !== 'draf' && status !== 'dibatalkan';
 
   // 1. Konfirmasi Pesanan
   async function handleKonfirmasi() {
@@ -182,8 +185,23 @@ export function PesananActions({
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      {/* Cetak Dokumen */}
-      {canPrint && (
+      {/* Cetak Surat Jalan (Khusus status dikirim) */}
+      {canPrintSuratJalan && (
+        <Button
+          variant="outline"
+          size="sm"
+          asChild
+          className="text-xs h-8 gap-1.5 border-slate-300 text-slate-800 hover:text-slate-900"
+        >
+          <Link href={`/pesanan/${pesananId}/surat-jalan`} target="_blank">
+            <Printer className="w-3.5 h-3.5" />
+            Cetak Surat Jalan
+          </Link>
+        </Button>
+      )}
+
+      {/* Cetak Faktur (Penjualan & Manajer) */}
+      {canPrintFaktur && (
         <Button
           variant="outline"
           size="sm"
@@ -192,7 +210,7 @@ export function PesananActions({
         >
           <Link href={`/pesanan/${pesananId}/cetak`} target="_blank">
             <Printer className="w-3.5 h-3.5" />
-            {isGudang ? 'Cetak Surat Jalan' : 'Cetak Faktur'}
+            Cetak Faktur
           </Link>
         </Button>
       )}

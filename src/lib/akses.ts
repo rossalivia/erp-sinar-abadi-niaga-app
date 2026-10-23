@@ -120,6 +120,7 @@ export const ROUTE_PERMISSIONS: { pattern: RegExp; roles: Peran[] }[] = [
   { pattern: /^\/pelanggan/, roles: ['penjualan', 'manajer'] },
   { pattern: /^\/pemasok/, roles: ['gudang', 'manajer'] },
   { pattern: /^\/pesanan\/(baru|[^\/]+\/ubah)/, roles: ['penjualan', 'manajer'] },
+  { pattern: /^\/pesanan\/[^\/]+\/surat-jalan/, roles: ['penjualan', 'gudang', 'manajer'] },
   { pattern: /^\/pesanan/, roles: ['penjualan', 'gudang', 'manajer'] },
   { pattern: /^\/penagihan/, roles: ['penjualan', 'manajer'] },
   { pattern: /^\/persetujuan/, roles: ['manajer'] },

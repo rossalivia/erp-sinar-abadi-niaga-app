@@ -112,3 +112,37 @@ export interface PersetujuanHargaRow {
   nama_toko?: string | null;
   total_pesanan?: number | null;
 }
+
+export interface SuratJalanHeader {
+  id: string;
+  nomor: string;
+  status: string;
+  dibuat_oleh: string;
+  dibuat_pada: string;
+  dikirim_pada: string | null;
+  catatan: string | null;
+  pelanggan_id: string;
+  pelanggan_kode: string;
+  pelanggan_nama: string;
+  pelanggan_telepon: string | null;
+  pelanggan_alamat: string | null;
+  pembuat_nama: string | null;
+}
+
+export interface SuratJalanItem {
+  id: string;
+  pesanan_jual_id: string;
+  barang_id: string;
+  kode_barang: string;
+  nama_barang: string;
+  satuan: string;
+  jumlah: number;
+}
+
+export interface SuratJalanData {
+  header: SuratJalanHeader;
+  items: SuratJalanItem[];
+  totalJenis: number;
+  totalKuantitas: number;
+}
+
