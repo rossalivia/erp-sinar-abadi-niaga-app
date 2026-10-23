@@ -143,6 +143,7 @@ Kolom rahasia: `barang.harga_pokok`, `pembelian.harga_beli_satuan`, `item_pesana
 | `/laporan` | Laporan | ❌ | ❌ | ✅ | Grafik mingguan, margin per barang, umur piutang, CSV | MW, VW/RPC filter peran |
 | `/impor` | Impor Data Master | ❌ | ❌ | ✅ | Halaman unggah, validasi dry-run, tabel galat, pratinjau, dan eksekusi impor | MW, RLS, RPC |
 | `/impor/riwayat` | Riwayat Impor Data | ❌ | ❌ | ✅ | Rekam jejak seluruh transaksi impor data CSV | MW, RLS |
+| `/gudang/picking` | Daftar Ambil Barang (Picking) | ❌ | ✅ | ✅ | Konsolidasi barang pesanan terkonfirmasi, cetak siap fisik (@media print), bebas nilai uang | MW, RLS, RPC `rpc_ambil_daftar_picking` |
 | `/pengaturan/akun` | Akun & Peran | ❌ | ❌ | ✅ | — | MW, RPC |
 | `/pengaturan/audit-log` | Audit Log | ❌ | ❌ | ✅ | Filter aksi & tanggal | MW, RLS |
 
@@ -181,5 +182,16 @@ Kolom rahasia: `barang.harga_pokok`, `pembelian.harga_beli_satuan`, `item_pesana
 | Konfirmasi Pesanan melebihi Plafon | ❌ | ❌ | ❌ | **D4 & D5:** Diblokir untuk SEMUA peran via `rpc_konfirmasi_pesanan` (`E0006`) |
 | Override Blokir Overdue | ❌ | ❌ | ✅ | **D5:** Hanya melalui pelunasan faktur menunggak (`rpc_catat_pelunasan`) |
 | Override Plafon Kredit | ❌ | ❌ | ✅ | **D5:** Hanya melalui penaikan limit kredit pelanggan (`rpc_set_batas_kredit`) |
+
+---
+
+## F. Modul Pusat Tugas Harian & Daftar Ambil Barang (Picking List)
+
+| Objek / Fitur | P | G | M | Aturan & Lapisan Penegak |
+|---|---|---|---|---|
+| RPC `rpc_get_tugas_harian` | ✅ | ✅ | ✅ | Penghitung tugas personal (P: data sendiri; G: stok/po/kirim; M: persetujuan/overdue/stok). Zero-leakage nilai finansial |
+| RPC `rpc_ambil_daftar_picking` | ❌ | ✅ | ✅ | Validasi peran (`E0065`), validasi pesanan dikonfirmasi (`E0064`), agregasi kuantitas barang, rincian per pesanan. Zero-leakage data uang |
+| Halaman `/gudang/picking` | ❌ | ✅ | ✅ | Konsolidasi barang siap ambil, seleksi pesanan, format cetak fisik `@media print` |
+| Dasbor "Tugas Hari Ini" (`/`) | ✅ | ✅ | ✅ | Widget ringkasan tugas harian dinamis per peran pemanggil |
 
 

@@ -655,6 +655,21 @@ Terdapat 14 tabel di dalam skema public (9 tabel inti + 2 modul stock opname + 1
 | TC-108 | supabase/tests/08_impor_csv.sql | SQL | Otomatis | Zero-leakage data finansial rahasia pada impor_data dan audit_log |
 | TC-109 | supabase/migrations/20261023023000_impor_csv.sql | SQL / Constraint | Otomatis | Ketahanan balapan dua berkas konkuren berkat constraint unik database |
 | TC-110 | src/features/impor/__tests__/utils.test.ts | End-to-End | Otomatis | Verifikasi siklus templat siap pakai dapat diunduh dan diimpor 100% |
+| TC-111 | supabase/tests/09_pusat_tugas.sql, src/features/pusat-tugas/__tests__/utils.test.ts | SQL + Vitest | Otomatis | Akurasi agregat widget dasbor tugas harian Penjualan (5 metrik) |
+| TC-112 | supabase/tests/09_pusat_tugas.sql | SQL | Otomatis | Isolasi kepemilikan data Penjualan di dasbor (RLS filter auth.uid()) |
+| TC-113 | supabase/tests/09_pusat_tugas.sql, src/features/pusat-tugas/__tests__/utils.test.ts | SQL + Vitest | Otomatis | Akurasi agregat widget dasbor Gudang & kalkulasi umur pesanan tertua |
+| TC-114 | supabase/tests/09_pusat_tugas.sql, src/features/pusat-tugas/__tests__/utils.test.ts | SQL + Vitest | Otomatis | Akurasi agregat widget dasbor Manajer (6 metrik terpadu) |
+| TC-115 | supabase/tests/09_pusat_tugas.sql | SQL Direct Call | Otomatis | Performa single-call rpc_get_tugas_harian (<50ms) & penolakan anon |
+| TC-116 | supabase/tests/09_pusat_tugas.sql, src/lib/akses.ts | SQL + Route Guard | Otomatis | Pemblokiran total Staf Penjualan pada rute picking list (403/E0065) |
+| TC-117 | supabase/tests/09_pusat_tugas.sql, src/features/pusat-tugas/actions.ts | SQL + UI | Otomatis | Pembuatan picking list untuk 1 pesanan valid berstruktur JSONB |
+| TC-118 | supabase/tests/09_pusat_tugas.sql, src/features/pusat-tugas/__tests__/utils.test.ts | SQL + Vitest | Otomatis | Agregasi multi-pesanan (penggabungan kuantitas barang sama, kode ASC) |
+| TC-119 | supabase/tests/09_pusat_tugas.sql, src/features/pusat-tugas/__tests__/utils.test.ts | SQL + Vitest | Otomatis | Deteksi indikator ketersediaan stok fisik (stok_cukup = false jika defisit) |
+| TC-120 | supabase/tests/09_pusat_tugas.sql | SQL | Otomatis | Penolakan array daftar pesanan kosong atau NULL (E0063) |
+| TC-121 | supabase/tests/09_pusat_tugas.sql | SQL | Otomatis | Penolakan pesanan bukan berstatus dikonfirmasi (E0064) |
+| TC-122 | supabase/tests/09_pusat_tugas.sql | SQL | Otomatis | Penolakan pesanan dengan ID palsu atau tidak dikenal (E0064) |
+| TC-123 | supabase/tests/09_pusat_tugas.sql, src/features/pusat-tugas/types.ts | SQL + DOM | Otomatis | Zero-leakage data finansial rahasia pada respons JSON & UI picking |
+| TC-124 | src/features/pusat-tugas/components/picking-workspace.tsx | UI Inspection | Otomatis | Kelengkapan cetak resmi kop, waktu WIB, petugas, ceklis (@media print) |
+| TC-125 | src/features/pusat-tugas/components/tugas-hari-ini.tsx | UI Inspection | Otomatis | Netralitas angka 0 (slate-400) dan penanganan empty state |
 
 ---
 

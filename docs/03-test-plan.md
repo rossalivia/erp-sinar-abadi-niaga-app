@@ -255,5 +255,27 @@ Urutan validasi `konfirmasi_pesanan`: (1) akses/kepemilikan → E01/E02, (2) sta
 | **TC-109** | Ketahanan Konkurensi & Balapan Dua Berkas Bersamaan | Multi | SQL / Constraint | **Lulus** | 2026-10-23 | `supabase/migrations/20261023023000_impor_csv.sql` | Constraint unik database menjamin tidak terjadi duplikasi kode saat balapan paralel. |
 | **TC-110** | Verifikasi Siklus Templat Siap Pakai | M | End-to-End | **Lulus** | 2026-10-23 | `src/features/impor/__tests__/utils.test.ts` | Templat CSV yang diunduh dari sistem terbukti valid dan dapat diimpor kembali 100%. |
 
+---
+
+## 13. Test Case Tambahan: Pusat Tugas Harian & Daftar Ambil Barang (TC-111 s.d. TC-125)
+
+| ID | Fokus Uji | Aktor | Media | Status | Tanggal Uji | Bukti Uji | Ringkasan Verifikasi & Hasil |
+|---|---|---|---|---|---|---|---|
+| **TC-111** | Akurasi Agregat Dasbor Penjualan | P1 | SQL + Vitest | **Lulus** | 2026-10-23 | `supabase/tests/09_pusat_tugas.sql`<br>`src/features/pusat-tugas/__tests__/utils.test.ts` | Nilai widget `draf_saya`, `menunggu_kirim_saya`, `persetujuan_harga_menunggu_saya`, `tagihan_tempo_hari_ini_saya`, dan `tagihan_overdue_saya` tepat sesuai baris data aktual. |
+| **TC-112** | Isolasi Kepemilikan Data Penjualan di Dasbor | P1, P2 | SQL | **Lulus** | 2026-10-23 | `supabase/tests/09_pusat_tugas.sql` | P1 tidak menghitung draf, pesanan, atau tagihan milik P2; nilai terisolasi 100% akurat. |
+| **TC-113** | Akurasi Agregat Dasbor Gudang & Umur Tertua | G | SQL + Vitest | **Lulus** | 2026-10-23 | `supabase/tests/09_pusat_tugas.sql`<br>`src/features/pusat-tugas/__tests__/utils.test.ts` | Menghitung pesanan siap kirim, PO disetujui, stok menipis, opname draf, dan umur pesanan tertua dalam satuan hari bisnis Asia/Jakarta. |
+| **TC-114** | Akurasi Agregat Dasbor Manajer | M | SQL + Vitest | **Lulus** | 2026-10-23 | `supabase/tests/09_pusat_tugas.sql`<br>`src/features/pusat-tugas/__tests__/utils.test.ts` | Menghitung persetujuan harga menunggu, PO diajukan, opname diajukan, tagihan overdue/hari ini, dan stok menipis secara terpadu. |
+| **TC-115** | Performa & Atomisitas Single-Call Dasbor | All | SQL Direct Call | **Lulus** | 2026-10-23 | `supabase/tests/09_pusat_tugas.sql` | Pemanggilan `rpc_get_tugas_harian()` selesai dalam 1 round-trip (< 50ms) dan menolak pengguna non-login. |
+| **TC-116** | Pemblokiran Penjualan pada Fitur Picking List | P1 | SQL + Route Guard | **Lulus** | 2026-10-23 | `supabase/tests/09_pusat_tugas.sql`<br>`src/lib/akses.ts` | P1 dialihkan ke `/tidak-berwenang` saat buka `/gudang/picking`, dan eksekusi `rpc_ambil_daftar_picking` ditolak dengan error `E0065`. |
+| **TC-117** | Pembuatan Picking List untuk 1 Pesanan Valid | G, M | SQL + UI | **Lulus** | 2026-10-23 | `supabase/tests/09_pusat_tugas.sql`<br>`src/features/pusat-tugas/actions.ts` | Mengembalikan daftar barang dan rincian pesanan dengan struktur JSONB lengkap dan status sukses. |
+| **TC-118** | Agregasi Multi-Pesanan (Penggabungan Barang Sama) | G, M | SQL + Vitest | **Lulus** | 2026-10-23 | `supabase/tests/09_pusat_tugas.sql`<br>`src/features/pusat-tugas/__tests__/utils.test.ts` | Jika Pesanan A dan B memesan barang yang sama, kuantitas dijumlahkan presisi dan diurutkan `kode_barang ASC`. |
+| **TC-119** | Deteksi Indikator Kecukupan Stok Fisik | G, M | SQL + Vitest | **Lulus** | 2026-10-23 | `supabase/tests/09_pusat_tugas.sql`<br>`src/features/pusat-tugas/__tests__/utils.test.ts` | Flag `stok_cukup = false` jika `total_diambil > stok_saat_ini`, dan `true` jika mencukupi. |
+| **TC-120** | Penolakan Parameter Daftar Pesanan Kosong | G, M | SQL | **Lulus** | 2026-10-23 | `supabase/tests/09_pusat_tugas.sql` | Pemanggilan `rpc_ambil_daftar_picking` dengan array kosong atau NULL ditolak dengan pesan error `E0063`. |
+| **TC-121** | Penolakan Pesanan Bukan Berstatus Dikonfirmasi | G, M | SQL | **Lulus** | 2026-10-23 | `supabase/tests/09_pusat_tugas.sql` | Jika array memuat pesanan draf, dikirim, lunas, atau batal, seluruh panggilan ditolak dengan pesan error `E0064`. |
+| **TC-122** | Penolakan Pesanan dengan ID Palsu / Tak Dikenal | G, M | SQL | **Lulus** | 2026-10-23 | `supabase/tests/09_pusat_tugas.sql` | Array berisi UUID yang tidak ada di database ditolak dengan pesan error `E0064`. |
+| **TC-123** | Zero-Leakage Data Finansial Rahasia | G | Network + DOM | **Lulus** | 2026-10-23 | `supabase/tests/09_pusat_tugas.sql`<br>`src/features/pusat-tugas/types.ts` | Respons JSON, DOM, dan payload picking list 100% bebas dari harga satuan, diskon, HPP, margin, dan total rupiah. |
+| **TC-124** | Kelengkapan Tata Letak Cetak Resmi (@media print) | G, M | UI Inspection | **Lulus** | 2026-10-23 | `src/features/pusat-tugas/components/picking-workspace.tsx` | Tampilan cetak memuat kop resmi perusahaan, tanggal & jam cetak Asia/Jakarta, nama pencetak, dan kotak centang ceklis fisik. |
+| **TC-125** | Penanganan State Kosong & Netralitas Angka Nol | All | UI Inspection | **Lulus** | 2026-10-23 | `src/features/pusat-tugas/components/tugas-hari-ini.tsx` | Saat angka = 0, widget tampil netral (slate-400) tanpa warna alarm. Halaman picking list menampilkan EmptyState jika tidak ada pesanan dikonfirmasi. |
+
 
 
