@@ -167,13 +167,43 @@ Aplikasi telah disiapkan dengan konfigurasi [netlify.toml](netlify.toml) yang te
 5. Masuk ke tab **"Site configuration"** → **"Environment variables"**, lalu tambahkan:
    - `NEXT_PUBLIC_SUPABASE_URL` = `https://<your-project-ref>.supabase.co`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY` = `<your-supabase-anon-key>`
+   - `SUPABASE_SERVICE_ROLE_KEY` = `<your-supabase-service-role-key>` (Akses sistem eksklusif server)
+   - `CRON_SECRET` = `<string-acak-rahasia-cron>`
+   - `RESEND_API_KEY` = `re_...`
+   - `EMAIL_MODE` = `sandbox` atau `live`
+   - `EMAIL_SANDBOX_TO` = `<email-anda-di-resend>` (wajib jika mode sandbox)
+   - `EMAIL_FROM` = `Peringatan Stok <notifikasi@domain-anda.com>` (wajib jika mode live)
+   - `APP_URL` = `https://erp-sinar-abadi.netlify.app`
 6. Klik **"Deploy site"**.
 7. Setelah deployment selesai, buka dasbor **Supabase Console** → **Authentication** → **URL Configuration**:
    - Tambahkan URL Netlify Anda (contoh: `https://erp-sinar-abadi.netlify.app`) ke dalam **Site URL** dan **Redirect URLs**.
 
 ---
 
-## 8. Lisensi & Hak Cipta
+## 8. Notifikasi Email Stok Menipis Harian (PRD 11.1)
+
+Fitur pengiriman email peringatan stok barang menipis berjalan otomatis setiap hari pukul **07.00 WIB** (00.00 UTC) dipicu oleh Netlify Scheduled Functions ke endpoint route handler `/api/cron/notifikasi-stok`.
+
+### Pengujian Lokal:
+1. **Menggunakan cURL (Route Handler Langsung):**
+   ```bash
+   curl -X POST http://localhost:3000/api/cron/notifikasi-stok \
+     -H "Authorization: Bearer <NILAI_CRON_SECRET>" \
+     -H "Content-Type: application/json"
+   ```
+2. **Menggunakan Netlify CLI:**
+   ```bash
+   npx netlify functions:invoke notifikasi-stok
+   ```
+3. **Melalui Antarmuka Manajer:**
+   Buka menu **Log Notifikasi** (`/notifikasi`) sebagai Manajer, lalu klik tombol **"Kirim Uji Sekarang"** (dibatasi 1 kali per menit).
+
+> **PERINGATAN MODE LIVE:**
+> Mode `EMAIL_MODE=live` membutuhkan domain yang telah terverifikasi DNS-nya (SPF, DKIM, DMARC) di dasbor Resend. Gunakan mode `EMAIL_MODE=sandbox` untuk pengujian aman ke alamat pemilik akun Resend (`EMAIL_SANDBOX_TO`).
+
+---
+
+## 9. Lisensi & Hak Cipta
 
 Hak Cipta © 2026 CV Sinar Abadi Niaga. Seluruh hak cipta dilindungi undang-undang.
 Dibuat untuk kebutuhan operasional distribusi internal perusahaan.

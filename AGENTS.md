@@ -27,7 +27,11 @@ Dokumen ini wajib dibaca dan dipatuhi oleh setiap agen/sesi kerja sebelum menyen
 ## 4. Keamanan Repo (Repo GitHub Publik)
 - **Dilarang meng-commit** `.env`, `.env.local`, service-role key, password, token, atau kredensial apa pun.
 - Sediakan `.env.example` yang hanya berisi nama variabel, tanpa nilai rahasia.
-- **Aplikasi tidak memakai service-role key sama sekali**, termasuk di server/route handler. Semua akses memakai anon key + sesi pengguna sehingga RLS selalu berlaku.
+- **Batasan Ketat Service-Role Key**: Secara umum aplikasi dilarang memakai service-role key dan seluruh akses pengguna wajib memakai anon key + sesi pengguna. **Pengecualian terbatas sistem (PRD 11.1 / E5)**: kunci service-role hanya boleh:
+  1. Berada di variabel lingkungan `SUPABASE_SERVICE_ROLE_KEY` (tidak pernah di-commit ke repo, tidak pernah berawalan `NEXT_PUBLIC_`).
+  2. Dibaca di satu modul `src/lib/supabase/admin.ts` yang mengimpor package `'server-only'`.
+  3. Dipakai HANYA oleh route handler sistem latar belakang (cron notifikasi email stok dan webhook transaksi).
+  4. Hanya memanggil fungsi database `rpc_sistem_*` yang hak `EXECUTE`-nya dicabut dari `PUBLIC`, `anon`, dan `authenticated`, dan hanya diberikan kepada `service_role`. Dilarang melakukan kueri tabel langsung dengan klien admin.
 - Data seed tidak boleh berisi password asli. Gunakan password latihan yang terdokumentasi saja.
 
 ## 5. Konvensi Struktur Folder & Kode

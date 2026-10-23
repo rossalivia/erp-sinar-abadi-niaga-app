@@ -146,6 +146,8 @@ Kolom rahasia: `barang.harga_pokok`, `pembelian.harga_beli_satuan`, `item_pesana
 | `/impor` | Impor Data Master | ❌ | ❌ | ✅ | Halaman unggah, validasi dry-run, tabel galat, pratinjau, dan eksekusi impor | MW, RLS, RPC |
 | `/impor/riwayat` | Riwayat Impor Data | ❌ | ❌ | ✅ | Rekam jejak seluruh transaksi impor data CSV | MW, RLS |
 | `/gudang/picking` | Daftar Ambil Barang (Picking) | ❌ | ✅ | ✅ | Konsolidasi barang pesanan terkonfirmasi, cetak siap fisik (@media print), bebas nilai uang | MW, RLS, RPC `rpc_ambil_daftar_picking` |
+| `/notifikasi` | Log Notifikasi Email | ❌ | ❌ | ✅ | Riwayat pengiriman email stok menipis harian & tombol uji coba | MW, Server Component, RPC `rpc_riwayat_notifikasi_manajer` |
+| `/api/cron/notifikasi-stok` | Endpoint Cron Notifikasi | ❌ | ❌ | ❌ (Sistem) | Pemicu cron harian stok menipis Netlify (Bearer `CRON_SECRET` & `service_role`) | TimingSafeEqual, `service_role` only RPC |
 | `/pengaturan/akun` | Akun & Peran | ❌ | ❌ | ✅ | — | MW, RPC |
 | `/pengaturan/audit-log` | Audit Log | ❌ | ❌ | ✅ | Filter aksi & tanggal | MW, RLS |
 

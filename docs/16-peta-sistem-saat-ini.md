@@ -700,6 +700,23 @@ Terdapat 14 tabel di dalam skema public (9 tabel inti + 2 modul stock opname + 1
 | TC-153 | supabase/tests/11_surat_jalan.sql, src/features/pesanan/__tests__/surat-jalan.test.ts | SQL + Vitest | Otomatis | Verifikasi katalog kolom view v_surat_jalan 100% bebas dari data uang |
 | TC-154 | src/app/(dashboard)/pesanan/[id]/surat-jalan/page.tsx | UI Inspection | Otomatis | Kelengkapan cetak A4 kop CV Sinar Abadi Niaga, tgl WIB, 3 kotak TTD |
 | TC-155 | src/features/pesanan/components/pesanan-actions.tsx | UI + Vitest | Otomatis | Tombol Cetak Surat Jalan hanya muncul pada pesanan berstatus dikirim |
+| TC-156 | supabase/tests/12_notifikasi_email.sql | SQL | Otomatis | Kriteria inklusif stok menipis (stok = minimum disertakan) |
+| TC-157 | supabase/tests/12_notifikasi_email.sql | SQL | Otomatis | Eksklusi barang dengan stok di atas minimum (stok > minimum) |
+| TC-158 | supabase/tests/12_notifikasi_email.sql | SQL | Otomatis | Eksklusi barang berstatus nonaktif dari daftar stok menipis |
+| TC-159 | supabase/tests/12_notifikasi_email.sql | SQL | Otomatis | Kriteria stok 0 dan minimum 0 disertakan (0 <= 0) |
+| TC-160 | supabase/tests/12_notifikasi_email.sql | SQL | Otomatis | Penerima notifikasi hanya akun Manajer dan Gudang aktif (Penjualan dieksklusi) |
+| TC-161 | src/features/notifikasi/service.ts | Vitest / Service | Otomatis | Daftar barang kosong tidak mengirim email dan status dicatat dilewati |
+| TC-162 | supabase/tests/12_notifikasi_email.sql | SQL | Otomatis | Idempotensi harian: klaim kedua pada hari yang sama ditolak (boleh_kirim = false) |
+| TC-163 | supabase/tests/12_notifikasi_email.sql | SQL | Otomatis | Retry pada status pengiriman gagal diizinkan untuk mengulang |
+| TC-164 | src/features/notifikasi/__tests__/email-stok.test.ts | Route Handler | Otomatis | Otentikasi token cron: tanpa Bearer token atau token salah ditolak HTTP 401 |
+| TC-165 | src/features/notifikasi/__tests__/email-stok.test.ts | Route Handler | Otomatis | Penolakan metode GET pada route cron (HTTP 405 Method Not Allowed) |
+| TC-166 | src/features/notifikasi/__tests__/email-stok.test.ts | Vitest | Otomatis | Mode sandbox mengirim 1 email ke EMAIL_SANDBOX_TO dengan banner MODE UJI |
+| TC-167 | src/features/notifikasi/__tests__/email-stok.test.ts | Vitest | Otomatis | Mode live mengirim email terpisah per penerima dengan Idempotency-Key |
+| TC-168 | src/features/notifikasi/__tests__/email-stok.test.ts | Vitest | Otomatis | Sanitasi HTML XSS escaping dan pemotongan baris pada batas 100 barang |
+| TC-169 | src/features/notifikasi/__tests__/email-stok.test.ts | Vitest | Otomatis | Zero-leakage data finansial rahasia pada seluruh payload email |
+| TC-170 | supabase/tests/12_notifikasi_email.sql | SQL | Otomatis | Hak akses database rpc_sistem_* dicabut dari authenticated/anon (service_role only) |
+| TC-171 | supabase/tests/12_notifikasi_email.sql, src/lib/akses.ts | SQL + Route Guard | Otomatis | Otorisasi rpc_riwayat_notifikasi_manajer & rute /notifikasi khusus Manajer |
+| TC-172 | supabase/tests/12_notifikasi_email.sql | SQL | Otomatis | Rate limiting tombol uji kirim dibatasi 1 kali per menit |
 
 ---
 

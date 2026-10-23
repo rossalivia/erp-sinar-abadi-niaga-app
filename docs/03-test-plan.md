@@ -321,5 +321,29 @@ Urutan validasi `konfirmasi_pesanan`: (1) akses/kepemilikan → E01/E02, (2) sta
 | **TC-154** | Kelengkapan Format Cetak Surat Jalan (@media print) | G, M | UI Inspection | **Lulus** | 2026-10-23 | `src/app/(dashboard)/pesanan/[id]/surat-jalan/page.tsx` | Dokumen A4 memuat kop CV Sinar Abadi Niaga, nomor pesanan, tgl kirim WIB, tabel barang, total jenis & kuantitas, 3 kotak TTD, jam cetak & nama pencetak. |
 | **TC-155** | Visibilitas Tombol "Cetak Surat Jalan" di `/pesanan/[id]` | All | UI Inspection + Vitest | **Lulus** | 2026-10-23 | `src/features/pesanan/components/pesanan-actions.tsx` | Tombol "Cetak Surat Jalan" hanya muncul ketika pesanan berstatus `dikirim`. |
 
+---
+
+## 16. Test Case Tambahan: Notifikasi Email Stok Menipis Harian (TC-156 s.d. TC-172)
+
+| ID | Fokus Uji | Aktor | Media | Status | Tanggal Uji | Bukti Uji | Ringkasan Verifikasi & Hasil |
+|---|---|---|---|---|---|---|---|
+| **TC-156** | Barang Stok Sama Dengan Minimum Disertakan (`stok = stok_minimum`) | Sistem | SQL | **Lulus** | 2026-10-23 | `supabase/tests/12_notifikasi_email.sql` | Barang aktif dengan `stok = 10` dan `stok_minimum = 10` berhasil masuk dalam daftar notifikasi `rpc_sistem_daftar_stok_menipis()`. |
+| **TC-157** | Barang Stok Di Atas Minimum Dieksklusi (`stok > stok_minimum`) | Sistem | SQL | **Lulus** | 2026-10-23 | `supabase/tests/12_notifikasi_email.sql` | Barang dengan stok melebihi batas minimum berhasil dieksklusi dari daftar stok menipis. |
+| **TC-158** | Barang Nonaktif Dieksklusi dari Daftar Stok Menipis | Sistem | SQL | **Lulus** | 2026-10-23 | `supabase/tests/12_notifikasi_email.sql` | Barang dengan status `aktif = false` tidak disertakan meskipun stoknya berada di bawah minimum. |
+| **TC-159** | Barang Stok Nol dan Minimum Nol Disertakan (`0 <= 0`) | Sistem | SQL | **Lulus** | 2026-10-23 | `supabase/tests/12_notifikasi_email.sql` | Barang aktif dengan stok 0 dan minimum 0 tetap disertakan sesuai aturan inklusif (sama dengan). |
+| **TC-160** | Penerima Notifikasi Hanya Manajer dan Gudang Aktif | Sistem | SQL | **Lulus** | 2026-10-23 | `supabase/tests/12_notifikasi_email.sql` | Staf Penjualan dan profil nonaktif berhasil dieksklusi; hanya Manajer dan Gudang aktif yang ditarik. |
+| **TC-161** | Daftar Barang Kosong: Tidak Mengirim Email & Status `dilewati` | Sistem | Service | **Lulus** | 2026-10-23 | `src/features/notifikasi/service.ts` | Jika tidak ada barang menipis, pengiriman email dibatalkan dan status log dicatat sebagai `dilewati`. |
+| **TC-162** | Idempotensi Harian: Panggilan Ganda Hanya Mengirim Sekali | Sistem | SQL | **Lulus** | 2026-10-23 | `supabase/tests/12_notifikasi_email.sql` | Panggilan kedua pada tanggal bisnis yang sama ditolak oleh `rpc_sistem_klaim_notifikasi()` (`boleh_kirim = false`). |
+| **TC-163** | Retry pada Status `gagal` Diizinkan | Sistem | SQL | **Lulus** | 2026-10-23 | `supabase/tests/12_notifikasi_email.sql` | Jika riwayat pengiriman sebelumnya berstatus `gagal`, panggilan berikutnya diizinkan untuk mengklaim ulang (`boleh_kirim = true`). |
+| **TC-164** | Otentikasi Token Cron: Token Hilang atau Salah Menghasilkan 401 | Publik | Route Handler | **Lulus** | 2026-10-23 | `src/features/notifikasi/__tests__/email-stok.test.ts` | Permintaan tanpa token atau dengan Bearer token yang tidak cocok ditolak dengan HTTP 401 polos (`timingSafeEqual`). |
+| **TC-165** | Penolakan Metode HTTP GET pada Route Cron (405) | Publik | Route Handler | **Lulus** | 2026-10-23 | `src/features/notifikasi/__tests__/email-stok.test.ts` | Permintaan GET ke `/api/cron/notifikasi-stok` menghasilkan HTTP 405 Method Not Allowed dengan header Allow: POST. |
+| **TC-166** | Mode Sandbox: Mengirim 1 Email ke `EMAIL_SANDBOX_TO` dengan Banner | Sistem | Vitest | **Lulus** | 2026-10-23 | `src/features/notifikasi/__tests__/email-stok.test.ts` | Mode sandbox mengirim ke alamat penguji dengan banner MODE UJI tanpa membocorkan alamat email asli penerima di badan email. |
+| **TC-167** | Mode Live: Mengirim Email Terpisah per Penerima | Sistem | Vitest | **Lulus** | 2026-10-23 | `src/features/notifikasi/__tests__/email-stok.test.ts` | Mode live mengirim email secara individual ke setiap penerima dengan Idempotency-Key unik. |
+| **TC-168** | Sanitasi HTML & Pembatasan 100 Baris pada Isi Email | Sistem | Vitest | **Lulus** | 2026-10-23 | `src/features/notifikasi/__tests__/email-stok.test.ts` | Karakter `<script>` dan tanda kutip/kurang-dari ter-escape aman; daftar dipotong pada baris 100 dengan pesan ringkasan sisa. |
+| **TC-169** | Zero-Leakage: Tidak Ada Kolom Nilai Uang pada Email & RPC | Sistem | Vitest | **Lulus** | 2026-10-23 | `src/features/notifikasi/__tests__/email-stok.test.ts` | Dokumen email dan skema RPC sistem 100% bebas dari kolom finansial (harga pokok, harga jual, subtotal, total, HPP, margin). |
+| **TC-170** | Hak Akses Database: `rpc_sistem_*` Diblokir dari `authenticated` & `anon` | User / Anon | SQL | **Lulus** | 2026-10-23 | `supabase/tests/12_notifikasi_email.sql` | Hak `EXECUTE` pada seluruh fungsi `rpc_sistem_*` dicabut dari `PUBLIC`, `anon`, dan `authenticated`; hanya `service_role` yang diizinkan. |
+| **TC-171** | Otorisasi Halaman `/notifikasi` Khusus Manajer (Penjualan & Gudang Ditolak) | P, G, M | SQL + Route Guard | **Lulus** | 2026-10-23 | `supabase/tests/12_notifikasi_email.sql`<br>`src/lib/akses.ts` | Manajer sukses membaca riwayat log; Penjualan dan Gudang ditolak di tingkat database (E0001) dan route guard (403). |
+| **TC-172** | Rate Limiting Tombol Uji Kirim (1 Kali per Menit) | M | SQL / Action | **Lulus** | 2026-10-23 | `supabase/tests/12_notifikasi_email.sql` | Panggilan uji coba kedua dalam kurun waktu kurang dari 60 detik ditolak dengan pesan pembatasan laju. |
+
 
 
