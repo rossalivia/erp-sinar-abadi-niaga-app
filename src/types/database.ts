@@ -1628,8 +1628,98 @@ export type Database = {
         }
         Relationships: []
       }
+      notifikasi_email_log: {
+        Row: {
+          dibuat_pada: string
+          diperbarui_pada: string
+          galat_singkat: string | null
+          id: string
+          jenis: string
+          jumlah_barang: number
+          jumlah_penerima: number
+          status: string
+          tanggal_bisnis: string
+        }
+        Insert: {
+          dibuat_pada?: string
+          diperbarui_pada?: string
+          galat_singkat?: string | null
+          id?: string
+          jenis: string
+          jumlah_barang?: number
+          jumlah_penerima?: number
+          status: string
+          tanggal_bisnis: string
+        }
+        Update: {
+          dibuat_pada?: string
+          diperbarui_pada?: string
+          galat_singkat?: string | null
+          id?: string
+          jenis?: string
+          jumlah_barang?: number
+          jumlah_penerima?: number
+          status?: string
+          tanggal_bisnis?: string
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      rpc_sistem_daftar_stok_menipis: {
+        Args: Record<string, never>
+        Returns: {
+          kode: string
+          nama: string
+          satuan: string
+          stok: number
+          stok_minimum: number
+          selisih: number
+        }[]
+      }
+      rpc_sistem_penerima_notifikasi_stok: {
+        Args: Record<string, never>
+        Returns: {
+          email: string
+          nama_lengkap: string
+          peran: string
+        }[]
+      }
+      rpc_sistem_klaim_notifikasi: {
+        Args: {
+          p_jenis: string
+          p_tanggal_bisnis: string
+        }
+        Returns: {
+          boleh_kirim: boolean
+          log_id: string
+          pesan: string
+        }[]
+      }
+      rpc_sistem_selesaikan_notifikasi: {
+        Args: {
+          p_galat?: string | null
+          p_jumlah_barang: number
+          p_jumlah_penerima: number
+          p_log_id: string
+          p_status: string
+        }
+        Returns: boolean
+      }
+      rpc_riwayat_notifikasi_manajer: {
+        Args: Record<string, never>
+        Returns: {
+          dibuat_pada: string
+          diperbarui_pada: string
+          galat_singkat: string | null
+          id: string
+          jenis: string
+          jumlah_barang: number
+          jumlah_penerima: number
+          status: string
+          tanggal_bisnis: string
+        }[]
+      }
       rpc_impor_barang: {
         Args: {
           p_nama_berkas: string
