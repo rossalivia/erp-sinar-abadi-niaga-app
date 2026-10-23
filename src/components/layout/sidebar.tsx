@@ -17,6 +17,7 @@ import {
   X,
   Layers,
   ClipboardCheck,
+  ClipboardList,
   ReceiptText,
   Upload,
   LucideIcon,
@@ -30,6 +31,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Package,
   Layers,
   ClipboardCheck,
+  ClipboardList,
   Users,
   ShoppingCart,
   ReceiptText,
@@ -50,7 +52,7 @@ const SIDEBAR_SECTIONS: { label: string; hrefs: string[] }[] = [
   },
   {
     label: 'Inventory & Gudang',
-    hrefs: ['/barang', '/stok', '/stok/opname'],
+    hrefs: ['/barang', '/stok', '/stok/opname', '/gudang/picking'],
   },
   {
     label: 'Transaksi & Penjualan',

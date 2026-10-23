@@ -23,7 +23,10 @@ export function AppShell({ user, children }: AppShellProps) {
       />
 
       {/* Main Container */}
-      <div className="flex flex-1 flex-col md:pl-56 min-w-0">
+      <div
+        className="flex flex-1 flex-col md:pl-56 min-w-0"
+        data-app-shell-content
+      >
         {/* Top Header */}
         <Header
           user={user}

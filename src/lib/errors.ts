@@ -63,6 +63,9 @@ export const ERROR_MESSAGES: Record<string, string> = {
   E0060: 'Gagal memproses impor data, seluruh transaksi dibatalkan',
   E0061: 'Format berkas tidak didukung, harap unggah berkas berekstensi .csv',
   E0062: 'Data impor tidak valid',
+  E0063: 'Pilih minimal satu pesanan untuk membuat daftar ambil barang',
+  E0064: 'Terdapat pesanan yang tidak valid atau bukan berstatus dikonfirmasi',
+  E0065: 'Hanya Staf Gudang dan Manajer yang berwenang mengakses daftar ambil barang',
 };
 
 interface SupabasePostgresError {

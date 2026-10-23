@@ -40,3 +40,65 @@
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
+
+/* Aturan cetak dokumen operasional (picking list, laporan, struk) */
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+
+  body {
+    background: #fff !important;
+    color: #0f172a;
+  }
+
+  aside,
+  header,
+  .no-print {
+    display: none !important;
+  }
+
+  [data-app-shell-content] {
+    padding-left: 0 !important;
+  }
+
+  main {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  .picking-print table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .picking-print th,
+  .picking-print td {
+    border: 1px solid #0f172a !important;
+    padding: 4px 6px !important;
+    font-size: 10px !important;
+    color: #000 !important;
+    background: transparent !important;
+  }
+
+  .picking-print thead th {
+    background: #f1f5f9 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .picking-print .rounded-md {
+    border-radius: 0 !important;
+  }
+
+  .picking-print .picking-list-row {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .picking-print .text-slate-500,
+  .picking-print .text-slate-400 {
+    color: #334155 !important;
+  }
+}

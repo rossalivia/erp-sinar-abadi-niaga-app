@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { getProfil } from '@/lib/profil';
 import { createServerClient } from '@/lib/supabase/server';
@@ -19,6 +20,10 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import type { LaporanRingkasan, LaporanAgingPiutang } from '@/features/laporan/types';
+import {
+  TugasHariIniSkeleton,
+  TugasHariIniSection,
+} from '@/features/pusat-tugas/components/tugas-hari-ini-section';
 
 interface BarangMenipis {
   id: string;
@@ -226,6 +231,11 @@ export default async function DashboardPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Pusat Tugas Harian — satu RPC, terisolasi dalam Suspense */}
+      <Suspense fallback={<TugasHariIniSkeleton />}>
+        <TugasHariIniSection />
+      </Suspense>
 
       {/* Widget Monitoring Penagihan (Manajer & Penjualan) */}
       {(user?.peran === 'manajer' || user?.peran === 'penjualan') && (tagihanHariIni > 0 || tagihanOverdueCount > 0) && (

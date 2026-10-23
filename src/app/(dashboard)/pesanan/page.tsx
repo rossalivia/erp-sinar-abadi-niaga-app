@@ -1,6 +1,6 @@
 import * as React from 'react';
 import Link from 'next/link';
-import { Plus, Search, Truck, Filter, RotateCcw } from 'lucide-react';
+import { Plus, Search, Truck, Filter, RotateCcw, ClipboardList } from 'lucide-react';
 
 import { PageHeader } from '@/components/shared/page-header';
 import { BadgeStatus } from '@/components/shared/badge-status';
@@ -86,7 +86,7 @@ export default async function DaftarPesananPage({ searchParams }: PageProps) {
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
   const canCreate = peran === 'penjualan' || peran === 'manajer';
-  const isGudang = peran === 'gudang';
+  const dapatPicking = peran === 'gudang' || peran === 'manajer';
 
   return (
     <div className="space-y-4">
@@ -106,21 +106,36 @@ export default async function DaftarPesananPage({ searchParams }: PageProps) {
       />
 
       {/* Baris Pintasan Gudang */}
-      {isGudang && (
-        <div className="flex items-center gap-2 p-2.5 bg-blue-50 border border-blue-200 rounded-md text-xs text-blue-900">
-          <Truck className="w-4 h-4 text-blue-700 shrink-0" />
-          <span className="font-medium">Pintasan Gudang:</span>
-          <span>Lihat daftar pesanan yang sudah dikonfirmasi dan siap untuk dikirim.</span>
-          <Button
-            asChild
-            size="sm"
-            variant={statusFilter === 'dikonfirmasi' ? 'default' : 'outline'}
-            className="ml-auto text-xs h-7 gap-1"
-          >
-            <Link href="/pesanan?status=dikonfirmasi">
-              Siap Kirim
-            </Link>
-          </Button>
+      {dapatPicking && (
+        <div className="flex flex-col gap-2 p-2.5 bg-blue-50 border border-blue-200 rounded-md text-xs text-blue-900 sm:flex-row sm:items-center">
+          <div className="flex items-center gap-2">
+            <Truck className="w-4 h-4 text-blue-700 shrink-0" />
+            <span className="font-medium">Pintasan Gudang:</span>
+            <span>Lihat daftar pesanan yang sudah dikonfirmasi dan siap untuk dikirim.</span>
+          </div>
+          <div className="flex items-center gap-2 sm:ml-auto">
+            <Button
+              asChild
+              size="sm"
+              variant={statusFilter === 'dikonfirmasi' ? 'default' : 'outline'}
+              className="text-xs h-7 gap-1"
+            >
+              <Link href="/pesanan?status=dikonfirmasi">
+                Siap Kirim
+              </Link>
+            </Button>
+            <Button
+              asChild
+              size="sm"
+              variant="outline"
+              className="text-xs h-7 gap-1"
+            >
+              <Link href="/gudang/picking">
+                <ClipboardList className="w-3 h-3" />
+                Daftar Ambil Barang
+              </Link>
+            </Button>
+          </div>
         </div>
       )}
 

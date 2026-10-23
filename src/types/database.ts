@@ -1609,6 +1609,10 @@ export type Database = {
         }
         Returns: Json
       }
+      rpc_ambil_daftar_picking: {
+        Args: { p_pesanan_ids: string[] }
+        Returns: Json
+      }
       rpc_batalkan_pengajuan_harga: {
         Args: {
           p_id: string
@@ -1685,6 +1689,10 @@ export type Database = {
           total: number
           hari_terlambat: number
         }[]
+      }
+      rpc_get_tugas_harian: {
+        Args: never
+        Returns: Json
       }
       rpc_kirim_pesanan: { Args: { p_pesanan_id: string }; Returns: Json }
       rpc_konfirmasi_pesanan: { Args: { p_pesanan_id: string }; Returns: Json }
