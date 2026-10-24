@@ -77,7 +77,7 @@ export default async function DaftarStokPage({ searchParams }: PageProps) {
       />
 
       {/* Filter & Pencarian Bar */}
-      <div className="bg-white border border-slate-200 rounded-md p-3.5 space-y-3">
+      <div className="bg-white/80 backdrop-blur-md border border-white/80 rounded-2xl p-4 shadow-neu-sm space-y-3">
         <form method="get" className="flex flex-col sm:flex-row items-center gap-2.5">
           <div className="relative flex-1 w-full">
             <Search className="w-4 h-4 text-slate-400 absolute left-2.5 top-2.5 pointer-events-none" />
@@ -123,7 +123,7 @@ export default async function DaftarStokPage({ searchParams }: PageProps) {
       </div>
 
       {/* Tabel Inventori Barang */}
-      <div className="bg-white border border-slate-200 rounded-md overflow-hidden">
+      <div className="bg-white rounded-2xl border border-white/80 shadow-neu-sm overflow-hidden">
         {items.length === 0 ? (
           <EmptyState
             title="Tidak ada data barang ditemukan"

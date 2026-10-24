@@ -288,7 +288,7 @@ export default async function BarangPage({ searchParams }: PageProps) {
       />
 
       {/* Filter & Search Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 bg-white rounded-md border border-slate-200">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 bg-white/80 backdrop-blur-md rounded-2xl border border-white/80 shadow-neu-sm">
         <form method="GET" className="flex items-center gap-2 flex-1 max-w-md">
           <div className="relative flex-1">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
@@ -380,7 +380,7 @@ export default async function BarangPage({ searchParams }: PageProps) {
       </div>
 
       {/* Tabel Data Barang */}
-      <div className="bg-white rounded-md border border-slate-200 overflow-hidden">
+      <div className="bg-white rounded-2xl border border-white/80 shadow-neu-sm overflow-hidden">
         <DataTable
           columns={baseColumns}
           data={barangList}

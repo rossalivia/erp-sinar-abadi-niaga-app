@@ -38,7 +38,7 @@ export function FilterBar({ tab, preset = '8', dari = '', sampai = '', ambang = 
   // Filter untuk Tab Sales & Pelanggan: Berbasis Rentang Tanggal
   if (tab === 'sales' || tab === 'pelanggan') {
     return (
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3 border border-slate-200 rounded-md">
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-white/80 backdrop-blur-md p-4 border border-white/80 rounded-2xl shadow-neu-sm">
         {/* Preset Periode */}
         <div className="flex items-center gap-1.5 flex-wrap">
           <span className="text-xs font-medium text-slate-500 flex items-center gap-1 mr-1">
@@ -100,7 +100,7 @@ export function FilterBar({ tab, preset = '8', dari = '', sampai = '', ambang = 
 
   // Filter untuk Tab Dormant & Deadstock: Berbasis Ambang Batas Hari Inaktivitas
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3 border border-slate-200 rounded-md">
+    <div className="flex flex-wrap items-center justify-between gap-3 bg-white/80 backdrop-blur-md p-4 border border-white/80 rounded-2xl shadow-neu-sm">
       <div className="flex items-center gap-1.5 flex-wrap">
         <span className="text-xs font-medium text-slate-500 flex items-center gap-1 mr-1">
           <Clock className="w-3.5 h-3.5" />

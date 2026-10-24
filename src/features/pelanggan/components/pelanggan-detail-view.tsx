@@ -128,7 +128,7 @@ export function PelangganDetailView({
     <div className="space-y-6">
       {/* Kartu Ringkasan Status Kredit & Piutang */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="border-slate-200 shadow-none">
+        <Card>
           <CardHeader className="py-2.5 px-4 border-b border-slate-100">
             <CardTitle className="text-xs font-medium text-slate-500">
               Batas Kredit (Plafon)
@@ -144,7 +144,7 @@ export function PelangganDetailView({
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200 shadow-none">
+        <Card>
           <CardHeader className="py-2.5 px-4 border-b border-slate-100">
             <CardTitle className="text-xs font-medium text-slate-500">
               Piutang Berjalan
@@ -160,7 +160,7 @@ export function PelangganDetailView({
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200 shadow-none">
+        <Card>
           <CardHeader className="py-2.5 px-4 border-b border-slate-100">
             <CardTitle className="text-xs font-medium text-slate-500">
               Sisa Kredit
@@ -298,7 +298,7 @@ export function PelangganDetailView({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Kolom Kiri: Form Ubah Data Pokok Toko */}
         <div className="lg:col-span-2">
-          <Card className="border-slate-200 shadow-none">
+          <Card>
             <CardHeader className="py-3 px-5 border-b border-slate-100 flex flex-row items-center justify-between">
               <div>
                 <CardTitle className="text-xs font-semibold text-slate-900 uppercase tracking-wider">
@@ -368,7 +368,7 @@ export function PelangganDetailView({
 
         {/* Kolom Kanan: Pengaturan Kredit & Termin (Hak Khusus Manajer) */}
         <div className="space-y-6">
-          <Card className="border-slate-200 shadow-none">
+          <Card>
             <CardHeader className="py-3 px-5 border-b border-slate-100">
               <CardTitle className="text-xs font-semibold text-slate-900 uppercase tracking-wider">
                 Ketentuan Kredit & Termin

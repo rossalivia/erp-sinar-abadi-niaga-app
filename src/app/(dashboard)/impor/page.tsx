@@ -35,7 +35,7 @@ export default async function ImporPage({ searchParams }: PageProps) {
         action={
           <Link
             href="/impor/riwayat"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl border border-white/80 bg-white/90 shadow-neu-sm hover:bg-white text-slate-700 transition-colors"
           >
             <History className="h-4 w-4" />
             <span>Lihat Riwayat Impor</span>
@@ -44,29 +44,29 @@ export default async function ImporPage({ searchParams }: PageProps) {
       />
 
       {/* Tab Navigasi */}
-      <div className="flex border-b border-slate-200">
+      <div className="flex items-center gap-1.5 p-1 bg-slate-100/80 backdrop-blur-md rounded-xl border border-slate-200/60 shadow-neu-inset w-fit">
         <Link
           href="/impor?tab=barang"
           className={cn(
-            'inline-flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-colors -mb-px',
+            'inline-flex items-center gap-2 px-3.5 py-1.5 text-xs font-medium rounded-lg transition-all',
             activeTab === 'barang'
-              ? 'border-slate-900 text-slate-900 font-semibold'
-              : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+              ? 'bg-white text-slate-900 font-semibold shadow-neu-sm'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
           )}
         >
-          <Package className="h-4 w-4" />
+          <Package className={cn('h-4 w-4', activeTab === 'barang' && 'text-indigo-600')} />
           <span>Impor Barang</span>
         </Link>
         <Link
           href="/impor?tab=pelanggan"
           className={cn(
-            'inline-flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-colors -mb-px',
+            'inline-flex items-center gap-2 px-3.5 py-1.5 text-xs font-medium rounded-lg transition-all',
             activeTab === 'pelanggan'
-              ? 'border-slate-900 text-slate-900 font-semibold'
-              : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+              ? 'bg-white text-slate-900 font-semibold shadow-neu-sm'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
           )}
         >
-          <Users className="h-4 w-4" />
+          <Users className={cn('h-4 w-4', activeTab === 'pelanggan' && 'text-indigo-600')} />
           <span>Impor Pelanggan</span>
         </Link>
       </div>

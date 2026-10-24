@@ -313,14 +313,14 @@ export function CommandMenu({ open, onOpenChange, peran }: CommandMenuProps) {
   return (
     <DialogPrimitive.Root open={open} onOpenChange={handleOpenChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 duration-200" />
         <DialogPrimitive.Content
           onKeyDown={handleKeyDown}
-          className="fixed left-[50%] top-[18%] z-50 w-full max-w-2xl translate-x-[-50%] bg-white border border-slate-800 shadow-2xl rounded-none flex flex-col overflow-hidden data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 duration-100"
+          className="fixed left-[50%] top-[16%] z-50 w-full max-w-2xl translate-x-[-50%] bg-white/95 backdrop-blur-2xl border border-white/80 shadow-2xl rounded-2xl flex flex-col overflow-hidden data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 duration-150"
         >
           {/* Header & Search Input */}
-          <div className="flex items-center gap-3 border-b border-slate-200 bg-slate-50/75 px-4 py-3 shrink-0">
-            <Search className="h-4 w-4 text-slate-500 shrink-0" />
+          <div className="flex items-center gap-3 border-b border-slate-200/70 bg-slate-50/60 px-4 py-3.5 shrink-0">
+            <Search className="h-4 w-4 text-indigo-600 shrink-0" />
             <input
               ref={inputRef}
               type="text"
@@ -330,7 +330,7 @@ export function CommandMenu({ open, onOpenChange, peran }: CommandMenuProps) {
                 setSelectedIndex(0);
               }}
               placeholder="Ketik nama menu, transaksi, atau aksi cepat (mis: pesanan, stok, PO)..."
-              className="flex-1 bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
+              className="flex-1 bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none font-medium"
             />
             {query ? (
               <button
@@ -339,13 +339,13 @@ export function CommandMenu({ open, onOpenChange, peran }: CommandMenuProps) {
                   setQuery('');
                   setSelectedIndex(0);
                 }}
-                className="text-slate-400 hover:text-slate-600 p-0.5 rounded-none cursor-pointer"
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg cursor-pointer"
                 title="Hapus pencarian"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
             ) : (
-              <kbd className="hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-mono text-slate-500 bg-white border border-slate-200 rounded-none shadow-xs">
+              <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-mono text-slate-500 bg-white border border-slate-200 rounded-md shadow-xs">
                 ESC
               </kbd>
             )}
@@ -383,18 +383,18 @@ export function CommandMenu({ open, onOpenChange, peran }: CommandMenuProps) {
                           data-active={isSelected}
                           onClick={() => handleSelect(item)}
                           onMouseEnter={() => setSelectedIndex(globalIndex)}
-                          className={`w-full flex items-center justify-between px-3 py-2 text-left cursor-pointer transition-colors rounded-none ${
+                          className={`w-full flex items-center justify-between px-3 py-2 text-left cursor-pointer transition-all rounded-xl ${
                             isSelected
-                              ? 'bg-slate-900 text-white'
-                              : 'text-slate-700 hover:bg-slate-100'
+                              ? 'bg-indigo-600 text-white shadow-neu-sm'
+                              : 'text-slate-700 hover:bg-slate-100/80'
                           }`}
                         >
                           <div className="flex items-center gap-3 min-w-0">
                             <div
-                              className={`p-1.5 rounded-none shrink-0 ${
+                              className={`p-1.5 rounded-lg shrink-0 ${
                                 isSelected
-                                  ? 'bg-slate-800 text-slate-100'
-                                  : 'bg-slate-100 text-slate-600'
+                                  ? 'bg-indigo-700 text-white'
+                                  : 'bg-[#f4f7fb] text-slate-600 shadow-neu-inset'
                               }`}
                             >
                               <Icon className="h-3.5 w-3.5" />
@@ -402,17 +402,17 @@ export function CommandMenu({ open, onOpenChange, peran }: CommandMenuProps) {
                             <div className="truncate">
                               <div className="flex items-center gap-2">
                                 <span
-                                  className={`text-xs font-medium truncate ${
+                                  className={`text-xs font-semibold truncate ${
                                     isSelected ? 'text-white' : 'text-slate-900'
                                   }`}
                                 >
                                   {item.title}
                                 </span>
                                 <span
-                                  className={`text-[10px] font-mono px-1 rounded-none border ${
+                                  className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full border ${
                                     isSelected
-                                      ? 'bg-slate-800 text-slate-300 border-slate-700'
-                                      : 'bg-slate-50 text-slate-500 border-slate-200'
+                                      ? 'bg-indigo-700 text-indigo-100 border-indigo-500'
+                                      : 'bg-white/80 text-slate-500 border-slate-200'
                                   }`}
                                 >
                                   {item.href}
@@ -421,7 +421,7 @@ export function CommandMenu({ open, onOpenChange, peran }: CommandMenuProps) {
                               {item.description && (
                                 <p
                                   className={`text-[11px] truncate mt-0.5 ${
-                                    isSelected ? 'text-slate-300' : 'text-slate-500'
+                                    isSelected ? 'text-indigo-100' : 'text-slate-500'
                                   }`}
                                 >
                                   {item.description}
@@ -432,7 +432,7 @@ export function CommandMenu({ open, onOpenChange, peran }: CommandMenuProps) {
 
                           <div className="flex items-center gap-1 pl-3 shrink-0">
                             {isSelected ? (
-                              <span className="flex items-center gap-1 text-[10px] font-mono text-slate-300">
+                              <span className="flex items-center gap-1 text-[10px] font-mono text-indigo-100">
                                 <span>Pilih</span>
                                 <CornerDownLeft className="h-3 w-3" />
                               </span>
@@ -450,32 +450,32 @@ export function CommandMenu({ open, onOpenChange, peran }: CommandMenuProps) {
           </div>
 
           {/* Dialog Footer - Keyboard shortcuts helper */}
-          <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-4 py-2 text-[11px] text-slate-500 font-mono shrink-0">
+          <div className="flex items-center justify-between border-t border-slate-200/80 bg-slate-50/80 px-4 py-2.5 text-[11px] text-slate-500 font-mono shrink-0">
             <div className="flex items-center gap-3">
               <span className="flex items-center gap-1">
-                <kbd className="px-1 py-0.2 bg-white border border-slate-200 text-[10px] rounded-none">
+                <kbd className="px-1.5 py-0.2 bg-white border border-slate-200 text-[10px] rounded-md shadow-xs">
                   ↑
                 </kbd>
-                <kbd className="px-1 py-0.2 bg-white border border-slate-200 text-[10px] rounded-none">
+                <kbd className="px-1.5 py-0.2 bg-white border border-slate-200 text-[10px] rounded-md shadow-xs">
                   ↓
                 </kbd>
                 <span className="ml-0.5">Navigasi</span>
               </span>
               <span className="flex items-center gap-1">
-                <kbd className="px-1 py-0.2 bg-white border border-slate-200 text-[10px] rounded-none">
+                <kbd className="px-1.5 py-0.2 bg-white border border-slate-200 text-[10px] rounded-md shadow-xs">
                   ↵
                 </kbd>
                 <span className="ml-0.5">Buka</span>
               </span>
               <span className="flex items-center gap-1">
-                <kbd className="px-1 py-0.2 bg-white border border-slate-200 text-[10px] rounded-none">
+                <kbd className="px-1.5 py-0.2 bg-white border border-slate-200 text-[10px] rounded-md shadow-xs">
                   ESC
                 </kbd>
                 <span className="ml-0.5">Tutup</span>
               </span>
             </div>
             <div className="text-[10px] text-slate-400">
-              Hak Akses: <span className="uppercase font-semibold text-slate-600">{peran}</span>
+              Hak Akses: <span className="uppercase font-semibold text-slate-700">{peran}</span>
             </div>
           </div>
         </DialogPrimitive.Content>

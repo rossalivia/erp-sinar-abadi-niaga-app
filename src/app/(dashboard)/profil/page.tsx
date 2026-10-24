@@ -40,7 +40,7 @@ export default async function ProfilPage() {
       />
 
       {/* Ringkasan Identitas Akun */}
-      <Card className="border-slate-200 shadow-none bg-white">
+      <Card>
         <CardHeader className="py-3 px-5 border-b border-slate-100 flex flex-row items-center justify-between">
           <CardTitle className="text-xs font-semibold text-slate-900 uppercase tracking-wider">
             Informasi Akun Terdaftar
@@ -49,7 +49,7 @@ export default async function ProfilPage() {
         </CardHeader>
         <CardContent className="p-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
-            <div className="flex items-center gap-2.5 p-3 rounded-md bg-slate-50 border border-slate-100">
+            <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-slate-50/70 border border-slate-100 shadow-neu-sm">
               <UserCheck className="h-4 w-4 text-slate-500 shrink-0" />
               <div>
                 <span className="text-slate-400 text-[10px] block">Nama Lengkap</span>

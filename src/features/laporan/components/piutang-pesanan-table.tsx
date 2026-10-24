@@ -78,7 +78,7 @@ export function PiutangPesananTable({ items }: PiutangPesananTableProps) {
 
   return (
     <>
-      <Card className="border-slate-200 shadow-none bg-white">
+      <Card>
         <CardHeader className="py-3 px-5 border-b border-slate-100 flex flex-row items-center justify-between">
           <div>
             <CardTitle className="text-sm font-semibold text-slate-900 tracking-tight">

@@ -107,7 +107,7 @@ export function AuditTable({
   return (
     <>
       {/* Filter Bar */}
-      <Card className="border-slate-200 shadow-none bg-white p-3.5">
+      <Card className="p-4">
         <form onSubmit={applyFilters} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2.5 items-end">
           <div>
             <label className="text-xs font-medium text-slate-600 block mb-1">Aksi</label>
@@ -186,7 +186,7 @@ export function AuditTable({
       </Card>
 
       {/* Tabel Data Audit */}
-      <Card className="border-slate-200 shadow-none bg-white">
+      <Card>
         <CardHeader className="py-3 px-5 border-b border-slate-100 flex flex-row items-center justify-between">
           <CardTitle className="text-sm font-semibold text-slate-900 tracking-tight">
             Log Aktivitas Perubahan Data

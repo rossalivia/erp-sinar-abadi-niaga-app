@@ -86,7 +86,7 @@ export function AkunTableClient({ users }: AkunTableClientProps) {
 
   return (
     <>
-      <div className="bg-white rounded-md border border-slate-200 overflow-hidden">
+      <div className="bg-white rounded-2xl border border-white/80 shadow-neu-sm overflow-hidden">
         <DataTable
           columns={columns}
           data={users}

@@ -92,10 +92,10 @@ function PenyesuaianModalInner({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="bg-white rounded-md border border-slate-200 shadow-md max-w-md w-full p-5 space-y-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-md p-4 animate-in fade-in-0">
+      <div className="bg-white/95 backdrop-blur-xl rounded-2xl border border-white/80 shadow-neu-lg max-w-md w-full p-6 space-y-4 animate-in zoom-in-95">
         <div className="flex items-start gap-3">
-          <div className="p-2 rounded bg-slate-100 text-slate-800 shrink-0">
+          <div className="p-2.5 rounded-xl bg-slate-100 text-slate-800 shadow-neu-sm shrink-0">
             <SlidersHorizontal className="w-5 h-5" />
           </div>
           <div>

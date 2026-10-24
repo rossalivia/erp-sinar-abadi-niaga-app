@@ -115,7 +115,7 @@ export function BarangDetailView({ barang, peran }: BarangDetailViewProps) {
     <div className="space-y-6">
       {/* Kartu Ringkasan Stok & Peringatan */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="border-slate-200 shadow-none">
+        <Card>
           <CardHeader className="py-2.5 px-4 border-b border-slate-100">
             <CardTitle className="text-xs font-medium text-slate-500">
               Stok Fisik Saat Ini
@@ -132,9 +132,9 @@ export function BarangDetailView({ barang, peran }: BarangDetailViewProps) {
         </Card>
 
         <Card
-          className={`border shadow-none ${
-            stokMenipis ? 'border-amber-200 bg-amber-50/30' : 'border-slate-200 bg-white'
-          }`}
+          className={
+            stokMenipis ? 'border-amber-200/80 bg-amber-50/50 shadow-neu-sm' : ''
+          }
         >
           <CardHeader className="py-2.5 px-4 border-b border-slate-100">
             <CardTitle className="text-xs font-medium text-slate-500">
@@ -161,7 +161,7 @@ export function BarangDetailView({ barang, peran }: BarangDetailViewProps) {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200 shadow-none">
+        <Card>
           <CardHeader className="py-2.5 px-4 border-b border-slate-100">
             <CardTitle className="text-xs font-medium text-slate-500">
               Harga Jual Resmi
@@ -177,7 +177,7 @@ export function BarangDetailView({ barang, peran }: BarangDetailViewProps) {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200 shadow-none">
+        <Card>
           <CardHeader className="py-2.5 px-4 border-b border-slate-100">
             <CardTitle className="text-xs font-medium text-slate-500">
               Terakhir Diperbarui
@@ -210,7 +210,7 @@ export function BarangDetailView({ barang, peran }: BarangDetailViewProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Kolom Kiri: Informasi Barang & Form Gudang/Manajer */}
         <div className="lg:col-span-2 space-y-6">
-          <Card className="border-slate-200 shadow-none">
+          <Card>
             <CardHeader className="py-3 px-5 border-b border-slate-100 flex flex-row items-center justify-between">
               <div>
                 <CardTitle className="text-xs font-semibold text-slate-900 uppercase tracking-wider">
@@ -312,7 +312,7 @@ export function BarangDetailView({ barang, peran }: BarangDetailViewProps) {
           </Card>
 
           {/* Kartu Manajemen Stok (Non-editable langsung) */}
-          <Card className="border-slate-200 shadow-none">
+          <Card>
             <CardHeader className="py-3 px-5 border-b border-slate-100">
               <CardTitle className="text-xs font-semibold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
                 <Package className="h-4 w-4 text-slate-500" />
@@ -353,7 +353,7 @@ export function BarangDetailView({ barang, peran }: BarangDetailViewProps) {
         {/* Kolom Kanan: Panel Keuangan / Hak Khusus Manajer */}
         <div className="space-y-6">
           {isManajer ? (
-            <Card className="border-slate-200 shadow-none">
+            <Card>
               <CardHeader className="py-3 px-5 border-b border-slate-100 flex items-center justify-between">
                 <CardTitle className="text-xs font-semibold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
                   <TrendingUp className="h-4 w-4 text-slate-600" />
@@ -442,7 +442,7 @@ export function BarangDetailView({ barang, peran }: BarangDetailViewProps) {
               </CardContent>
             </Card>
           ) : (
-            <Card className="border-slate-200 shadow-none">
+            <Card>
               <CardHeader className="py-3 px-5 border-b border-slate-100">
                 <CardTitle className="text-xs font-semibold text-slate-900 uppercase tracking-wider">
                   Harga & Ketentuan Penjualan

@@ -8,10 +8,10 @@ import type { ToneTugas, WidgetTugas } from '../types';
 import type { Peran } from '@/types/auth';
 
 const GAYA_KARTU: Record<ToneTugas, string> = {
-  neutral: 'border-slate-200 bg-white',
-  info: 'border-blue-200 bg-blue-50/50',
-  warning: 'border-amber-200 bg-amber-50/50',
-  danger: 'border-red-200 bg-red-50/50',
+  neutral: 'border-white/80 bg-white/80 backdrop-blur-md shadow-neu-sm hover:bg-white',
+  info: 'border-blue-200/80 bg-blue-50/70 backdrop-blur-md shadow-neu-sm hover:bg-blue-50/90',
+  warning: 'border-amber-200/80 bg-amber-50/70 backdrop-blur-md shadow-neu-sm hover:bg-amber-50/90',
+  danger: 'border-red-200/80 bg-red-50/70 backdrop-blur-md shadow-neu-sm hover:bg-red-50/90',
 };
 
 const GAYA_ANGKA: Record<ToneTugas, string> = {
@@ -91,7 +91,7 @@ export function TugasHariIni({ widgets, peran }: TugasHariIniProps) {
               key={widget.key}
               href={widget.href}
               className={cn(
-                'group flex flex-col justify-between rounded-md border p-3.5 transition-colors hover:border-slate-300',
+                'group flex flex-col justify-between rounded-2xl border p-4 transition-all duration-200',
                 GAYA_KARTU[tone]
               )}
             >

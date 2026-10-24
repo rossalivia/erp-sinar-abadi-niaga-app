@@ -231,7 +231,7 @@ export function OpnameEditor({ katalogBarang, initialData }: OpnameEditorProps) 
       )}
 
       {/* Form Metadata Sesi */}
-      <div className="rounded-lg border border-slate-200 bg-white p-4">
+      <div className="rounded-2xl border border-white/80 bg-white/80 backdrop-blur-md p-5 shadow-neu-sm">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="md:col-span-2">
             <FormField label="Catatan / Area Audit" id="catatan" hint="Opsional">
@@ -293,7 +293,7 @@ export function OpnameEditor({ katalogBarang, initialData }: OpnameEditorProps) 
       </div>
 
       {/* Tabel Hitung Fisik Interaktif */}
-      <div className="rounded-lg border border-slate-200 bg-white overflow-hidden shadow-none">
+      <div className="rounded-2xl border border-white/80 bg-white shadow-neu-sm overflow-hidden">
         <div className="border-b border-slate-200 bg-slate-50 px-4 py-2.5 flex items-center justify-between">
           <h3 className="text-xs font-semibold text-slate-800 uppercase tracking-wider">
             Rincian Inventarisasi Fisik ({rows.length} Barang)

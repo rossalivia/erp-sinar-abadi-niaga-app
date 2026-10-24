@@ -111,7 +111,7 @@ export function PenilaianKreditPanel({
   };
 
   return (
-    <Card className="border-slate-200 shadow-none">
+    <Card>
       <CardHeader className="pb-3 border-b border-slate-100">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>

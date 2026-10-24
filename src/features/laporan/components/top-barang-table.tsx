@@ -11,7 +11,7 @@ interface TopBarangTableProps {
 
 export function TopBarangTable({ items }: TopBarangTableProps) {
   return (
-    <Card className="border-slate-200 shadow-none bg-white">
+    <Card>
       <CardHeader className="py-3 px-5 border-b border-slate-100">
         <CardTitle className="text-sm font-semibold text-slate-900 tracking-tight">
           Top 10 Barang berdasarkan Margin

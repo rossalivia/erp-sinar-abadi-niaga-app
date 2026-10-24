@@ -14,12 +14,12 @@ export function TugasHariIniSkeleton() {
         {Array.from({ length: 5 }).map((_, index) => (
           <div
             key={index}
-            className="animate-pulse rounded-md border border-slate-200 bg-white p-3.5"
+            className="animate-pulse rounded-2xl border border-white/80 bg-white/70 backdrop-blur-md p-4 shadow-neu-sm"
           >
-            <div className="h-2.5 w-3/4 rounded bg-slate-200" />
-            <div className="mt-3 h-6 w-10 rounded bg-slate-200" />
-            <div className="mt-2 h-2 w-full rounded bg-slate-100" />
-            <div className="mt-3 h-2 w-1/3 rounded bg-slate-100" />
+            <div className="h-2.5 w-3/4 rounded-full bg-slate-200" />
+            <div className="mt-3 h-6 w-10 rounded-lg bg-slate-200" />
+            <div className="mt-2 h-2 w-full rounded-full bg-slate-100" />
+            <div className="mt-3 h-2 w-1/3 rounded-full bg-slate-100" />
           </div>
         ))}
       </div>

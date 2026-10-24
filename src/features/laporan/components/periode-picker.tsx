@@ -49,7 +49,7 @@ export function PeriodePicker({ dari, sampai, preset }: PeriodePickerProps) {
   };
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 rounded-md border border-slate-200">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white/80 backdrop-blur-md p-4 rounded-2xl border border-white/80 shadow-neu-sm">
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5 mr-1">
           <Calendar className="h-3.5 w-3.5" />

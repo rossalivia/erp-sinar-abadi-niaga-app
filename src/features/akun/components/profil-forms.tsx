@@ -60,7 +60,7 @@ export function ProfilForms({ user }: ProfilFormsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* Form Ubah Nama Profil */}
-      <Card className="border-slate-200 shadow-none">
+      <Card>
         <CardHeader className="py-3 px-5 border-b border-slate-100">
           <CardTitle className="text-xs font-semibold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
             <User className="h-4 w-4 text-slate-500" />
@@ -95,7 +95,7 @@ export function ProfilForms({ user }: ProfilFormsProps) {
       </Card>
 
       {/* Form Ganti Kata Sandi */}
-      <Card className="border-slate-200 shadow-none">
+      <Card>
         <CardHeader className="py-3 px-5 border-b border-slate-100">
           <CardTitle className="text-xs font-semibold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
             <KeyRound className="h-4 w-4 text-slate-500" />

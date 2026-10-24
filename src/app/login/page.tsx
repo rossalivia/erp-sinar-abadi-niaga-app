@@ -38,32 +38,32 @@ function LoginForm() {
 
   return (
     <div className="space-y-5 max-w-sm w-full mx-auto">
-      <div className="space-y-1.5">
+      <div className="space-y-1">
         <h1 className="text-xl font-bold tracking-tight text-slate-900">
-          Selamat Datang di Enterprise SAN
+          Selamat Datang
         </h1>
-        <p className="text-xs text-slate-500">
-          Masuk untuk mengakses dasbor distribusi, pesanan, dan kontrol inventori.
+        <p className="text-xs text-slate-500 font-normal">
+          Masuk ke portal distribusi, pesanan grosir, dan inventori terpadu.
         </p>
       </div>
 
       {errorMessage && (
-        <div className="flex items-start gap-2 rounded-none border border-red-300 bg-red-50 p-2.5 text-xs text-red-700">
+        <div className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50/80 p-3 text-xs text-red-800 shadow-neu-sm">
           <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-red-600" />
-          <span>{errorMessage}</span>
+          <span className="font-medium">{errorMessage}</span>
         </div>
       )}
 
       <form action={formAction} className="space-y-4">
         <input type="hidden" name="next" value={nextParam} />
 
-        {/* Input Email / Username ala Jira */}
+        {/* Input Email / Username */}
         <div className="space-y-1.5">
           <label
             htmlFor="email"
             className="block text-xs font-semibold text-slate-700 uppercase tracking-wider"
           >
-            Email / Username
+            Email / Akun
           </label>
           <div className="relative">
             <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
@@ -77,7 +77,7 @@ function LoginForm() {
               autoComplete="email"
               disabled={isPending}
               placeholder="nama@sinarabadi.co.id"
-              className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-300 rounded-none text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-indigo-600 focus:bg-white transition-colors font-mono disabled:opacity-50"
+              className="w-full pl-9 pr-3 py-2 bg-[#f8fafc] border border-slate-200/80 rounded-xl text-xs text-slate-800 placeholder:text-slate-400 shadow-neu-inset focus:outline-none focus:ring-2 focus:ring-indigo-500/70 focus:border-indigo-400 focus:bg-white transition-all font-mono disabled:opacity-50"
             />
           </div>
           {state?.fieldErrors?.email?.[0] && (
@@ -85,7 +85,7 @@ function LoginForm() {
           )}
         </div>
 
-        {/* Input Password ala Jira */}
+        {/* Input Password */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <label
@@ -97,7 +97,7 @@ function LoginForm() {
             <button
               type="button"
               onClick={() => setShowHelpDialog(true)}
-              className="text-[11px] text-indigo-600 hover:underline font-medium cursor-pointer"
+              className="text-[11px] text-indigo-600 hover:text-indigo-700 hover:underline font-semibold cursor-pointer"
             >
               Lupa sandi?
             </button>
@@ -114,12 +114,12 @@ function LoginForm() {
               autoComplete="current-password"
               disabled={isPending}
               placeholder="••••••••••••"
-              className="w-full pl-9 pr-10 py-2.5 bg-slate-50 border border-slate-300 rounded-none text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-indigo-600 focus:bg-white transition-colors font-mono disabled:opacity-50"
+              className="w-full pl-9 pr-10 py-2 bg-[#f8fafc] border border-slate-200/80 rounded-xl text-xs text-slate-800 placeholder:text-slate-400 shadow-neu-inset focus:outline-none focus:ring-2 focus:ring-indigo-500/70 focus:border-indigo-400 focus:bg-white transition-all font-mono disabled:opacity-50"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none cursor-pointer"
               tabIndex={-1}
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -131,26 +131,26 @@ function LoginForm() {
         </div>
 
         {/* Remember Me Checkbox */}
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
           <input
             id="remember-me"
             type="checkbox"
-            className="h-4 w-4 rounded-none border-slate-300 text-indigo-600 focus:ring-indigo-500"
+            className="h-4 w-4 rounded-md border-slate-300 text-indigo-600 shadow-neu-inset focus:ring-indigo-500 cursor-pointer"
           />
-          <label htmlFor="remember-me" className="ml-2 block text-xs text-slate-600 select-none">
+          <label htmlFor="remember-me" className="text-xs text-slate-600 select-none cursor-pointer">
             Ingat sesi masuk di perangkat ini
           </label>
         </div>
 
         {/* Submit Button */}
-        <button
+        <Button
           type="submit"
           disabled={isPending}
-          className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-medium rounded-none text-xs tracking-wide transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+          className="w-full h-9 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold rounded-xl text-xs tracking-wide transition-all shadow-neu-sm flex items-center justify-center gap-2 cursor-pointer"
         >
           {isPending ? (
             <>
-              <span className="inline-block h-4 w-4 animate-spin rounded-none border-2 border-white border-t-transparent"></span>
+              <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
               <span>Memproses Otentikasi...</span>
             </>
           ) : (
@@ -159,15 +159,15 @@ function LoginForm() {
               <ArrowRight className="h-3.5 w-3.5" />
             </>
           )}
-        </button>
+        </Button>
       </form>
 
       {/* Modal Dialog Bantuan Pemulihan Kata Sandi */}
       <Dialog open={showHelpDialog} onOpenChange={setShowHelpDialog}>
-        <DialogContent className="sm:max-w-md rounded-none border-slate-300">
+        <DialogContent className="sm:max-w-md rounded-2xl">
           <DialogHeader className="space-y-2">
-            <div className="flex items-center gap-2.5 text-indigo-600">
-              <div className="p-2 bg-indigo-50 border border-indigo-200 rounded-none">
+            <div className="flex items-center gap-3 text-indigo-600">
+              <div className="p-2.5 bg-indigo-50 border border-indigo-200/80 rounded-xl shadow-neu-sm">
                 <ShieldAlert className="h-5 w-5" />
               </div>
               <div>
@@ -182,14 +182,14 @@ function LoginForm() {
           </DialogHeader>
 
           <div className="space-y-3 py-2 text-xs text-slate-600 leading-relaxed">
-            <p className="bg-slate-50 p-3 border border-slate-200 text-slate-700">
+            <p className="bg-slate-50/90 p-3.5 rounded-xl border border-slate-200/80 text-slate-700 shadow-neu-inset">
               Untuk menjaga keamanan dan kerahasiaan data transaksi CV Sinar Abadi Niaga,
               pengaturan dan pemulihan kata sandi dilakukan secara terpusat oleh{' '}
               <strong className="text-slate-900 font-semibold">Administrator Manajer</strong>.
             </p>
             <p className="text-slate-600">
               Silakan hubungi{' '}
-              <strong className="text-slate-800 font-medium">Manajer Operasional</strong> untuk
+              <strong className="text-slate-800 font-semibold">Manajer Operasional</strong> untuk
               permohonan reset kata sandi akun Anda.
             </p>
           </div>
@@ -199,7 +199,7 @@ function LoginForm() {
               type="button"
               variant="default"
               onClick={() => setShowHelpDialog(false)}
-              className="w-full sm:w-auto h-8 text-xs bg-slate-900 hover:bg-slate-800 rounded-none"
+              className="w-full sm:w-auto h-8 text-xs rounded-xl"
             >
               Saya Mengerti
             </Button>
@@ -212,21 +212,21 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-slate-950 p-4 lg:p-8">
-      {/* Container utama dengan sudut sharp / clean industrial box */}
-      <div className="w-full max-w-5xl h-[640px] bg-white border border-slate-800 shadow-2xl flex overflow-hidden rounded-none">
-        {/* SISI KIRI: Form Login ala Jira (Clean, Sharp, Form Label di atas input) */}
-        <div className="w-full lg:w-1/2 p-8 lg:p-12 flex flex-col justify-between bg-white z-10">
+    <div className="min-h-screen w-full flex items-center justify-center p-4 lg:p-8 bg-[#f4f7fb]">
+      {/* Container utama hybrid Neumorphic-Glassmorphic */}
+      <div className="w-full max-w-5xl h-[640px] bg-white/80 backdrop-blur-2xl border border-white/80 shadow-2xl flex overflow-hidden rounded-3xl">
+        {/* SISI KIRI: Form Login Glassmorphic */}
+        <div className="w-full lg:w-1/2 p-8 lg:p-12 flex flex-col justify-between z-10">
           {/* Brand Header */}
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 bg-indigo-600 rounded-none flex items-center justify-center text-white font-bold tracking-wider shadow-sm">
+            <div className="h-9 w-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold tracking-wider shadow-neu-sm border border-white/30">
               SA
             </div>
             <div className="flex flex-col">
               <span className="font-bold text-slate-900 tracking-tight text-sm">
                 CV Sinar Abadi Niaga
               </span>
-              <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">
+              <span className="text-[10px] font-mono text-indigo-600 uppercase tracking-widest font-semibold">
                 Enterprise B2B Portal
               </span>
             </div>
@@ -246,16 +246,16 @@ export default function LoginPage() {
           </div>
 
           {/* Footer Info */}
-          <div className="text-[11px] text-slate-500 pt-4 border-t border-slate-100 flex items-center justify-between">
+          <div className="text-[11px] text-slate-500 pt-4 border-t border-slate-100/80 flex items-center justify-between">
             <span>CV Sinar Abadi Niaga © 2026</span>
             <span className="font-mono text-slate-400">Secure B2B Node</span>
           </div>
         </div>
 
         {/* SISI KANAN: Visual Korporat Distribusi (Gaya Logistics Supply Chain) */}
-        <div className="hidden lg:flex lg:w-1/2 relative bg-slate-900 flex-col justify-end p-12 overflow-hidden border-l border-slate-800">
+        <div className="hidden lg:flex lg:w-1/2 relative bg-slate-900 flex-col justify-end p-12 overflow-hidden border-l border-slate-800/80">
           {/* Background Image / Gradient overlay dengan nuansa high-tech logistics */}
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/40 to-transparent z-10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/60 to-transparent z-10" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-900/40 via-slate-900/80 to-slate-950 z-0" />
 
           {/* Decorative Grid Lines */}
@@ -263,23 +263,23 @@ export default function LoginPage() {
 
           {/* Content Overlay */}
           <div className="relative z-20 space-y-3">
-            <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-[11px] font-mono rounded-none">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-[11px] font-mono rounded-full backdrop-blur-md">
               <Building2 className="h-3.5 w-3.5" />
               <span>Distribution & Supply Chain Hub</span>
             </div>
             <h2 className="text-2xl font-bold tracking-tight text-white">
               Plan, Supply & Deliver.
             </h2>
-            <p className="text-xs text-slate-400 max-w-md leading-relaxed">
+            <p className="text-xs text-slate-300 max-w-md leading-relaxed">
               Sistem ERP terintegrasi untuk pengelolaan stok gudang, otomatisasi pesanan B2B, dan
               pencatatan transaksi real-time dengan keamanan ketat.
             </p>
 
             {/* Slider Indicators */}
-            <div className="flex items-center gap-1.5 pt-4">
-              <div className="w-8 h-1 bg-indigo-500 rounded-none"></div>
-              <div className="w-2 h-1 bg-slate-700 rounded-none"></div>
-              <div className="w-2 h-1 bg-slate-700 rounded-none"></div>
+            <div className="flex items-center gap-2 pt-4">
+              <div className="w-8 h-1.5 bg-indigo-500 rounded-full shadow-xs" />
+              <div className="w-2 h-1.5 bg-slate-700 rounded-full" />
+              <div className="w-2 h-1.5 bg-slate-700 rounded-full" />
             </div>
           </div>
         </div>

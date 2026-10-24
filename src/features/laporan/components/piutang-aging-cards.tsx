@@ -12,7 +12,7 @@ export function PiutangAgingCards({ aging }: PiutangAgingCardsProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
       {/* 1. Total Piutang Belum Lunas */}
-      <Card className="border-slate-200 shadow-none bg-white">
+      <Card className="shadow-neu-sm">
         <CardContent className="p-3.5">
           <div className="flex items-center justify-between text-xs font-medium text-slate-500 uppercase tracking-wider">
             <span>Total Tagihan Dikirim</span>
@@ -28,7 +28,7 @@ export function PiutangAgingCards({ aging }: PiutangAgingCardsProps) {
       </Card>
 
       {/* 2. Belum Jatuh Tempo */}
-      <Card className="border-slate-200 shadow-none bg-white">
+      <Card className="shadow-neu-sm">
         <CardContent className="p-3.5">
           <div className="flex items-center justify-between text-xs font-medium text-slate-500 uppercase tracking-wider">
             <span>Belum Jatuh Tempo</span>
@@ -44,7 +44,7 @@ export function PiutangAgingCards({ aging }: PiutangAgingCardsProps) {
       </Card>
 
       {/* 3. Lewat 1-7 Hari */}
-      <Card className="border-slate-200 shadow-none bg-white">
+      <Card className="shadow-neu-sm">
         <CardContent className="p-3.5">
           <div className="flex items-center justify-between text-xs font-medium text-slate-500 uppercase tracking-wider">
             <span>Lewat 1–7 Hari</span>
@@ -60,7 +60,7 @@ export function PiutangAgingCards({ aging }: PiutangAgingCardsProps) {
       </Card>
 
       {/* 4. Lewat 8-30 Hari */}
-      <Card className="border-slate-200 shadow-none bg-white">
+      <Card className="shadow-neu-sm">
         <CardContent className="p-3.5">
           <div className="flex items-center justify-between text-xs font-medium text-slate-500 uppercase tracking-wider">
             <span>Lewat 8–30 Hari</span>
@@ -76,7 +76,7 @@ export function PiutangAgingCards({ aging }: PiutangAgingCardsProps) {
       </Card>
 
       {/* 5. Lewat > 30 Hari */}
-      <Card className="border-red-200 shadow-none bg-red-50/30">
+      <Card className="border-red-200/80 bg-red-50/50 shadow-neu-sm">
         <CardContent className="p-3.5">
           <div className="flex items-center justify-between text-xs font-medium text-red-700 uppercase tracking-wider">
             <span>Lewat &gt; 30 Hari</span>

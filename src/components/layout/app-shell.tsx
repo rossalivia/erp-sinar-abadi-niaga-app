@@ -4,6 +4,7 @@ import * as React from 'react';
 import { Sidebar } from './sidebar';
 import { Header } from './header';
 import { CommandMenu } from './command-menu';
+import { MobileDock } from './mobile-dock';
 import type { UserProfile } from '@/types/auth';
 
 interface AppShellProps {
@@ -29,7 +30,7 @@ export function AppShell({ user, children }: AppShellProps) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="min-h-screen flex bg-transparent">
       {/* Sidebar (Desktop & Mobile Drawer) */}
       <Sidebar
         peran={user.peran}
@@ -51,11 +52,18 @@ export function AppShell({ user, children }: AppShellProps) {
           onOpenSearch={() => setIsSearchOpen(true)}
         />
 
-        {/* Content Area */}
-        <main className="flex-1 p-4 sm:p-6 max-w-7xl w-full mx-auto">
+        {/* Content Area dengan bottom padding untuk Apple Mobile Dock */}
+        <main className="flex-1 p-4 sm:p-6 pb-20 md:pb-6 max-w-7xl w-full mx-auto">
           {children}
         </main>
       </div>
+
+      {/* Apple-style Floating Glass Mobile Dock */}
+      <MobileDock
+        peran={user.peran}
+        onOpenSearch={() => setIsSearchOpen(true)}
+        onOpenMobileSidebar={() => setIsMobileMenuOpen(true)}
+      />
 
       {/* Global Quick Search / Command Palette */}
       <CommandMenu

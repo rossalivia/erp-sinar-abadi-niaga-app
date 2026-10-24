@@ -2,30 +2,37 @@
 
 @layer base {
   :root {
-    --background: #f8fafc; /* slate-50 */
-    --foreground: #0f172a; /* slate-900 */
-    --card: #ffffff;
+    --background: #f4f7fb;
+    --foreground: #0f172a;
+    --card: rgba(255, 255, 255, 0.82);
     --card-foreground: #0f172a;
-    --popover: #ffffff;
+    --popover: rgba(255, 255, 255, 0.92);
     --popover-foreground: #0f172a;
-    --primary: #1e293b; /* slate-800 */
-    --primary-foreground: #f8fafc;
-    --secondary: #f1f5f9; /* slate-100 */
+    --primary: #4f46e5;
+    --primary-foreground: #ffffff;
+    --secondary: #eef2f6;
     --secondary-foreground: #1e293b;
     --muted: #f1f5f9;
-    --muted-foreground: #64748b; /* slate-500 */
-    --accent: #0284c7; /* ocean-600 */
+    --muted-foreground: #64748b;
+    --accent: #4f46e5;
     --accent-foreground: #ffffff;
-    --destructive: #dc2626; /* red-600 */
+    --destructive: #ef4444;
     --destructive-foreground: #ffffff;
-    --border: #e2e8f0; /* slate-200 */
-    --input: #e2e8f0;
-    --ring: #1e293b;
-    --radius: 0.375rem; /* rounded-md */
-  }
+    --border: rgba(226, 232, 240, 0.8);
+    --input: rgba(226, 232, 240, 0.9);
+    --ring: #4f46e5;
+    --radius: 0.75rem;
 
-  * {
-    border-color: var(--border);
+    /* Neumorphic Shadows */
+    --shadow-raised: 5px 5px 12px rgba(160, 175, 200, 0.28), -5px -5px 12px rgba(255, 255, 255, 0.95);
+    --shadow-raised-sm: 3px 3px 7px rgba(160, 175, 200, 0.22), -3px -3px 7px rgba(255, 255, 255, 0.95);
+    --shadow-inset: inset 2px 2px 5px rgba(160, 175, 200, 0.3), inset -2px -2px 5px rgba(255, 255, 255, 0.95);
+    --shadow-flat: 0 1px 3px 0 rgba(15, 23, 42, 0.06);
+
+    /* Glass Tokens */
+    --glass-bg: rgba(255, 255, 255, 0.75);
+    --glass-border: rgba(255, 255, 255, 0.7);
+    --glass-blur: 16px;
   }
 
   body {
@@ -33,12 +40,103 @@
     color: var(--foreground);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     -webkit-font-smoothing: antialiased;
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.05) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(56, 189, 248, 0.04) 0px, transparent 50%),
+      radial-gradient(at 50% 100%, rgba(224, 231, 255, 0.3) 0px, transparent 60%);
+    background-attachment: fixed;
   }
 }
 
-/* Utilitas Tabel Padat & Angka Tabular Enterprise */
+/* ==========================================================================
+   NEUMORPHISM TOKENS & UTILITIES
+   ========================================================================== */
+.shadow-neu {
+  box-shadow: var(--shadow-raised);
+}
+
+.shadow-neu-sm {
+  box-shadow: var(--shadow-raised-sm);
+}
+
+.shadow-neu-inset {
+  box-shadow: var(--shadow-inset);
+}
+
+/* ==========================================================================
+   GLASSMORPHISM TOKENS & UTILITIES
+   ========================================================================== */
+.glass-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow: 4px 4px 14px rgba(160, 175, 200, 0.18), -4px -4px 14px rgba(255, 255, 255, 0.9);
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+}
+
+.glass-dark {
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-dropdown {
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.06);
+}
+
+/* ==========================================================================
+   INTERACTIVE MICRO-TRANSITIONS & MOTION
+   ========================================================================== */
+.btn-neu {
+  transition: all 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.btn-neu:active {
+  transform: translateY(1px);
+  box-shadow: var(--shadow-inset) !important;
+}
+
+/* ==========================================================================
+   TABULAR DATA & PRINT RULES (ZONA DATAR WAJIB)
+   ========================================================================== */
 .tabular-nums {
   font-variant-numeric: tabular-nums;
+}
+
+/* Media query prefers-reduced-motion untuk aksesibilitas WCAG */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Fallback untuk browser yang belum mendukung backdrop-filter */
+@supports not ((-webkit-backdrop-filter: none) or (backdrop-filter: none)) {
+  .glass-card,
+  .glass-panel,
+  .glass-dropdown {
+    background: #ffffff !important;
+  }
+  .glass-dark {
+    background: #0f172a !important;
+  }
 }
 
 /* Aturan cetak dokumen operasional (picking list, laporan, struk) */
@@ -50,11 +148,13 @@
 
   body {
     background: #fff !important;
-    color: #0f172a;
+    color: #0f172a !important;
+    background-image: none !important;
   }
 
   aside,
   header,
+  nav,
   .no-print {
     display: none !important;
   }

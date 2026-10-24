@@ -12,7 +12,7 @@ export function KpiCards({ ringkasan }: KpiCardsProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {/* 1. Omzet Total */}
-      <Card className="border-slate-200 shadow-none bg-white">
+      <Card>
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
@@ -34,7 +34,7 @@ export function KpiCards({ ringkasan }: KpiCardsProps) {
       </Card>
 
       {/* 2. Total HPP */}
-      <Card className="border-slate-200 shadow-none bg-white">
+      <Card>
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
@@ -56,7 +56,7 @@ export function KpiCards({ ringkasan }: KpiCardsProps) {
       </Card>
 
       {/* 3. Total Margin & Margin % */}
-      <Card className="border-slate-200 shadow-none bg-white">
+      <Card>
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
@@ -81,7 +81,7 @@ export function KpiCards({ ringkasan }: KpiCardsProps) {
       </Card>
 
       {/* 4. Jumlah Pesanan */}
-      <Card className="border-slate-200 shadow-none bg-white">
+      <Card>
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">

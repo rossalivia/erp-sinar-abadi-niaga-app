@@ -53,7 +53,7 @@ export default async function PemantauanKreditPage() {
       {/* 4 Kartu Ringkasan Eksekutif */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {/* Kartu 1: Distribusi Kelas */}
-        <Card className="border-slate-200 shadow-none bg-white">
+        <Card>
           <CardContent className="p-3.5">
             <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
               <span>Distribusi Kelas</span>
@@ -83,7 +83,7 @@ export default async function PemantauanKreditPage() {
         </Card>
 
         {/* Kartu 2: Total Plafon Limit */}
-        <Card className="border-slate-200 shadow-none bg-white">
+        <Card>
           <CardContent className="p-3.5">
             <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
               <span>Total Plafon Limit</span>
@@ -99,7 +99,7 @@ export default async function PemantauanKreditPage() {
         </Card>
 
         {/* Kartu 3: Total Piutang Berjalan */}
-        <Card className="border-slate-200 shadow-none bg-white">
+        <Card>
           <CardContent className="p-3.5">
             <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
               <span>Piutang Berjalan</span>
@@ -118,7 +118,7 @@ export default async function PemantauanKreditPage() {
         </Card>
 
         {/* Kartu 4: Perlu Ditinjau */}
-        <Card className="border-slate-200 shadow-none bg-white">
+        <Card>
           <CardContent className="p-3.5">
             <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
               <span>Perlu Ditinjau</span>

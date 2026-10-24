@@ -129,7 +129,7 @@ export default async function NotifikasiPage() {
 
       {/* Info Status Konfigurasi & Jadwal */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="border-slate-200 bg-white">
+        <Card>
           <CardContent className="p-4 flex items-center gap-3">
             <div className="w-9 h-9 rounded-md bg-slate-100 flex items-center justify-center text-slate-700">
               <Mail className="w-4 h-4" />
@@ -155,7 +155,7 @@ export default async function NotifikasiPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200 bg-white">
+        <Card>
           <CardContent className="p-4 flex items-center gap-3">
             <div className="w-9 h-9 rounded-md bg-slate-100 flex items-center justify-center text-slate-700">
               <Clock className="w-4 h-4" />
@@ -170,7 +170,7 @@ export default async function NotifikasiPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200 bg-white">
+        <Card>
           <CardContent className="p-4 flex items-center gap-3">
             <div className="w-9 h-9 rounded-md bg-slate-100 flex items-center justify-center text-slate-700">
               <ShieldCheck className="w-4 h-4" />

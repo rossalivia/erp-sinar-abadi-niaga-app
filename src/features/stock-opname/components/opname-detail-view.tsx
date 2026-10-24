@@ -229,7 +229,7 @@ export function OpnameDetailView({
       )}
 
       {/* Header Info Card */}
-      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-none">
+      <div className="rounded-2xl border border-white/80 bg-white/80 backdrop-blur-md p-5 shadow-neu-sm">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
           <div>
             <span className="text-slate-500 block">Nomor Dokumen:</span>
@@ -315,7 +315,7 @@ export function OpnameDetailView({
       </div>
 
       {/* Tabel Detail Item Opname */}
-      <div className="rounded-lg border border-slate-200 bg-white overflow-hidden shadow-none">
+      <div className="rounded-2xl border border-white/80 bg-white shadow-neu-sm overflow-hidden">
         <div className="border-b border-slate-200 bg-slate-50 px-4 py-2.5 flex items-center justify-between">
           <h3 className="text-xs font-semibold text-slate-800 uppercase tracking-wider">
             Rincian Barang & Perbandingan Stok ({items.length} Barang)

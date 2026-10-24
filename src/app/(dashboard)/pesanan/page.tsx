@@ -107,7 +107,7 @@ export default async function DaftarPesananPage({ searchParams }: PageProps) {
 
       {/* Baris Pintasan Gudang */}
       {dapatPicking && (
-        <div className="flex flex-col gap-2 p-2.5 bg-blue-50 border border-blue-200 rounded-md text-xs text-blue-900 sm:flex-row sm:items-center">
+        <div className="flex flex-col gap-2 p-3 bg-blue-50/80 backdrop-blur-md border border-blue-200/80 rounded-2xl text-xs text-blue-900 shadow-neu-sm sm:flex-row sm:items-center">
           <div className="flex items-center gap-2">
             <Truck className="w-4 h-4 text-blue-700 shrink-0" />
             <span className="font-medium">Pintasan Gudang:</span>
@@ -140,7 +140,7 @@ export default async function DaftarPesananPage({ searchParams }: PageProps) {
       )}
 
       {/* Filter & Pencarian Bar */}
-      <div className="bg-white border border-slate-200 rounded-md p-3.5 space-y-3">
+      <div className="bg-white/80 backdrop-blur-md border border-white/80 rounded-2xl p-4 shadow-neu-sm space-y-3">
         <form method="get" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2.5">
           {/* Cari nomor */}
           <div className="relative lg:col-span-2">
@@ -227,7 +227,7 @@ export default async function DaftarPesananPage({ searchParams }: PageProps) {
       </div>
 
       {/* Tabel Data Pesanan */}
-      <div className="bg-white border border-slate-200 rounded-md overflow-hidden">
+      <div className="bg-white rounded-2xl border border-white/80 shadow-neu-sm overflow-hidden">
         {(!pesananList || pesananList.length === 0) ? (
           <EmptyState
             title="Tidak ada pesanan jual ditemukan"

@@ -11,7 +11,7 @@ export function KartuMetrikPenagihan({ ringkasan }: KartuMetrikPenagihanProps) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {/* 1. Total Piutang Tertagih */}
-      <Card className="border-slate-200 shadow-none">
+      <Card>
         <CardContent className="p-4">
           <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">
             Total Piutang Tertagih
@@ -26,7 +26,7 @@ export function KartuMetrikPenagihan({ ringkasan }: KartuMetrikPenagihanProps) {
       </Card>
 
       {/* 2. Total Tagihan Overdue */}
-      <Card className="border-red-200 bg-red-50/30 shadow-none">
+      <Card className="border-red-200/80 bg-red-50/50 shadow-neu-sm">
         <CardContent className="p-4">
           <p className="text-xs font-medium text-red-700 uppercase tracking-wider">
             Total Menunggak (Overdue)
@@ -41,7 +41,7 @@ export function KartuMetrikPenagihan({ ringkasan }: KartuMetrikPenagihanProps) {
       </Card>
 
       {/* 3. Jatuh Tempo Hari Ini */}
-      <Card className="border-amber-200 bg-amber-50/30 shadow-none">
+      <Card className="border-amber-200/80 bg-amber-50/50 shadow-neu-sm">
         <CardContent className="p-4">
           <p className="text-xs font-medium text-amber-800 uppercase tracking-wider">
             Jatuh Tempo Hari Ini
@@ -58,7 +58,7 @@ export function KartuMetrikPenagihan({ ringkasan }: KartuMetrikPenagihanProps) {
       </Card>
 
       {/* 4. Segera Jatuh Tempo (1-3 Hari) */}
-      <Card className="border-blue-200 bg-blue-50/20 shadow-none">
+      <Card className="border-blue-200/80 bg-blue-50/40 shadow-neu-sm">
         <CardContent className="p-4">
           <p className="text-xs font-medium text-blue-700 uppercase tracking-wider">
             Segera Tempo (1–3 Hari)

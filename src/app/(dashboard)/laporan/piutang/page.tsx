@@ -98,19 +98,19 @@ export default async function LaporanPiutangPage() {
       </div>
 
       {/* Tab Navigasi Sub-Modul Laporan */}
-      <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+      <div className="flex items-center gap-1.5 p-1 bg-slate-100/80 backdrop-blur-md rounded-xl border border-slate-200/60 shadow-neu-inset w-fit">
         <Link
           href="/laporan"
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/50 transition-colors"
         >
           <BarChart3 className="h-3.5 w-3.5" />
           Omzet &amp; Margin
         </Link>
         <Link
           href="/laporan/piutang"
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md bg-slate-900 text-white shadow-none"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-white text-slate-900 shadow-neu-sm"
         >
-          <ReceiptText className="h-3.5 w-3.5" />
+          <ReceiptText className="h-3.5 w-3.5 text-indigo-600" />
           Piutang Pelanggan
         </Link>
       </div>
