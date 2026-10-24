@@ -14,15 +14,20 @@ function sanitizeNextUrl(url: string | null): string {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // 1. Lewati aset statis, API routes khusus, atau robots.txt
+  // 1. Lewati aset statis, API routes khusus, robots.txt, atau landing publik pembayaran selesai
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api') ||
     pathname === '/robots.txt' ||
     pathname === '/favicon.ico' ||
+    pathname === '/pembayaran/selesai' ||
     pathname.match(/\.(svg|png|jpg|jpeg|gif|webp|ico)$/)
   ) {
-    return NextResponse.next();
+    const res = NextResponse.next();
+    if (pathname === '/pembayaran/selesai') {
+      res.headers.set('X-Robots-Tag', 'noindex, nofollow');
+    }
+    return res;
   }
 
   let supabaseResponse = NextResponse.next({

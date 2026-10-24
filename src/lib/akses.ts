@@ -116,6 +116,12 @@ export const MENU_ITEMS: MenuItem[] = [
     icon: 'Mail',
     roles: ['manajer'],
   },
+  {
+    title: 'Pembayaran Mayar',
+    href: '/pembayaran',
+    icon: 'CreditCard',
+    roles: ['manajer'],
+  },
 ];
 
 export const ROUTE_PERMISSIONS: { pattern: RegExp; roles: Peran[] }[] = [
@@ -129,6 +135,7 @@ export const ROUTE_PERMISSIONS: { pattern: RegExp; roles: Peran[] }[] = [
   { pattern: /^\/pesanan\/[^\/]+\/surat-jalan/, roles: ['penjualan', 'gudang', 'manajer'] },
   { pattern: /^\/pesanan/, roles: ['penjualan', 'gudang', 'manajer'] },
   { pattern: /^\/penagihan/, roles: ['penjualan', 'manajer'] },
+  { pattern: /^\/pembayaran/, roles: ['manajer'] },
   { pattern: /^\/persetujuan/, roles: ['manajer'] },
   { pattern: /^\/pembelian/, roles: ['gudang', 'manajer'] },
   { pattern: /^\/stok\/opname/, roles: ['gudang', 'manajer'] },
@@ -148,6 +155,10 @@ export function getMenuItemsForRole(peran: Peran): MenuItem[] {
 }
 
 export function isRouteAuthorized(pathname: string, peran: Peran): boolean {
+  if (pathname === '/pembayaran/selesai') {
+    return true;
+  }
+
   for (const route of ROUTE_PERMISSIONS) {
     if (route.pattern.test(pathname)) {
       return route.roles.includes(peran);

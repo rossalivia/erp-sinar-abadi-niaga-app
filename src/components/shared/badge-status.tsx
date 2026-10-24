@@ -66,6 +66,12 @@ const STATUS_VARIANT_MAP: Record<string, BadgeProps['variant']> = {
   dilewati: 'neutral',
   diklaim: 'info',
   gagal: 'danger',
+
+  // Status Tagihan Mayar
+  dibuat: 'warning',
+  dibayar: 'success',
+  ditutup: 'neutral',
+  perlu_tinjau: 'danger',
 };
 
 const STATUS_LABEL_MAP: Record<string, string> = {
@@ -98,6 +104,10 @@ const STATUS_LABEL_MAP: Record<string, string> = {
   dilewati: 'Dilewati',
   diklaim: 'Diproses',
   gagal: 'Gagal',
+  dibuat: 'Menunggu Pembayaran',
+  dibayar: 'Dibayar Online',
+  ditutup: 'Ditutup',
+  perlu_tinjau: 'Perlu Tinjau',
 };
 
 export function BadgeStatus({ status, label, className }: BadgeStatusProps) {

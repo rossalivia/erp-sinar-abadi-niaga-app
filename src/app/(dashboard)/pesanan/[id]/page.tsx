@@ -9,6 +9,9 @@ import { PesananActions } from '@/features/pesanan/components/pesanan-actions';
 import { PesananTimeline } from '@/features/pesanan/components/pesanan-timeline';
 import { PesananItemsTable } from '@/features/pesanan/components/pesanan-items-table';
 import { PersetujuanPanel } from '@/features/pesanan/components/persetujuan-panel';
+import { MayarPaymentPanel } from '@/features/pembayaran/components/MayarPaymentPanel';
+import { ambilRiwayatTagihanMayarService } from '@/features/pembayaran/service';
+import type { TagihanMayarRow } from '@/features/pembayaran/types';
 import { createServerClient } from '@/lib/supabase/server';
 import { getProfil } from '@/lib/profil';
 import { formatRupiah, formatTanggal, formatTanggalWaktu } from '@/lib/format';
@@ -144,6 +147,12 @@ export default async function DetailPesananPage({ params }: PageProps) {
     ? (persetujuanRaw as unknown as PersetujuanHargaRow)
     : null;
 
+  // 4. Ambil data tagihan Mayar jika peran = manajer (M1, M11)
+  let tagihanMayarList: TagihanMayarRow[] = [];
+  if (isManajer) {
+    tagihanMayarList = await ambilRiwayatTagihanMayarService(pesanan.id);
+  }
+
   return (
     <div className="space-y-5 max-w-6xl mx-auto">
       {/* Header Halaman & Aksi */}
@@ -274,6 +283,19 @@ export default async function DetailPesananPage({ params }: PageProps) {
         dibuatOleh={pesanan.dibuat_oleh}
         persetujuan={persetujuan}
       />
+
+      {/* Panel Pembayaran Digital Mayar (Khusus Manajer, M1, M11) */}
+      {isManajer && (pesanan.status === 'dikirim' || tagihanMayarList.length > 0) && (
+        <MayarPaymentPanel
+          pesananId={pesanan.id}
+          nomorPesanan={pesanan.nomor}
+          totalPesanan={pesanan.total}
+          statusPesanan={pesanan.status}
+          namaToko={pesanan.pelanggan?.nama_toko || 'Pelanggan'}
+          teleponToko={pesanan.pelanggan?.telepon}
+          tagihanList={tagihanMayarList}
+        />
+      )}
 
       {/* Tabel Baris Item */}
       <PesananItemsTable
