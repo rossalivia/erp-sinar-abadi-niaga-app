@@ -213,27 +213,24 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-4 lg:p-8 bg-[#f4f7fb]">
-      {/* Container utama hybrid Neumorphic-Glassmorphic */}
-      <div className="w-full max-w-5xl min-h-[660px] bg-white/90 backdrop-blur-2xl border border-white/80 shadow-2xl flex flex-col lg:flex-row overflow-hidden rounded-3xl">
-        {/* SISI KIRI: Form Login Glassmorphic */}
-        <div className="w-full lg:w-1/2 p-6 sm:p-10 lg:p-12 flex flex-col justify-between z-10 bg-white/60">
+    <div className="min-h-screen w-full flex items-center justify-center p-4 sm:p-6 lg:p-8 bg-slate-100/80">
+      {/* Container utama Solid Enterprise */}
+      <div className="w-full max-w-4xl min-h-[580px] bg-white border border-slate-200/90 shadow-md flex flex-col lg:flex-row overflow-hidden rounded-2xl">
+        {/* SISI KIRI: Form Login Enterprise */}
+        <div className="w-full lg:w-[48%] p-8 sm:p-10 flex flex-col justify-between bg-white">
           {/* Brand Header Resmi */}
-          <div className="pb-4 border-b border-slate-100">
+          <div className="pb-5 border-b border-slate-100">
             <Logo size="sm" showSubdeskripsi={true} />
           </div>
 
           {/* Form Content */}
           <div className="my-auto py-6">
             <div className="mb-6 space-y-1">
-              <span className="text-[11px] font-mono uppercase tracking-wider text-indigo-600 font-bold bg-indigo-50 px-2 py-0.5 rounded-md inline-block">
-                Portal Internal Perusahaan
-              </span>
-              <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+              <h1 className="text-lg font-bold text-slate-900 tracking-tight">
                 Masuk ke Akun Anda
               </h1>
               <p className="text-xs text-slate-500">
-                Akses sistem manajemen operasional grosir, pergudangan, dan distribusi sembako.
+                Gunakan kredensial akun terdaftar untuk mengakses modul operasional.
               </p>
             </div>
 
@@ -249,78 +246,50 @@ export default function LoginPage() {
           </div>
 
           {/* Footer Info */}
-          <div className="text-[11px] text-slate-500 pt-4 border-t border-slate-100/80 flex items-center justify-between">
+          <div className="text-[11px] text-slate-400 pt-4 border-t border-slate-100 flex items-center justify-between">
             <span>CV Sinar Abadi Niaga © 2026</span>
-            <span className="font-mono text-slate-400">Node Asia/Jakarta</span>
+            <span className="font-mono text-slate-400">Node Internal</span>
           </div>
         </div>
 
-        {/* SISI KANAN: Visual Korporat Wholesale FMCG & Groceries */}
-        <div className="hidden lg:flex lg:w-1/2 relative bg-slate-950 flex-col justify-between p-10 overflow-hidden border-l border-slate-800">
-          {/* Background Image Gudang Distribusi FMCG */}
-          <div
-            className="absolute inset-0 bg-cover bg-center opacity-40 scale-105 transition-transform duration-1000"
-            style={{ backgroundImage: `url('/images/login-showcase.jpg')` }}
-          />
-
-          {/* Ambient Gradient Overlays */}
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/75 to-slate-950/40 z-10" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-500/20 via-indigo-900/40 to-slate-950/90 z-10" />
-
-          {/* Grid lines dekoratif */}
-          <div className="absolute inset-0 opacity-15 bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:32px_32px] z-10 pointer-events-none" />
-
-          {/* Bagian Atas Sisi Kanan: Logo Utama & Identitas Perusahaan */}
-          <div className="relative z-20 space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/20 border border-amber-500/30 text-amber-300 text-[11px] font-mono rounded-full backdrop-blur-md">
-              <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
-              <span>Wholesale Groceries & FMCG Network</span>
+        {/* SISI KANAN: Panel Identitas Korporat Enterprise (Tanpa Foto AI 3D & Tanpa Ornamen Berlebihan) */}
+        <div className="hidden lg:flex lg:w-[52%] bg-slate-900 text-slate-100 flex-col justify-between p-10 border-l border-slate-800">
+          {/* Bagian Atas: Lingkup Usaha */}
+          <div className="space-y-4">
+            <div className="inline-block px-2.5 py-1 bg-slate-800 border border-slate-700 text-slate-300 text-[11px] font-mono rounded">
+              SISTEM DISTRIBUSI PUSAT
             </div>
 
-            {/* Logo Besar Resmi dengan Nama CV Sinar Abadi Niaga */}
-            <div className="p-4 rounded-2xl bg-slate-900/70 border border-white/10 backdrop-blur-md shadow-2xl">
-              <Logo size="lg" inverted={true} showSubdeskripsi={true} />
+            <div className="space-y-2">
+              <h2 className="text-xl font-bold tracking-tight text-white leading-snug">
+                Perdagangan Grosir Sembako &amp; Kebutuhan Toko Kelontong
+              </h2>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Platform operasional internal CV Sinar Abadi Niaga untuk pencatatan persediaan barang, otomatisasi pesanan penjualan, penerbitan surat jalan logistik, serta pemantauan limit kredit toko rekanan.
+              </p>
             </div>
           </div>
 
-          {/* Bagian Bawah: Kartu Keunggulan Distribusi Toko Kelontong */}
-          <div className="relative z-20 space-y-3 pt-6">
-            <div className="grid grid-cols-1 gap-2.5">
-              <div className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md">
-                <div className="p-2 rounded-lg bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 shrink-0">
-                  <Building2 className="h-4 w-4" />
-                </div>
-                <div>
-                  <h2 className="text-xs font-semibold text-white">
-                    Pasokan Sembako & Kebutuhan Kelontong
-                  </h2>
-                  <p className="text-[11px] text-slate-300 leading-snug">
-                    Distribusi rutin beras, minyak goreng, gula, tepung, dan produk FMCG terpercaya untuk ratusan toko mitra.
-                  </p>
-                </div>
-              </div>
+          {/* Bagian Tengah: Tampilan Logo Resmi Bersih */}
+          <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800">
+            <Logo size="md" inverted={true} showSubdeskripsi={true} />
+          </div>
 
-              <div className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md">
-                <div className="p-2 rounded-lg bg-amber-500/20 border border-amber-400/30 text-amber-300 shrink-0">
-                  <Lock className="h-4 w-4" />
-                </div>
-                <div>
-                  <h2 className="text-xs font-semibold text-white">
-                    Pencatatan Transaksi & Plafon Kredit
-                  </h2>
-                  <p className="text-[11px] text-slate-300 leading-snug">
-                    Sistem pemantauan jatuh tempo, kartu piutang real-time, dan persetujuan harga khusus dengan keamanan bertingkat.
-                  </p>
-                </div>
+          {/* Bagian Bawah: Informasi Entitas & Gudang */}
+          <div className="space-y-3 pt-4 border-t border-slate-800 text-xs">
+            <div className="grid grid-cols-2 gap-3 text-[11px]">
+              <div>
+                <span className="text-slate-500 block">Kategori Usaha</span>
+                <span className="font-medium text-slate-300">Wholesale Trade of Groceries &amp; FMCG</span>
+              </div>
+              <div>
+                <span className="text-slate-500 block">Wilayah Distribusi</span>
+                <span className="font-medium text-slate-300">Jawa Timur &amp; Sekitarnya</span>
               </div>
             </div>
 
-            <div className="pt-2 flex items-center justify-between text-[11px] text-slate-400 border-t border-white/10">
-              <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                Sistem Operasional Aktif
-              </span>
-              <span className="font-mono text-slate-400">CV Sinar Abadi Niaga</span>
+            <div className="text-[11px] text-slate-500 pt-1">
+              Akses terbatas hanya untuk staf penjualan, staf gudang, dan manajer yang memiliki izin resmi.
             </div>
           </div>
         </div>

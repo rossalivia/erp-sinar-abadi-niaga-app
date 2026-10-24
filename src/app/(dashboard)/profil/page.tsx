@@ -41,51 +41,40 @@ export default async function ProfilPage() {
       />
 
       {/* Profil Resmi Entitas Perusahaan */}
-      <Card className="border-indigo-100 bg-gradient-to-br from-white via-indigo-50/20 to-slate-50 overflow-hidden shadow-xs">
-        <CardHeader className="py-3.5 px-5 border-b border-indigo-100/70 bg-white/80 flex flex-row items-center justify-between">
-          <CardTitle className="text-xs font-semibold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-            <Building2 className="h-4 w-4 text-indigo-600" />
-            Profil Entitas Usaha
+      <Card className="border-slate-200 bg-white">
+        <CardHeader className="py-3 px-5 border-b border-slate-100 flex flex-row items-center justify-between">
+          <CardTitle className="text-xs font-semibold text-slate-900 uppercase tracking-wider">
+            Identitas Entitas Usaha
           </CardTitle>
-          <span className="text-[11px] font-mono font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-            Status: Terverifikasi
+          <span className="text-[11px] font-mono text-slate-500">
+            Badan Usaha: Persekutuan Komanditer (CV)
           </span>
         </CardHeader>
         <CardContent className="p-5 space-y-4">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl bg-white border border-slate-200 shadow-neu-sm">
-            <Logo size="md" showSubdeskripsi={true} />
-            <div className="text-left md:text-right space-y-1 border-t md:border-t-0 pt-3 md:pt-0 border-slate-100">
-              <span className="text-[11px] font-mono text-slate-400 block">Kategori Klasifikasi Usaha</span>
-              <span className="text-xs font-bold text-slate-800">
-                Wholesale Trade of Groceries and FMCG
-              </span>
-              <p className="text-[11px] text-slate-500">
-                Distribusi Sembako dan Kebutuhan Toko Kelontong
-              </p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+            <Logo size="sm" showSubdeskripsi={true} />
+            <div className="text-left sm:text-right text-xs">
+              <span className="text-slate-400 block text-[10px]">Basis Operasional</span>
+              <span className="font-semibold text-slate-800">Kawasan Pergudangan Niaga, Surabaya</span>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-            <div className="p-3 rounded-lg bg-slate-50 border border-slate-100 flex items-start gap-2.5">
-              <Store className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
-              <div>
-                <span className="text-[10px] text-slate-400 font-semibold uppercase block">Fokus Pasar</span>
-                <span className="font-medium text-slate-800">Toko Kelontong & Minimarket Ritel</span>
-              </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+            <div className="p-3 rounded-lg bg-slate-50 border border-slate-100">
+              <span className="text-[10px] text-slate-400 block font-mono uppercase">Klasifikasi Usaha</span>
+              <span className="font-semibold text-slate-900 mt-0.5 block">Wholesale Groceries &amp; FMCG</span>
             </div>
-            <div className="p-3 rounded-lg bg-slate-50 border border-slate-100 flex items-start gap-2.5">
-              <Truck className="h-4 w-4 text-indigo-600 shrink-0 mt-0.5" />
-              <div>
-                <span className="text-[10px] text-slate-400 font-semibold uppercase block">Kawasan Logistik</span>
-                <span className="font-medium text-slate-800">Kawasan Pergudangan, Surabaya</span>
-              </div>
+            <div className="p-3 rounded-lg bg-slate-50 border border-slate-100">
+              <span className="text-[10px] text-slate-400 block font-mono uppercase">Layanan Utama</span>
+              <span className="font-semibold text-slate-900 mt-0.5 block">Distribusi Sembako &amp; Toko Kelontong</span>
             </div>
-            <div className="p-3 rounded-lg bg-slate-50 border border-slate-100 flex items-start gap-2.5">
-              <Shield className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
-              <div>
-                <span className="text-[10px] text-slate-400 font-semibold uppercase block">Layanan Distribusi</span>
-                <span className="font-medium text-slate-800">Sembako, Minyak, Beras, Gula & FMCG</span>
-              </div>
+            <div className="p-3 rounded-lg bg-slate-50 border border-slate-100">
+              <span className="text-[10px] text-slate-400 block font-mono uppercase">Komoditas Inti</span>
+              <span className="font-semibold text-slate-900 mt-0.5 block">Beras, Minyak, Gula, Tepung, FMCG</span>
+            </div>
+            <div className="p-3 rounded-lg bg-slate-50 border border-slate-100">
+              <span className="text-[10px] text-slate-400 block font-mono uppercase">Jaringan Pelanggan</span>
+              <span className="font-semibold text-slate-900 mt-0.5 block">Toko Kelontong &amp; Ritel Mitra</span>
             </div>
           </div>
         </CardContent>
