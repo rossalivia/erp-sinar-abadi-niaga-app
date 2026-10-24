@@ -74,6 +74,10 @@ export const ERROR_MESSAGES: Record<string, string> = {
   E0071: 'Tagihan Mayar tidak ditemukan atau bukan berstatus aktif',
   E0072: 'Jumlah tagihan tidak sesuai dengan total pesanan',
   E0073: 'Hanya Manajer yang berwenang mengelola tagihan Mayar',
+  E0074: 'Hanya pengaju yang berwenang membatalkan pengajuan pembelian',
+  E0075: 'Hanya Manajer yang berwenang membatalkan pembelian yang disetujui',
+  E0076: 'Pembelian dengan status ini tidak dapat dibatalkan',
+  E0077: 'Pembelian yang sudah diterima barangnya tidak dapat dibatalkan',
 };
 
 interface SupabasePostgresError {

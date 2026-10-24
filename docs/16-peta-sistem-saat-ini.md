@@ -134,7 +134,7 @@ Terdapat 14 tabel di dalam skema public (9 tabel inti + 2 modul stock opname + 1
   * jumlah_dipesan (integer, NOT NULL, CHECK jumlah_dipesan BETWEEN 1 AND 10000)
   * jumlah_diterima (integer, NOT NULL, DEFAULT 0, CHECK jumlah_diterima >= 0 AND jumlah_diterima <= jumlah_dipesan)
   * harga_beli_satuan (numeric(14,0), nullable) [RAHASIA MANAJER]
-  * status (text, NOT NULL, DEFAULT 'diajukan', CHECK status IN ('diajukan','disetujui','ditolak','diterima'))
+  * status (text, NOT NULL, DEFAULT 'diajukan', CHECK status IN ('diajukan','disetujui','ditolak','diterima','dibatalkan'))
   * alasan_tolak (text, nullable)
   * diajukan_oleh (uuid, NOT NULL, REFERENCES public.profiles(id))
   * diajukan_pada (timestamptz, NOT NULL, DEFAULT now())
@@ -142,6 +142,9 @@ Terdapat 14 tabel di dalam skema public (9 tabel inti + 2 modul stock opname + 1
   * diputuskan_pada (timestamptz, nullable)
   * diterima_oleh (uuid, nullable, REFERENCES public.profiles(id))
   * diterima_pada (timestamptz, nullable)
+  * dibatalkan_oleh (uuid, nullable, REFERENCES public.profiles(id))
+  * dibatalkan_pada (timestamptz, nullable)
+  * alasan_batal (text, nullable)
 * Kolom Rahasia: harga_beli_satuan.
 * Hak Akses Kolom (Grants):
   * SELECT: seluruh kolom non-rahasia TO authenticated. (harga_beli_satuan TIDAK DI-GRANT).
@@ -445,6 +448,7 @@ Terdapat 14 tabel di dalam skema public (9 tabel inti + 2 modul stock opname + 1
 | rpc_tolak_pembelian | p_pembelian_id uuid, p_alasan text | Manajer Saja | pembelian, audit_log | Ya (pembelian) | Tidak | Ya (tolak_pembelian) |
 | rpc_putuskan_pembelian | p_pembelian_id uuid, p_setuju bool, p_harga_beli numeric, p_alasan text | Manajer Saja | Wrapper rpc_setujui_pembelian / rpc_tolak_pembelian | Ya | Tidak | Ya |
 | rpc_terima_pembelian | p_pembelian_id uuid, p_jumlah_diterima int | Gudang, Manajer | pembelian, barang, mutasi_stok, audit_log | Ya (pembelian, barang) | Ya (jenis 'masuk') | Ya (terima_pembelian) |
+| rpc_batalkan_pembelian | p_pembelian_id uuid, p_alasan text | Pengaju PO (status diajukan), Manajer (status disetujui) | pembelian, audit_log | Ya (pembelian FOR UPDATE) | Tidak | Ya (batalkan_pembelian) |
 | rpc_penyesuaian_stok (alias rpc_sesuaikan_stok) | p_barang_id uuid, p_stok_fisik int, p_alasan text | Gudang, Manajer | barang, mutasi_stok, audit_log | Ya (barang) | Ya (jenis 'penyesuaian') | Ya (penyesuaian_stok) |
 | rpc_buat_opname_stok | p_catatan text, p_items jsonb, p_langsung_ajukan bool | Gudang, Manajer | opname_stok, item_opname_stok, audit_log | Ya (barang SHARE) | Tidak | Ya (buat_draf_stock_opname / ajukan_...) |
 | rpc_ubah_draf_opname | p_id uuid, p_catatan text, p_items jsonb | Gudang, Manajer | opname_stok, item_opname_stok, audit_log | Ya (opname_stok, barang SHARE) | Tidak | Ya (ubah_draf_stock_opname) |
@@ -489,9 +493,9 @@ Terdapat 14 tabel di dalam skema public (9 tabel inti + 2 modul stock opname + 1
 | /pesanan/[id] | src/app/(dashboard)/pesanan/[id]/page.tsx | Penjualan, Gudang, Manajer | konfirmasiPesananAction, kirimPesananAction, catatPelunasanAction, batalkanPesananAction |
 | /pesanan/[id]/cetak | src/app/(dashboard)/pesanan/[id]/cetak/page.tsx | Penjualan, Gudang, Manajer | Read-only (Print Layout) |
 | /pesanan/[id]/ubah | src/app/(dashboard)/pesanan/[id]/ubah/page.tsx | Penjualan, Manajer | simpanPesananAction, konfirmasiPesananAction |
-| /pembelian | src/app/(dashboard)/pembelian/page.tsx | Gudang, Manajer | putuskanPembelianAction, terimaPembelianAction |
+| /pembelian | src/app/(dashboard)/pembelian/page.tsx | Gudang, Manajer | putuskanPembelianAction, terimaPembelianAction, batalkanPembelianAction |
 | /pembelian/baru | src/app/(dashboard)/pembelian/baru/page.tsx | Gudang, Manajer | ajukanPembelianAction |
-| /pembelian/[id] | src/app/(dashboard)/pembelian/[id]/page.tsx | Gudang, Manajer | putuskanPembelianAction, terimaPembelianAction |
+| /pembelian/[id] | src/app/(dashboard)/pembelian/[id]/page.tsx | Gudang, Manajer | putuskanPembelianAction, terimaPembelianAction, batalkanPembelianAction |
 | /pemasok | src/app/(dashboard)/pemasok/page.tsx | Gudang, Manajer | ubahStatusPemasokAction |
 | /pemasok/baru | src/app/(dashboard)/pemasok/baru/page.tsx | Gudang, Manajer | buatPemasokAction |
 | /pemasok/[id] | src/app/(dashboard)/pemasok/[id]/page.tsx | Gudang, Manajer | updatePemasokAction |
@@ -580,6 +584,21 @@ Terdapat 14 tabel di dalam skema public (9 tabel inti + 2 modul stock opname + 1
 | E0060 | Hanya Manajer yang berwenang melakukan impor data CSV | rpc_impor_barang, rpc_impor_pelanggan, actions.ts | Aktif Digunakan (Modul Impor CSV, Otorisasi RBAC). |
 | E0061 | Format berkas tidak didukung, hanya berkas CSV yang diperbolehkan | DropzoneCsv.tsx, actions.ts, utils.ts | Aktif Digunakan (Modul Impor CSV). |
 | E0062 | Ukuran berkas melebihi batas maksimum 1 MB | DropzoneCsv.tsx, actions.ts | Aktif Digunakan (Modul Impor CSV). |
+| E0063 | Pilih minimal satu pesanan untuk membuat daftar ambil barang | rpc_buat_picking_list | Aktif Digunakan (Modul Picking List). |
+| E0064 | Terdapat pesanan yang tidak valid atau bukan berstatus dikonfirmasi | rpc_buat_picking_list | Aktif Digunakan (Modul Picking List). |
+| E0065 | Hanya Staf Gudang dan Manajer yang berwenang mengakses daftar ambil barang | rpc_buat_picking_list | Aktif Digunakan (Modul Picking List). |
+| E0066 | Tagihan Mayar hanya dapat dibuat untuk pesanan berstatus dikirim | rpc_buat_tagihan_mayar | Aktif Digunakan (Modul Mayar). |
+| E0067 | Pesanan sudah memiliki tagihan Mayar aktif | rpc_buat_tagihan_mayar | Aktif Digunakan (Modul Mayar). |
+| E0068 | Total pesanan harus lebih besar dari 0 untuk membuat tagihan | rpc_buat_tagihan_mayar | Aktif Digunakan (Modul Mayar). |
+| E0069 | Email pelanggan wajib diisi dengan format valid | actions.ts, rpc_buat_tagihan_mayar | Aktif Digunakan (Modul Mayar). |
+| E0070 | Masa berlaku tagihan harus antara 1 sampai 30 hari | rpc_buat_tagihan_mayar | Aktif Digunakan (Modul Mayar). |
+| E0071 | Tagihan Mayar tidak ditemukan atau bukan berstatus aktif | rpc_tutup_tagihan_mayar | Aktif Digunakan (Modul Mayar). |
+| E0072 | Jumlah tagihan tidak sesuai dengan total pesanan | rpc_sistem_lunaskan_dari_mayar | Aktif Digunakan (Modul Mayar). |
+| E0073 | Hanya Manajer yang berwenang mengelola tagihan Mayar | rpc_buat_tagihan_mayar, rpc_tutup_tagihan_mayar | Aktif Digunakan (Modul Mayar). |
+| E0074 | Hanya pengaju yang berwenang membatalkan pengajuan pembelian | rpc_batalkan_pembelian | Aktif Digunakan (Fitur Pembatalan PO, PRD Bab 6.2). |
+| E0075 | Hanya Manajer yang berwenang membatalkan pembelian yang disetujui | rpc_batalkan_pembelian | Aktif Digunakan (Fitur Pembatalan PO, PRD Bab 6.2). |
+| E0076 | Pembelian dengan status ini tidak dapat dibatalkan | rpc_batalkan_pembelian | Aktif Digunakan (Fitur Pembatalan PO, PRD Bab 6.2). |
+| E0077 | Pembelian yang sudah diterima barangnya tidak dapat dibatalkan | rpc_batalkan_pembelian | Aktif Digunakan (Fitur Pembatalan PO, PRD Bab 6.2). |
 
 ---
 
@@ -800,6 +819,21 @@ Terdapat 14 tabel di dalam skema public (9 tabel inti + 2 modul stock opname + 1
 | TC-211 | supabase/tests/14_pemantauan_kredit.sql | SQL | Otomatis | Perhitungan status tinjau limit kredit (>= 90 hari = perlu_tinjau) |
 | TC-212 | supabase/tests/14_pemantauan_kredit.sql | SQL | Otomatis | Pelanggan baru 0 pesanan menghasilkan data_kurang tanpa pembagian nol |
 | TC-213 | supabase/tests/14_pemantauan_kredit.sql | SQL | Otomatis | Eksekusi fn_daftar_pemantauan_kredit menghasilkan data pemantauan utuh |
+| TC-214 | supabase/tests/15_pembatalan_pembelian.sql | SQL | Otomatis | Pengaju membatalkan PO diajukan berhasil mengubah status ke dibatalkan |
+| TC-215 | supabase/tests/15_pembatalan_pembelian.sql | SQL | Otomatis | Bukan pengaju (staf gudang lain) membatalkan PO diajukan ditolak (E0074) |
+| TC-216 | supabase/tests/15_pembatalan_pembelian.sql | SQL | Otomatis | Manajer bukan pengaju membatalkan PO diajukan ditolak (E0074, harus tolak PO) |
+| TC-217 | supabase/tests/15_pembatalan_pembelian.sql | SQL | Otomatis | Manajer membatalkan PO disetujui (belum diterima) berhasil |
+| TC-218 | supabase/tests/15_pembatalan_pembelian.sql | SQL | Otomatis | Gudang membatalkan PO disetujui ditolak (E0075) |
+| TC-219 | supabase/tests/15_pembatalan_pembelian.sql | SQL | Otomatis | Membatalkan PO yang sudah berstatus diterima ditolak (E0076) |
+| TC-220 | supabase/tests/15_pembatalan_pembelian.sql | SQL | Otomatis | Membatalkan PO yang sudah ditolak atau dibatalkan ditolak (E0076) |
+| TC-221 | supabase/tests/15_pembatalan_pembelian.sql | SQL | Otomatis | Penerimaan barang pada PO yang dibatalkan ditolak (E0019) |
+| TC-222 | supabase/tests/15_pembatalan_pembelian.sql | SQL | Otomatis | Pembatalan PO terbukti tidak mengubah stok maupun harga_pokok |
+| TC-223 | supabase/tests/15_pembatalan_pembelian.sql | SQL | Otomatis | Audit log mencatat nilai_lama dan nilai_baru pembatalan PO secara lengkap |
+| TC-224 | supabase/tests/15_pembatalan_pembelian.sql | SQL | Otomatis | Zero-leakage: harga_beli_satuan tidak muncul di view/respons Gudang |
+| TC-225 | supabase/tests/15_pembatalan_pembelian.sql | SQL | Otomatis | Penghitung PO aktif dasbor & restock mengecualikan PO dibatalkan |
+| TC-226 | supabase/tests/15_pembatalan_pembelian.sql | SQL | Otomatis | Pemanggilan rpc_batalkan_pembelian langsung oleh Penjualan ditolak (E0001) |
+| TC-227 | src/features/pembelian/__tests__/schemas.test.ts | Vitest | Otomatis | Validasi schema batalkanPembelianSchema (alasan opsional) |
+| TC-228 | supabase/tests/15_konkurensi_pembatalan.ps1 | PowerShell Konkurensi | Otomatis | Konkurensi penerimaan vs pembatalan PO bersamaan: 1 pemenang, 0 deadlock |
 
 ---
 
@@ -810,7 +844,7 @@ Terdapat 14 tabel di dalam skema public (9 tabel inti + 2 modul stock opname + 1
 | 1 | Nama tabel pesanan | pesanan_jual, item_pesanan_jual | pesanan_jual, item_pesanan_jual | Ya | Sesuai spesifikasi. |
 | 2 | Tabel Modul Stock Opname | Belum ada (hanya penyesuaian manual di BR-11) | Ditambahkan tabel opname_stok dan item_opname_stok | Belum tercatat di docs/04 (Tercatat di docs/fitur-stock-opname.md) | Penambahan modul sesi audit fisik terstruktur dengan alur persetujuan Manajer. |
 | 3 | Batas Kredit Pelanggan Baru | Batas kredit awal Rp0 | batas_kredit = 0 dipaksa oleh trigger saat dibuat non-Manajer | Ya (A10) | Mencegah Staf Penjualan memberikan kredit tanpa otorisasi Manajer. |
-| 4 | Status Purchase Order (PO) | 4 status: diajukan, disetujui, ditolak, diterima | 4 status (tidak ada status dibatalkan) | Ya (A4, B1) | Status ditolak oleh Manajer mewakili pembatalan pengajuan. |
+| 4 | Status Purchase Order (PO) | 4 status: diajukan, disetujui, ditolak, diterima | 5 status: diajukan, disetujui, ditolak, diterima, dibatalkan | Ya (A4, B1) | Ditambahkan status `dibatalkan` sesuai mandat PRD BR-09 & Bab 6.2 (pengaju batalkan diajukan, Manajer batalkan disetujui). |
 | 5 | Pelunasan Piutang | Pelunasan pesanan (BR-07) | rpc_catat_pelunasan melunasi penuh 100% per faktur; tidak ada tabel pembayaran_piutang terpisah | Ya (B25) | Pelunasan sebagian dinyatakan di luar lingkup sistem (PRD §14). |
 | 6 | Bypass Kredit Manajer | Spesifikasi mengecualikan Manajer pada BR-04 | Manajer TIDAK BISA membypass limit kredit atau overdue di konfirmasi pesanan | Ya (B30, D5) | Untuk tata kelola risiko kredit, Manajer wajib menaikkan limit atau melunasi faktur terlebih dahulu (tercatat di audit log). |
 | 7 | Koreksi harga_pokok Manual | Spesifikasi menyatakan HPP diupdate via PO (BR-10) | Manajer diizinkan memanggil rpc_ubah_harga_pokok | Ya (B31) | Diperlukan untuk mengisi HPP saldo awal sebelum PO pertama diterbitkan. |

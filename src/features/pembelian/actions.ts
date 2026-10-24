@@ -8,10 +8,12 @@ import {
   setujuiPembelianSchema,
   tolakPembelianSchema,
   terimaPembelianSchema,
+  batalkanPembelianSchema,
   type AjukanPembelianInput,
   type SetujuiPembelianInput,
   type TolakPembelianInput,
   type TerimaPembelianInput,
+  type BatalkanPembelianInput,
 } from './schemas';
 
 export interface ActionResult<T = unknown> {
@@ -183,6 +185,48 @@ export async function terimaPembelianAction(
   return {
     success: true,
     message: 'Barang berhasil diterima, stok bertambah dan harga pokok diperbarui',
+    data: res,
+  };
+}
+
+/**
+ * Membatalkan PO (Pengaju untuk status diajukan, Manajer untuk status disetujui).
+ * Memanggil rpc_batalkan_pembelian.
+ */
+export async function batalkanPembelianAction(
+  payload: BatalkanPembelianInput
+): Promise<ActionResult<{ id: string; status: string }>> {
+  const parsed = batalkanPembelianSchema.safeParse(payload);
+  if (!parsed.success) {
+    return {
+      success: false,
+      message: parsed.error.issues[0]?.message || 'Data pembatalan tidak valid',
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  const supabase = await createServerClient();
+  const { data, error } = await supabase.rpc('rpc_batalkan_pembelian', {
+    p_pembelian_id: parsed.data.pembelian_id,
+    p_alasan: parsed.data.alasan || null,
+  });
+
+  if (error) {
+    return {
+      success: false,
+      message: getErrorMessage(error),
+    };
+  }
+
+  revalidatePath('/pembelian');
+  revalidatePath(`/pembelian/${parsed.data.pembelian_id}`);
+  revalidatePath('/stok');
+  revalidatePath('/');
+
+  const res = data as { id: string; status: string };
+  return {
+    success: true,
+    message: 'Pembelian berhasil dibatalkan',
     data: res,
   };
 }

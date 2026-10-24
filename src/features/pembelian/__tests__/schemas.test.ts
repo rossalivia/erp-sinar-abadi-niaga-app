@@ -4,6 +4,7 @@ import {
   setujuiPembelianSchema,
   tolakPembelianSchema,
   terimaPembelianSchema,
+  batalkanPembelianSchema,
 } from '../schemas';
 
 describe('ajukanPembelianSchema (BR-09)', () => {
@@ -99,3 +100,33 @@ describe('terimaPembelianSchema (BR-10)', () => {
     expect(res.success).toBe(false);
   });
 });
+
+describe('batalkanPembelianSchema (BR-09)', () => {
+  const validUUID = '44444444-4444-4444-8444-444444444444';
+
+  it('menerima pembatalan tanpa alasan', () => {
+    const res = batalkanPembelianSchema.safeParse({
+      pembelian_id: validUUID,
+    });
+    expect(res.success).toBe(true);
+  });
+
+  it('menerima pembatalan dengan alasan', () => {
+    const res = batalkanPembelianSchema.safeParse({
+      pembelian_id: validUUID,
+      alasan: 'Pemasok kehabisan stok barang ini',
+    });
+    expect(res.success).toBe(true);
+    if (res.success) {
+      expect(res.data.alasan).toBe('Pemasok kehabisan stok barang ini');
+    }
+  });
+
+  it('menolak pembatalan dengan ID bukan UUID', () => {
+    const res = batalkanPembelianSchema.safeParse({
+      pembelian_id: 'bukan-uuid',
+    });
+    expect(res.success).toBe(false);
+  });
+});
+

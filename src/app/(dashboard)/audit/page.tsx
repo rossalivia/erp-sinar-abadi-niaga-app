@@ -98,6 +98,7 @@ export default async function AuditLogPage({ searchParams }: PageProps) {
     'ajukan_pembelian',
     'setujui_pembelian',
     'tolak_pembelian',
+    'batalkan_pembelian',
     'terima_pembelian',
     'penyesuaian_stok',
   ];

@@ -372,10 +372,13 @@ export type Database = {
       }
       pembelian: {
         Row: {
+          alasan_batal: string | null
           alasan_tolak: string | null
           barang_id: string
           diajukan_oleh: string
           diajukan_pada: string
+          dibatalkan_oleh: string | null
+          dibatalkan_pada: string | null
           diputuskan_oleh: string | null
           diputuskan_pada: string | null
           diterima_oleh: string | null
@@ -389,10 +392,13 @@ export type Database = {
           status: string
         }
         Insert: {
+          alasan_batal?: string | null
           alasan_tolak?: string | null
           barang_id: string
           diajukan_oleh: string
           diajukan_pada?: string
+          dibatalkan_oleh?: string | null
+          dibatalkan_pada?: string | null
           diputuskan_oleh?: string | null
           diputuskan_pada?: string | null
           diterima_oleh?: string | null
@@ -406,10 +412,13 @@ export type Database = {
           status?: string
         }
         Update: {
+          alasan_batal?: string | null
           alasan_tolak?: string | null
           barang_id?: string
           diajukan_oleh?: string
           diajukan_pada?: string
+          dibatalkan_oleh?: string | null
+          dibatalkan_pada?: string | null
           diputuskan_oleh?: string | null
           diputuskan_pada?: string | null
           diterima_oleh?: string | null
@@ -1098,10 +1107,13 @@ export type Database = {
       }
       v_pembelian: {
         Row: {
+          alasan_batal: string | null
           alasan_tolak: string | null
           barang_id: string | null
           diajukan_oleh: string | null
           diajukan_pada: string | null
+          dibatalkan_oleh: string | null
+          dibatalkan_pada: string | null
           diputuskan_oleh: string | null
           diputuskan_pada: string | null
           diterima_oleh: string | null
@@ -1114,10 +1126,13 @@ export type Database = {
           status: string | null
         }
         Insert: {
+          alasan_batal?: string | null
           alasan_tolak?: string | null
           barang_id?: string | null
           diajukan_oleh?: string | null
           diajukan_pada?: string | null
+          dibatalkan_oleh?: string | null
+          dibatalkan_pada?: string | null
           diputuskan_oleh?: string | null
           diputuskan_pada?: string | null
           diterima_oleh?: string | null
@@ -1130,10 +1145,13 @@ export type Database = {
           status?: string | null
         }
         Update: {
+          alasan_batal?: string | null
           alasan_tolak?: string | null
           barang_id?: string | null
           diajukan_oleh?: string | null
           diajukan_pada?: string | null
+          dibatalkan_oleh?: string | null
+          dibatalkan_pada?: string | null
           diputuskan_oleh?: string | null
           diputuskan_pada?: string | null
           diterima_oleh?: string | null
@@ -1199,10 +1217,13 @@ export type Database = {
       }
       v_pembelian_manajer: {
         Row: {
+          alasan_batal: string | null
           alasan_tolak: string | null
           barang_id: string | null
           diajukan_oleh: string | null
           diajukan_pada: string | null
+          dibatalkan_oleh: string | null
+          dibatalkan_pada: string | null
           diputuskan_oleh: string | null
           diputuskan_pada: string | null
           diterima_oleh: string | null
@@ -1217,10 +1238,13 @@ export type Database = {
           total_estimasi_beli: number | null
         }
         Insert: {
+          alasan_batal?: string | null
           alasan_tolak?: string | null
           barang_id?: string | null
           diajukan_oleh?: string | null
           diajukan_pada?: string | null
+          dibatalkan_oleh?: string | null
+          dibatalkan_pada?: string | null
           diputuskan_oleh?: string | null
           diputuskan_pada?: string | null
           diterima_oleh?: string | null
@@ -1235,10 +1259,13 @@ export type Database = {
           total_estimasi_beli?: never
         }
         Update: {
+          alasan_batal?: string | null
           alasan_tolak?: string | null
           barang_id?: string | null
           diajukan_oleh?: string | null
           diajukan_pada?: string | null
+          dibatalkan_oleh?: string | null
+          dibatalkan_pada?: string | null
           diputuskan_oleh?: string | null
           diputuskan_pada?: string | null
           diterima_oleh?: string | null
@@ -1250,7 +1277,6 @@ export type Database = {
           nomor?: string | null
           pemasok_id?: string | null
           status?: string | null
-          total_estimasi_beli?: never
         }
         Relationships: [
           {
@@ -1970,6 +1996,10 @@ export type Database = {
       }
       rpc_batalkan_pesanan_terkonfirmasi: {
         Args: { p_alasan: string; p_pesanan_id: string }
+        Returns: Json
+      }
+      rpc_batalkan_pembelian: {
+        Args: { p_alasan?: string | null; p_pembelian_id: string }
         Returns: Json
       }
       rpc_buat_barang: {

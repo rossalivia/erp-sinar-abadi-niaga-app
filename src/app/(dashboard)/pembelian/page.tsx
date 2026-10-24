@@ -158,6 +158,7 @@ export default async function DaftarPembelianPage({ searchParams }: PageProps) {
               <option value="disetujui">Disetujui</option>
               <option value="ditolak">Ditolak</option>
               <option value="diterima">Diterima</option>
+              <option value="dibatalkan">Dibatalkan</option>
             </select>
           </div>
 

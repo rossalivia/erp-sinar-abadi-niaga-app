@@ -1,4 +1,4 @@
-export type StatusPembelian = 'diajukan' | 'disetujui' | 'ditolak' | 'diterima';
+export type StatusPembelian = 'diajukan' | 'disetujui' | 'ditolak' | 'diterima' | 'dibatalkan';
 
 export interface PembelianListItem {
   id: string;
@@ -38,6 +38,9 @@ export interface PembelianDetail {
   diputuskan_pada: string | null;
   diterima_oleh: string | null;
   diterima_pada: string | null;
+  dibatalkan_oleh: string | null;
+  dibatalkan_pada: string | null;
+  alasan_batal: string | null;
   pemasok: {
     id: string;
     kode: string;
@@ -59,6 +62,9 @@ export interface PembelianDetail {
     nama_lengkap: string;
   } | null;
   penerima?: {
+    nama_lengkap: string;
+  } | null;
+  pembatal?: {
     nama_lengkap: string;
   } | null;
   // Khusus manajer

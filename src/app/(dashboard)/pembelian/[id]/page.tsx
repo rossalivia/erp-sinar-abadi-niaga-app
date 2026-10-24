@@ -42,7 +42,7 @@ export default async function DetailPembelianPage({ params }: PageProps) {
   if (isManajer) {
     const res = await supabase
       .from('v_pembelian_manajer')
-      .select('id, nomor, status, jumlah_dipesan, jumlah_diterima, alasan_tolak, diajukan_oleh, diajukan_pada, diputuskan_oleh, diputuskan_pada, diterima_oleh, diterima_pada, harga_beli_satuan, total_estimasi_beli, pemasok:pemasok_id (id, kode, nama, telepon, alamat), barang:barang_id (id, kode, nama, satuan, stok), pengaju:diajukan_oleh (nama_lengkap), pemutus:diputuskan_oleh (nama_lengkap), penerima:diterima_oleh (nama_lengkap)')
+      .select('id, nomor, status, jumlah_dipesan, jumlah_diterima, alasan_tolak, diajukan_oleh, diajukan_pada, diputuskan_oleh, diputuskan_pada, diterima_oleh, diterima_pada, dibatalkan_oleh, dibatalkan_pada, alasan_batal, harga_beli_satuan, total_estimasi_beli, pemasok:pemasok_id (id, kode, nama, telepon, alamat), barang:barang_id (id, kode, nama, satuan, stok), pengaju:diajukan_oleh (nama_lengkap), pemutus:diputuskan_oleh (nama_lengkap), penerima:diterima_oleh (nama_lengkap), pembatal:dibatalkan_oleh (nama_lengkap)')
       .eq('id', id)
       .single();
     poRaw = res.data as Record<string, unknown> | null;
@@ -50,7 +50,7 @@ export default async function DetailPembelianPage({ params }: PageProps) {
   } else {
     const res = await supabase
       .from('v_pembelian')
-      .select('id, nomor, status, jumlah_dipesan, jumlah_diterima, alasan_tolak, diajukan_oleh, diajukan_pada, diputuskan_oleh, diputuskan_pada, diterima_oleh, diterima_pada, pemasok:pemasok_id (id, kode, nama, telepon, alamat), barang:barang_id (id, kode, nama, satuan, stok), pengaju:diajukan_oleh (nama_lengkap), pemutus:diputuskan_oleh (nama_lengkap), penerima:diterima_oleh (nama_lengkap)')
+      .select('id, nomor, status, jumlah_dipesan, jumlah_diterima, alasan_tolak, diajukan_oleh, diajukan_pada, diputuskan_oleh, diputuskan_pada, diterima_oleh, diterima_pada, dibatalkan_oleh, dibatalkan_pada, alasan_batal, pemasok:pemasok_id (id, kode, nama, telepon, alamat), barang:barang_id (id, kode, nama, satuan, stok), pengaju:diajukan_oleh (nama_lengkap), pemutus:diputuskan_oleh (nama_lengkap), penerima:diterima_oleh (nama_lengkap), pembatal:dibatalkan_oleh (nama_lengkap)')
       .eq('id', id)
       .single();
     poRaw = res.data as Record<string, unknown> | null;
@@ -66,6 +66,7 @@ export default async function DetailPembelianPage({ params }: PageProps) {
   const pengaju = (Array.isArray(poRaw.pengaju) ? poRaw.pengaju[0] : poRaw.pengaju) as unknown as PembelianDetail['pengaju'];
   const pemutus = (Array.isArray(poRaw.pemutus) ? poRaw.pemutus[0] : poRaw.pemutus) as unknown as PembelianDetail['pemutus'];
   const penerima = (Array.isArray(poRaw.penerima) ? poRaw.penerima[0] : poRaw.penerima) as unknown as PembelianDetail['penerima'];
+  const pembatal = (Array.isArray(poRaw.pembatal) ? poRaw.pembatal[0] : poRaw.pembatal) as unknown as PembelianDetail['pembatal'];
 
   const pembelian: PembelianDetail = {
     id: String(poRaw.id || ''),
@@ -82,11 +83,15 @@ export default async function DetailPembelianPage({ params }: PageProps) {
     diputuskan_pada: poRaw.diputuskan_pada ? String(poRaw.diputuskan_pada) : null,
     diterima_oleh: poRaw.diterima_oleh ? String(poRaw.diterima_oleh) : null,
     diterima_pada: poRaw.diterima_pada ? String(poRaw.diterima_pada) : null,
+    dibatalkan_oleh: poRaw.dibatalkan_oleh ? String(poRaw.dibatalkan_oleh) : null,
+    dibatalkan_pada: poRaw.dibatalkan_pada ? String(poRaw.dibatalkan_pada) : null,
+    alasan_batal: poRaw.alasan_batal ? String(poRaw.alasan_batal) : null,
     pemasok,
     barang,
     pengaju,
     pemutus,
     penerima,
+    pembatal,
     harga_beli_satuan: isManajer && poRaw.harga_beli_satuan !== undefined && poRaw.harga_beli_satuan !== null ? Number(poRaw.harga_beli_satuan) : null,
     total_estimasi_beli: isManajer && poRaw.total_estimasi_beli !== undefined && poRaw.total_estimasi_beli !== null ? Number(poRaw.total_estimasi_beli) : null,
   };
@@ -129,6 +134,8 @@ export default async function DetailPembelianPage({ params }: PageProps) {
           status={pembelian.status}
           jumlahDipesan={pembelian.jumlah_dipesan}
           peran={peran}
+          diajukanOleh={pembelian.diajukan_oleh}
+          userId={profil?.id || ''}
         />
       </div>
 

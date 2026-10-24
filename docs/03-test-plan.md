@@ -400,6 +400,29 @@ Urutan validasi `konfirmasi_pesanan`: (1) akses/kepemilikan → E01/E02, (2) sta
 | **TC-212** | Pelanggan Baru 0 Pesanan Menghasilkan `data_kurang` Tanpa Error Division by Zero | M | SQL | **Lulus** | 2026-10-24 | `supabase/tests/14_pemantauan_kredit.sql` | Fungsi mengembalikan kelas `data_kurang` dengan aman tanpa terjadi runtime error. |
 | **TC-213** | Eksekusi `fn_daftar_pemantauan_kredit()` Menghasilkan Data Komprehensif Seluruh Pelanggan | M | SQL | **Lulus** | 2026-10-24 | `supabase/tests/14_pemantauan_kredit.sql` | Seluruh metrik kredit (skor, kelas, utilisasi, overdue, rekomendasi, status tinjau) tampil utuh. |
 
+---
+
+## 19. Test Case Tambahan: Pembatalan Pembelian PO Sesuai PRD Bab 6.2 & BR-09 (TC-214 s.d. TC-228)
+
+| ID | Fokus Uji | Aktor | Media | Status | Tanggal Uji | Bukti Uji | Ringkasan Verifikasi & Hasil |
+|---|---|---|---|---|---|---|---|
+| **TC-214** | Pengaju membatalkan PO berstatus `diajukan` | G | SQL + Unit | **Lulus** | 2026-10-24 | `supabase/tests/15_pembatalan_pembelian.sql`<br>`src/features/pembelian/__tests__/schemas.test.ts` | Status berubah menjadi `dibatalkan`, kolom `dibatalkan_oleh`, `dibatalkan_pada`, dan `alasan_batal` terisi lengkap. |
+| **TC-215** | Penolakan pembatalan PO `diajukan` oleh non-pengaju (Gudang 2) | G | SQL | **Lulus** | 2026-10-24 | `supabase/tests/15_pembatalan_pembelian.sql` | Ditolak dengan kode error `E0074: Hanya pengaju yang berwenang membatalkan pengajuan pembelian`. |
+| **TC-216** | Penolakan pembatalan PO `diajukan` oleh Manajer bukan pengaju (PRD Harfiah) | M | SQL | **Lulus** | 2026-10-24 | `supabase/tests/15_pembatalan_pembelian.sql` | Ditolak dengan `E0074`; Manajer diarahkan menggunakan alur penolakan (`rpc_tolak_pembelian`). |
+| **TC-217** | Manajer membatalkan PO berstatus `disetujui` (sebelum barang diterima) | M | SQL + Unit | **Lulus** | 2026-10-24 | `supabase/tests/15_pembatalan_pembelian.sql`<br>`src/features/pembelian/__tests__/schemas.test.ts` | Status berubah menjadi `dibatalkan` dan pelaku manajer tercatat di baris pembelian. |
+| **TC-218** | Penolakan pembatalan PO `disetujui` oleh Staf Gudang | G | SQL | **Lulus** | 2026-10-24 | `supabase/tests/15_pembatalan_pembelian.sql` | Ditolak tegas dengan kode error `E0075: Hanya Manajer yang berwenang membatalkan pembelian yang disetujui`. |
+| **TC-219** | Penolakan pembatalan PO berstatus `diterima` | M, G | SQL | **Lulus** | 2026-10-24 | `supabase/tests/15_pembatalan_pembelian.sql` | Ditolak dengan kode error `E0076: Pembelian dengan status ini tidak dapat dibatalkan`. |
+| **TC-220** | Penolakan pembatalan PO berstatus `ditolak` | M, G | SQL | **Lulus** | 2026-10-24 | `supabase/tests/15_pembatalan_pembelian.sql` | Ditolak dengan kode error `E0076: Pembelian dengan status ini tidak dapat dibatalkan`. |
+| **TC-221** | Penolakan pembatalan ganda pada PO yang sudah `dibatalkan` | M, G | SQL | **Lulus** | 2026-10-24 | `supabase/tests/15_pembatalan_pembelian.sql` | Ditolak dengan kode error `E0076: Pembelian dengan status ini tidak dapat dibatalkan`. |
+| **TC-222** | Penolakan penerimaan barang fisik pada PO yang telah dibatalkan | G, M | SQL | **Lulus** | 2026-10-24 | `supabase/tests/15_pembatalan_pembelian.sql` | Eksekusi `rpc_terima_pembelian` ditolak dengan kode error `E0019: Pembelian tidak dalam status disetujui`. |
+| **TC-223** | Invariansi stok dan harga pokok master barang akibat pembatalan | Sistem | SQL | **Lulus** | 2026-10-24 | `supabase/tests/15_pembatalan_pembelian.sql` | Terbukti secara empiris pembatalan PO sama sekali tidak memicu mutasi stok maupun perubahan `harga_pokok`. |
+| **TC-224** | Pencatatan jejak audit pembatalan (`audit_log`) dengan nilai sebelum & sesudah | M | SQL | **Lulus** | 2026-10-24 | `supabase/tests/15_pembatalan_pembelian.sql` | Log mencatat `aksi = 'batalkan_pembelian'`, `nilai_lama` memuat status awal, dan `nilai_baru` memuat status `dibatalkan` dan alasan. |
+| **TC-225** | Zero-Leakage: View `v_pembelian` untuk Gudang bebas dari harga_beli_satuan | G | SQL | **Lulus** | 2026-10-24 | `supabase/tests/15_pembatalan_pembelian.sql` | Kolom `harga_beli_satuan` terbukti 100% tidak ada pada skema view `v_pembelian`. |
+| **TC-226** | Isolasi Antrean Dasbor & Tugas Harian (`rpc_get_tugas_harian`) | G, M | SQL | **Lulus** | 2026-10-24 | `supabase/tests/15_pembatalan_pembelian.sql` | PO berstatus dibatalkan tereksklusi dari metrik `po_menunggu_penerimaan` dan `po_menunggu_persetujuan`. |
+| **TC-227** | Penolakan eksekusi RPC pembatalan oleh Staf Penjualan | P | SQL | **Lulus** | 2026-10-24 | `supabase/tests/15_pembatalan_pembelian.sql` | Pemanggilan fungsi langsung oleh peran Penjualan ditolak dengan `E0001: Akses ditolak`. |
+| **TC-228** | Uji Konkurensi Multi-Proses: Penerimaan vs Pembatalan Bersamaan | G, M | PowerShell | **Lulus** | 2026-10-24 | `supabase/tests/15_konkurensi_pembatalan.ps1` | 10 dari 10 iterasi paralel berhasil dengan tepat satu pemenang konsisten tanpa deadlock basis data. |
+
+
 
 
 

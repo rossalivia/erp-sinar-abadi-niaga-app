@@ -1,5 +1,4 @@
-import * as React from 'react';
-import { Clock, CheckCircle2, XCircle, PackageCheck } from 'lucide-react';
+import { Clock, CheckCircle2, XCircle, PackageCheck, Ban } from 'lucide-react';
 import { formatTanggalWaktu } from '@/lib/format';
 import type { PembelianDetail } from '../types';
 
@@ -9,6 +8,7 @@ interface PembelianTimelineProps {
 
 export function PembelianTimeline({ pembelian }: PembelianTimelineProps) {
   const isDitolak = pembelian.status === 'ditolak';
+  const isDibatalkan = pembelian.status === 'dibatalkan';
 
   const steps = [
     {
@@ -69,6 +69,31 @@ export function PembelianTimeline({ pembelian }: PembelianTimelineProps) {
                 Alasan Penolakan:{' '}
                 <span className="italic font-normal text-slate-900 bg-white/70 px-1.5 py-0.5 rounded border border-red-100">
                   &ldquo;{pembelian.alasan_tolak}&rdquo;
+                </span>
+              </p>
+            )}
+          </div>
+        </div>
+      ) : isDibatalkan ? (
+        <div className="flex items-start gap-3 p-3.5 bg-slate-100 border border-slate-300 rounded-md text-slate-800 text-xs">
+          <Ban className="w-5 h-5 text-slate-500 shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <p className="font-semibold text-sm text-slate-900">Pesanan Pembelian Dibatalkan</p>
+            <p className="text-slate-600">
+              Waktu:{' '}
+              <span className="font-medium text-slate-800">
+                {formatTanggalWaktu(pembelian.dibatalkan_pada)}
+              </span>{' '}
+              oleh{' '}
+              <span className="font-medium text-slate-800">
+                {pembelian.pembatal?.nama_lengkap || 'Pengguna'}
+              </span>
+            </p>
+            {pembelian.alasan_batal && (
+              <p className="text-slate-700 mt-1">
+                Alasan Pembatalan:{' '}
+                <span className="italic font-normal text-slate-900 bg-white px-1.5 py-0.5 rounded border border-slate-200">
+                  &ldquo;{pembelian.alasan_batal}&rdquo;
                 </span>
               </p>
             )}

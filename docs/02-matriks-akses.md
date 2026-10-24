@@ -46,7 +46,7 @@ Kolom rahasia: `barang.harga_pokok`, `pembelian.harga_beli_satuan`, `item_pesana
 | | UPDATE | ❌ | ⚠️ | ⚠️ | G: `nama, satuan, stok_minimum, aktif`. M: + `harga_jual` (diaudit). **Tidak ada** yang boleh UPDATE `stok` atau `kode` langsung. `harga_pokok` via penerimaan PO atau RPC `ubah_harga_pokok` (M, diaudit) | RLS, CG, TG (`fn_guard_kolom_barang`), trigger audit |
 | | DELETE | ❌ | ❌ | ❌ | — | CG |
 | **pembelian** | SELECT | ❌ | ⚠️ | ⚠️ | G/M: semua kolom **kecuali `harga_beli_satuan`**. M membacanya via `v_pembelian_manajer` | RLS, CG, VW |
-| | INSERT/UPDATE | ❌ | ❌ | ❌ | Hanya via RPC `ajukan_pembelian`, `putuskan_pembelian`, `terima_pembelian` | CG (tanpa grant tulis), RPC |
+| | INSERT/UPDATE | ❌ | ❌ | ❌ | Hanya via RPC `ajukan_pembelian`, `putuskan_pembelian`, `terima_pembelian`, `batalkan_pembelian` | CG (tanpa grant tulis), RPC |
 | | DELETE | ❌ | ❌ | ❌ | — | CG |
 | **pesanan_jual** | SELECT | ⚠️ | ⚠️ | ✅ | P: `dibuat_oleh = auth.uid()`. G: `status <> 'draf'`. M: semua | RLS |
 | | INSERT/UPDATE | ❌ | ❌ | ❌ | Hanya via RPC (`buat_pesanan`, `konfirmasi_pesanan`, `kirim_pesanan`, `lunasi_pesanan`, `batalkan_pesanan`) | CG, RPC |
@@ -110,7 +110,9 @@ Kolom rahasia: `barang.harga_pokok`, `pembelian.harga_beli_satuan`, `item_pesana
 | Kirim pesanan (dikonfirmasi → dikirim) | ❌ | ✅ | ✅ | Jatuh tempo otomatis | RPC `kirim_pesanan` |
 | Catat pelunasan (dikirim → lunas) | ❌ | ❌ | ✅ | Diaudit | RPC `lunasi_pesanan`, audit |
 | Ajukan PO | ❌ | ✅ | ✅ | Jumlah 1–10.000, pemasok & barang aktif | RPC `ajukan_pembelian`, CK |
+| Batalkan PO (diajukan) | ❌ | ⚠️ pengaju | ⚠️ pengaju | Hanya oleh pengaju (`diajukan_oleh = auth.uid()`), diaudit | RPC `rpc_batalkan_pembelian`, audit |
 | Setujui PO | ❌ | ❌ | ✅ | `harga_beli_satuan > 0`, diaudit | RPC `putuskan_pembelian`, audit |
+| Batalkan PO (disetujui) | ❌ | ❌ | ✅ | Barang belum diterima, diaudit | RPC `rpc_batalkan_pembelian`, audit |
 | Tolak PO | ❌ | ❌ | ✅ | Alasan ≥ 10 karakter, diaudit | RPC, audit |
 | Terima barang | ❌ | ✅ | ✅ | Status disetujui, sekali, 1 ≤ jumlah ≤ dipesan; stok naik, harga_pokok diperbarui | RPC `terima_pembelian` (FOR UPDATE pada PO & barang) |
 | Penyesuaian stok | ❌ | ✅ | ✅ | Alasan ≥ 10 karakter, hasil ≥ 0, diaudit | RPC `sesuaikan_stok`, audit |

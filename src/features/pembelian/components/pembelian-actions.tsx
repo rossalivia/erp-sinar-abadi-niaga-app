@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
-import { CheckCircle2, XCircle, PackageCheck, AlertTriangle } from 'lucide-react';
+import { CheckCircle2, XCircle, PackageCheck, AlertTriangle, Ban } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import {
   setujuiPembelianAction,
   tolakPembelianAction,
   terimaPembelianAction,
+  batalkanPembelianAction,
 } from '../actions';
 import type { StatusPembelian } from '../types';
 import type { Peran } from '@/types/auth';
@@ -23,6 +24,8 @@ interface PembelianActionsProps {
   status: StatusPembelian;
   jumlahDipesan: number;
   peran: Peran;
+  diajukanOleh?: string;
+  userId?: string;
 }
 
 export function PembelianActions({
@@ -31,17 +34,21 @@ export function PembelianActions({
   status,
   jumlahDipesan,
   peran,
+  diajukanOleh,
+  userId,
 }: PembelianActionsProps) {
   const router = useRouter();
   const [loadingAction, setLoadingAction] = React.useState<string | null>(null);
 
   const isManajer = peran === 'manajer';
   const isGudang = peran === 'gudang';
+  const isPengaju = Boolean(diajukanOleh && userId && diajukanOleh === userId);
 
   // State Dialog
   const [isApproveOpen, setIsApproveOpen] = React.useState(false);
   const [isRejectOpen, setIsRejectOpen] = React.useState(false);
   const [isReceiveOpen, setIsReceiveOpen] = React.useState(false);
+  const [isCancelOpen, setIsCancelOpen] = React.useState(false);
 
   // Form Inputs
   const [hargaBeli, setHargaBeli] = React.useState<number>(0);
@@ -52,6 +59,8 @@ export function PembelianActions({
 
   const [jumlahDiterima, setJumlahDiterima] = React.useState<number>(jumlahDipesan);
   const [terimaError, setTerimaError] = React.useState<string | null>(null);
+
+  const [alasanBatal, setAlasanBatal] = React.useState('');
 
   // 1. Setujui PO (Manajer only)
   async function handleSetujui() {
@@ -141,6 +150,30 @@ export function PembelianActions({
     }
   }
 
+  // 4. Batalkan PO (Pengaju jika diajukan, Manajer jika disetujui)
+  async function handleBatalkan() {
+    setLoadingAction('batalkan');
+    try {
+      const res = await batalkanPembelianAction({
+        pembelian_id: pembelianId,
+        alasan: alasanBatal.trim() || undefined,
+      });
+
+      if (!res.success) {
+        toast.error(res.message || 'Gagal membatalkan pembelian');
+        return;
+      }
+
+      toast.success(res.message || 'Pembelian berhasil dibatalkan');
+      setIsCancelOpen(false);
+      router.refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan sistem');
+    } finally {
+      setLoadingAction(null);
+    }
+  }
+
   return (
     <div className="flex flex-wrap items-center gap-2">
       {/* Aksi Manajer saat status diajukan */}
@@ -193,6 +226,27 @@ export function PembelianActions({
           Terima Barang
         </Button>
       )}
+
+      {/* Aksi Batalkan PO:
+          - Saat status diajukan: HANYA Pengaju
+          - Saat status disetujui: HANYA Manajer
+      */}
+      {((status === 'diajukan' && isPengaju) || (status === 'disetujui' && isManajer)) && (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            setAlasanBatal('');
+            setIsCancelOpen(true);
+          }}
+          disabled={Boolean(loadingAction)}
+          className="text-xs h-8 gap-1.5 text-slate-700 hover:text-red-700 hover:bg-red-50 border-slate-300"
+        >
+          <Ban className="w-3.5 h-3.5 text-slate-500" />
+          Batalkan PO
+        </Button>
+      )}
+
 
       {/* Modal Dialog Setujui PO */}
       {isApproveOpen && (
@@ -398,6 +452,65 @@ export function PembelianActions({
                 className="text-xs h-8 bg-blue-700 hover:bg-blue-800 text-white shadow-none"
               >
                 {loadingAction === 'terima' ? 'Memproses...' : 'Konfirmasi Terima Barang'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Dialog Batalkan PO */}
+      {isCancelOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-white rounded-md border border-slate-200 shadow-md max-w-md w-full p-5 space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded bg-red-100 text-red-700 shrink-0">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-slate-900">
+                  Batalkan Pesanan Pembelian {nomor}?
+                </h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  {status === 'diajukan'
+                    ? 'Sebagai pengaju, Anda akan membatalkan pengajuan pembelian ini.'
+                    : 'Sebagai Manajer, Anda akan membatalkan PO yang telah disetujui (sebelum barang diterima).'}
+                  {' '}Tindakan ini permanen dan tidak dapat dibatalkan.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="alasan-batal" className="text-xs text-slate-700 font-medium">
+                Alasan Pembatalan (Opsional)
+              </Label>
+              <Textarea
+                id="alasan-batal"
+                value={alasanBatal}
+                onChange={(e) => setAlasanBatal(e.target.value)}
+                placeholder="Contoh: Salah estimasi jumlah kebutuhan atau pemasok kehabisan stok"
+                className="text-xs min-h-[80px]"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsCancelOpen(false)}
+                disabled={Boolean(loadingAction)}
+                className="text-xs h-8 border-slate-300"
+              >
+                Tutup
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                onClick={handleBatalkan}
+                disabled={Boolean(loadingAction)}
+                className="text-xs h-8 bg-red-600 hover:bg-red-700 text-white shadow-none"
+              >
+                {loadingAction === 'batalkan' ? 'Memproses...' : 'Ya, Batalkan PO'}
               </Button>
             </div>
           </div>

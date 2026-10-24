@@ -98,7 +98,7 @@ erDiagram
     integer jumlah_dipesan "1 .. 10.000"
     integer jumlah_diterima "0 .. dipesan"
     numeric harga_beli_satuan "RAHASIA"
-    text status "diajukan | disetujui | ditolak | diterima"
+    text status "diajukan | disetujui | ditolak | diterima | dibatalkan"
     text alasan_tolak
     uuid diajukan_oleh FK "-> profiles.id"
     timestamptz diajukan_pada
@@ -106,6 +106,9 @@ erDiagram
     timestamptz diputuskan_pada
     uuid diterima_oleh FK "-> profiles.id"
     timestamptz diterima_pada
+    uuid dibatalkan_oleh FK "-> profiles.id"
+    timestamptz dibatalkan_pada
+    text alasan_batal
   }
 
   PESANAN_JUAL {
@@ -239,6 +242,7 @@ Sistem database menerapkan 7 lapisan perlindungan mandiri di level Postgres:
 | `supabase/migrations/20261023060000_notifikasi_email_stok.sql` | Modul Notifikasi Email Stok Menipis Harian: tabel `notifikasi_email_log`, fungsi sistem `rpc_sistem_daftar_stok_menipis()`, `rpc_sistem_penerima_notifikasi_stok()`, `rpc_sistem_klaim_notifikasi()`, `rpc_sistem_selesaikan_notifikasi()`, dan fungsi baca `rpc_riwayat_notifikasi_manajer()`. |
 | `supabase/migrations/20261023080000_tautan_bayar_mayar.sql` | Modul Tautan Bayar Piutang Mayar (Sandbox / Live): tabel `tagihan_mayar`, `mayar_webhook_event`, index unik aktif, `fn_status_efektif_tagihan_mayar`, RPC `rpc_siapkan_tagihan_mayar`, `rpc_simpan_tagihan_mayar`, `rpc_tutup_tagihan_mayar`, `rpc_sistem_lunaskan_dari_mayar`, `rpc_sistem_rekam_webhook_event`, `rpc_sistem_cari_tagihan_mayar`, `rpc_riwayat_tagihan_mayar_manajer`, serta relaksasi `audit_log.pelaku_id DROP NOT NULL`. |
 | `supabase/migrations/20261024170000_pemantauan_kredit.sql` | Modul Pemantauan dan Rekomendasi Kredit: indeks komposit kalkulasi kredit & audit limit, fungsi `fn_parameter_kredit`, `fn_analisis_kredit_pelanggan`, `fn_daftar_pemantauan_kredit`, `fn_simulasi_limit_kredit`, `fn_peringatan_editor_pesanan`, serta pembaruan `rpc_get_tugas_harian` (tinjau_limit_kredit). |
+| `supabase/migrations/20261024223000_pembatalan_pembelian.sql` | Modul Pembatalan Pembelian (PO) sesuai PRD Bab 6.2 & BR-09: penambahan status `'dibatalkan'` pada CHECK constraint, penambahan kolom `dibatalkan_oleh`, `dibatalkan_pada`, `alasan_batal`, pembaruan `v_pembelian` & `v_pembelian_manajer`, serta RPC `rpc_batalkan_pembelian`. |
 | `supabase/seed.sql` | Data seed: 5 akun uji dev (3 peran), 2 pemasok, 5 pelanggan, 15 barang (sebagian stok menipis), saldo awal kartu stok. |
 | `supabase/tests/02_keamanan.sql` | Suite uji SQL 20 skenario mencakup RBAC, column grants, trigger guard, append-only, dan penolakan anon. |
 | `supabase/tests/03_rpc.sql` | Suite uji SQL 25 skenario alur transaksi bisnis, invarian stok, batas kredit, dan konkurensi. |
@@ -254,6 +258,9 @@ Sistem database menerapkan 7 lapisan perlindungan mandiri di level Postgres:
 | `supabase/tests/12_notifikasi_email.sql` | Suite uji SQL TC-156 s.d. TC-160, TC-162, TC-163, TC-170, TC-171: 9 skenario pengujian lengkap kriteria stok = minimum, eksklusi stok > minimum & nonaktif, stok 0 & min 0, penerima manajer & gudang aktif, kontrol idempotensi klaim ganda, retry status gagal, isolasi rpc_sistem_* service_role only, dan penolakan non-manajer. |
 | `supabase/tests/13_tautan_bayar_mayar.sql` | Suite uji SQL TC-174, TC-175, TC-177, TC-178, TC-184 s.d. TC-187, TC-192: 8 skenario pengujian lengkap pembuatan tagihan pesanan dikirim, idempotensi tagihan aktif, penutupan manual & otomatis via pelunasan, verifikasi pelunasan webhook via service_role, proteksi anomali perlu_tinjau, dan pencabutan hak eksekusi rpc_sistem_* dari anon/authenticated. |
 | `supabase/tests/14_pemantauan_kredit.sql` | Suite uji SQL TC-193 s.d. TC-213: 21 skenario pengujian lengkap formula 4 pilar skor kredit, batas kelayakan data cukup, pemetaan kelas A-E, penalti overdue >30 hari, pembulatan kelipatan Rp100.000, cap 3x omzet & 1.5x limit, simulasi limit, advisory warning non-blocking editor pesanan, audit penerapan limit, penolakan hak akses Penjualan/Gudang (`E0001`), dan penambahan tugas harian `tinjau_limit_kredit`. |
+| `supabase/tests/15_pembatalan_pembelian.sql` | Suite uji SQL TC-214 s.d. TC-227: 14 skenario pengujian lengkap pembatalan PO diajukan oleh pengaju, penolakan non-pengaju / Manajer (`E0074`), pembatalan PO disetujui oleh Manajer, penolakan Gudang (`E0075`), penolakan status diterima/ditolak/dibatalkan (`E0076`), penolakan penerimaan barang fisik (`E0019`), invariansi stok/HPP, audit log sebelum & sesudah, zero-leakage view `v_pembelian`, isolasi dasbor tugas harian, dan penolakan Penjualan (`E0001`). |
+| `supabase/tests/15_konkurensi_pembatalan.ps1` | Suite uji konkurensi PowerShell (TC-228): 10 iterasi eksekusi paralel multi-proses penerimaan barang (Gudang) vs pembatalan PO (Manajer) bebas deadlock dengan tepat satu pemenang konsisten. |
+
 
 
 

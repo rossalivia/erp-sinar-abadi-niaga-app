@@ -33,7 +33,14 @@ export const terimaPembelianSchema = z.object({
     .min(1, 'Jumlah minimal 1'),
 });
 
+export const batalkanPembelianSchema = z.object({
+  pembelian_id: z.string().uuid('ID pembelian tidak valid'),
+  alasan: z.string().trim().optional(),
+});
+
 export type AjukanPembelianInput = z.infer<typeof ajukanPembelianSchema>;
 export type SetujuiPembelianInput = z.infer<typeof setujuiPembelianSchema>;
 export type TolakPembelianInput = z.infer<typeof tolakPembelianSchema>;
 export type TerimaPembelianInput = z.infer<typeof terimaPembelianSchema>;
+export type BatalkanPembelianInput = z.infer<typeof batalkanPembelianSchema>;
+
