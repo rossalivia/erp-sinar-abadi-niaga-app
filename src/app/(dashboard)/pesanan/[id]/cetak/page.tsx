@@ -4,6 +4,7 @@ import { PrintButton } from '@/features/pesanan/components/print-button';
 import { createServerClient } from '@/lib/supabase/server';
 import { getProfil } from '@/lib/profil';
 import { formatRupiah, formatTanggal } from '@/lib/format';
+import { Logo } from '@/components/ui/logo';
 import type { PesananJualDetail } from '@/features/pesanan/types';
 
 interface PageProps {
@@ -74,15 +75,10 @@ export default async function CetakPesananPage({ params }: PageProps) {
       <div className="border border-slate-300 p-8 sm:p-10 rounded-sm space-y-6 print:border-none print:p-0">
         {/* Header Dokumen */}
         <div className="flex justify-between items-start border-b-2 border-slate-900 pb-4">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight text-slate-900">
-              CV SINAR ABADI NIAGA
-            </h1>
-            <p className="text-xs text-slate-600 mt-1">
-              Distributor & Perdagangan Umum
-            </p>
-            <p className="text-xs text-slate-500">
-              Jl. Industri Niaga No. 88, Kawasan Pergudangan, Surabaya
+          <div className="space-y-1">
+            <Logo variant="monochrome" size="sm" showSubdeskripsi={true} />
+            <p className="text-[11px] text-slate-500 pt-0.5">
+              Jl. Industri Niaga No. 88, Kawasan Pergudangan, Surabaya &bull; Telp: (031) 8990-1234
             </p>
           </div>
 

@@ -99,7 +99,7 @@ export default async function LaporanOmzetMarginPage({ searchParams }: PageProps
     <div className="space-y-5 max-w-7xl mx-auto">
       <PageHeader
         title="Laporan Keuangan & Penjualan"
-        description="Analisis performa omzet, biaya pokok penjualan (HPP), dan margin kotor CV Sinar Abadi Niaga."
+        description="Analisis performa omzet, HPP, dan margin CV Sinar Abadi Niaga — Wholesale Trade of Groceries and FMCG (Distribusi Sembako dan Kebutuhan Toko Kelontong)."
       />
 
       {/* Tab Navigasi Sub-Modul Laporan */}

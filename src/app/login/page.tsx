@@ -12,6 +12,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Logo } from '@/components/ui/logo';
 import { loginAction, type LoginState } from './actions';
 
 function LoginForm() {
@@ -214,26 +215,28 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4 lg:p-8 bg-[#f4f7fb]">
       {/* Container utama hybrid Neumorphic-Glassmorphic */}
-      <div className="w-full max-w-5xl h-[640px] bg-white/80 backdrop-blur-2xl border border-white/80 shadow-2xl flex overflow-hidden rounded-3xl">
+      <div className="w-full max-w-5xl min-h-[660px] bg-white/90 backdrop-blur-2xl border border-white/80 shadow-2xl flex flex-col lg:flex-row overflow-hidden rounded-3xl">
         {/* SISI KIRI: Form Login Glassmorphic */}
-        <div className="w-full lg:w-1/2 p-8 lg:p-12 flex flex-col justify-between z-10">
-          {/* Brand Header */}
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold tracking-wider shadow-neu-sm border border-white/30">
-              SA
-            </div>
-            <div className="flex flex-col">
-              <span className="font-bold text-slate-900 tracking-tight text-sm">
-                CV Sinar Abadi Niaga
-              </span>
-              <span className="text-[10px] font-mono text-indigo-600 uppercase tracking-widest font-semibold">
-                Enterprise B2B Portal
-              </span>
-            </div>
+        <div className="w-full lg:w-1/2 p-6 sm:p-10 lg:p-12 flex flex-col justify-between z-10 bg-white/60">
+          {/* Brand Header Resmi */}
+          <div className="pb-4 border-b border-slate-100">
+            <Logo size="sm" showSubdeskripsi={true} />
           </div>
 
           {/* Form Content */}
-          <div className="my-auto py-4">
+          <div className="my-auto py-6">
+            <div className="mb-6 space-y-1">
+              <span className="text-[11px] font-mono uppercase tracking-wider text-indigo-600 font-bold bg-indigo-50 px-2 py-0.5 rounded-md inline-block">
+                Portal Internal Perusahaan
+              </span>
+              <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+                Masuk ke Akun Anda
+              </h1>
+              <p className="text-xs text-slate-500">
+                Akses sistem manajemen operasional grosir, pergudangan, dan distribusi sembako.
+              </p>
+            </div>
+
             <React.Suspense
               fallback={
                 <div className="py-8 text-center text-xs text-slate-500 animate-pulse font-mono">
@@ -248,38 +251,76 @@ export default function LoginPage() {
           {/* Footer Info */}
           <div className="text-[11px] text-slate-500 pt-4 border-t border-slate-100/80 flex items-center justify-between">
             <span>CV Sinar Abadi Niaga © 2026</span>
-            <span className="font-mono text-slate-400">Secure B2B Node</span>
+            <span className="font-mono text-slate-400">Node Asia/Jakarta</span>
           </div>
         </div>
 
-        {/* SISI KANAN: Visual Korporat Distribusi (Gaya Logistics Supply Chain) */}
-        <div className="hidden lg:flex lg:w-1/2 relative bg-slate-900 flex-col justify-end p-12 overflow-hidden border-l border-slate-800/80">
-          {/* Background Image / Gradient overlay dengan nuansa high-tech logistics */}
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/60 to-transparent z-10" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-900/40 via-slate-900/80 to-slate-950 z-0" />
+        {/* SISI KANAN: Visual Korporat Wholesale FMCG & Groceries */}
+        <div className="hidden lg:flex lg:w-1/2 relative bg-slate-950 flex-col justify-between p-10 overflow-hidden border-l border-slate-800">
+          {/* Background Image Gudang Distribusi FMCG */}
+          <div
+            className="absolute inset-0 bg-cover bg-center opacity-40 scale-105 transition-transform duration-1000"
+            style={{ backgroundImage: `url('/images/login-showcase.jpg')` }}
+          />
 
-          {/* Decorative Grid Lines */}
-          <div className="absolute inset-0 opacity-10 bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:24px_24px] z-0" />
+          {/* Ambient Gradient Overlays */}
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/75 to-slate-950/40 z-10" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-500/20 via-indigo-900/40 to-slate-950/90 z-10" />
 
-          {/* Content Overlay */}
-          <div className="relative z-20 space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-[11px] font-mono rounded-full backdrop-blur-md">
-              <Building2 className="h-3.5 w-3.5" />
-              <span>Distribution & Supply Chain Hub</span>
+          {/* Grid lines dekoratif */}
+          <div className="absolute inset-0 opacity-15 bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:32px_32px] z-10 pointer-events-none" />
+
+          {/* Bagian Atas Sisi Kanan: Logo Utama & Identitas Perusahaan */}
+          <div className="relative z-20 space-y-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/20 border border-amber-500/30 text-amber-300 text-[11px] font-mono rounded-full backdrop-blur-md">
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
+              <span>Wholesale Groceries & FMCG Network</span>
             </div>
-            <h2 className="text-2xl font-bold tracking-tight text-white">
-              Plan, Supply & Deliver.
-            </h2>
-            <p className="text-xs text-slate-300 max-w-md leading-relaxed">
-              Sistem ERP terintegrasi untuk pengelolaan stok gudang, otomatisasi pesanan B2B, dan
-              pencatatan transaksi real-time dengan keamanan ketat.
-            </p>
 
-            {/* Slider Indicators */}
-            <div className="flex items-center gap-2 pt-4">
-              <div className="w-8 h-1.5 bg-indigo-500 rounded-full shadow-xs" />
-              <div className="w-2 h-1.5 bg-slate-700 rounded-full" />
-              <div className="w-2 h-1.5 bg-slate-700 rounded-full" />
+            {/* Logo Besar Resmi dengan Nama CV Sinar Abadi Niaga */}
+            <div className="p-4 rounded-2xl bg-slate-900/70 border border-white/10 backdrop-blur-md shadow-2xl">
+              <Logo size="lg" inverted={true} showSubdeskripsi={true} />
+            </div>
+          </div>
+
+          {/* Bagian Bawah: Kartu Keunggulan Distribusi Toko Kelontong */}
+          <div className="relative z-20 space-y-3 pt-6">
+            <div className="grid grid-cols-1 gap-2.5">
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md">
+                <div className="p-2 rounded-lg bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 shrink-0">
+                  <Building2 className="h-4 w-4" />
+                </div>
+                <div>
+                  <h2 className="text-xs font-semibold text-white">
+                    Pasokan Sembako & Kebutuhan Kelontong
+                  </h2>
+                  <p className="text-[11px] text-slate-300 leading-snug">
+                    Distribusi rutin beras, minyak goreng, gula, tepung, dan produk FMCG terpercaya untuk ratusan toko mitra.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md">
+                <div className="p-2 rounded-lg bg-amber-500/20 border border-amber-400/30 text-amber-300 shrink-0">
+                  <Lock className="h-4 w-4" />
+                </div>
+                <div>
+                  <h2 className="text-xs font-semibold text-white">
+                    Pencatatan Transaksi & Plafon Kredit
+                  </h2>
+                  <p className="text-[11px] text-slate-300 leading-snug">
+                    Sistem pemantauan jatuh tempo, kartu piutang real-time, dan persetujuan harga khusus dengan keamanan bertingkat.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-2 flex items-center justify-between text-[11px] text-slate-400 border-t border-white/10">
+              <span className="flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                Sistem Operasional Aktif
+              </span>
+              <span className="font-mono text-slate-400">CV Sinar Abadi Niaga</span>
             </div>
           </div>
         </div>

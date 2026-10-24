@@ -13,6 +13,7 @@ import {
 import { logoutAction } from "@/app/login/actions";
 import type { UserProfile } from "@/types/auth";
 import { cn } from "@/lib/utils";
+import { Logo } from "@/components/ui/logo";
 
 interface HeaderProps {
   user: UserProfile;
@@ -88,11 +89,8 @@ export function Header({
           <Menu className="h-5 w-5" />
         </button>
 
-        <div className="flex items-center gap-2">
-          <Building className="h-4 w-4 text-indigo-600 hidden sm:block" />
-          <span className="text-xs font-bold text-slate-800 tracking-tight hidden sm:inline">
-            CV Sinar Abadi Niaga
-          </span>
+        <div className="hidden sm:flex items-center">
+          <Logo size="xs" showSubdeskripsi={false} />
         </div>
       </div>
 

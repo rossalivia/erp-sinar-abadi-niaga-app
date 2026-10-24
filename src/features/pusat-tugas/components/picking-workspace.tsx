@@ -14,6 +14,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DataTable, type Column } from '@/components/shared/data-table';
+import { Logo } from '@/components/ui/logo';
 import { formatTanggalWaktu } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { ambilDaftarPickingAction } from '../actions';
@@ -182,13 +183,13 @@ export function PickingWorkspace({ pesanan }: PickingWorkspaceProps) {
 
         {/* Kop dokumen (tampil di layar & cetak) */}
         <div className="rounded-md border border-slate-200 bg-white p-4">
-          <div className="border-b border-slate-300 pb-3 text-center">
-            <p className="text-sm font-bold uppercase tracking-wide text-slate-900">
-              CV Sinar Abadi Niaga
-            </p>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-700">
-              Daftar Ambil Barang (Picking List)
-            </p>
+          <div className="border-b border-slate-300 pb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <Logo variant="monochrome" size="xs" showSubdeskripsi={true} />
+            <div className="text-left sm:text-right">
+              <span className="inline-block px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider bg-slate-100 text-slate-800 border border-slate-300 rounded">
+                Daftar Ambil Barang (Picking List)
+              </span>
+            </div>
           </div>
           <div className="grid gap-x-6 gap-y-1 pt-3 text-[11px] sm:grid-cols-2">
             <p>

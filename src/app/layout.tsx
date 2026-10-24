@@ -17,8 +17,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'ERP CV Sinar Abadi Niaga',
-  description: 'Sistem Informasi Manajemen Terpadu CV Sinar Abadi Niaga',
+  title: 'ERP CV Sinar Abadi Niaga — Wholesale Groceries & FMCG',
+  description: 'Sistem Informasi Manajemen CV Sinar Abadi Niaga — Wholesale Trade of Groceries and FMCG (Distribusi Sembako dan Kebutuhan Toko Kelontong)',
   robots: {
     index: false,
     follow: false,

@@ -5,6 +5,7 @@ import { PrintButton } from '@/features/pesanan/components/print-button';
 import { createServerClient } from '@/lib/supabase/server';
 import { getProfil } from '@/lib/profil';
 import { formatRupiah, formatTanggal } from '@/lib/format';
+import { Logo } from '@/components/ui/logo';
 import { TagihanItem } from '@/features/penagihan/types';
 
 interface PageProps {
@@ -78,15 +79,10 @@ export default async function KartuPiutangPage({ params }: PageProps) {
       <div className="border border-slate-200 rounded-lg p-6 sm:p-8 bg-white print:border-none print:p-0">
         {/* Kop Surat CV Sinar Abadi Niaga */}
         <div className="border-b-2 border-slate-900 pb-4 mb-6 flex justify-between items-start">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight text-slate-900 uppercase">
-              CV Sinar Abadi Niaga
-            </h1>
-            <p className="text-xs text-slate-600 mt-0.5">
-              Distributor Sembako, Bahan Pangan & Perlengkapan Toko
-            </p>
-            <p className="text-xs text-slate-500">
-              Jl. Industri No. 12, Bekasi &bull; Telp: (021) 8899-0010 &bull; Email: admin@sinarabadi.test
+          <div className="space-y-1">
+            <Logo variant="monochrome" size="sm" showSubdeskripsi={true} />
+            <p className="text-[11px] text-slate-500 pt-0.5">
+              Jl. Industri Niaga No. 88, Kawasan Pergudangan, Surabaya &bull; Telp: (031) 8990-1234 &bull; Email: admin@sinarabadi.test
             </p>
           </div>
           <div className="text-right">

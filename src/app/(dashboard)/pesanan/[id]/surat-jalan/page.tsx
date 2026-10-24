@@ -8,6 +8,7 @@ import { formatTanggal, formatTanggalWaktu } from '@/lib/format';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, ArrowLeft } from 'lucide-react';
+import { Logo } from '@/components/ui/logo';
 import type { SuratJalanHeader, SuratJalanItem } from '@/features/pesanan/types';
 
 interface PageProps {
@@ -118,15 +119,10 @@ export default async function SuratJalanPage({ params }: PageProps) {
       <div className="bg-white border border-slate-300 p-8 sm:p-10 rounded-sm space-y-6 max-w-4xl mx-auto shadow-sm print:shadow-none print:border-none print:p-0 print:m-0 print:max-w-none print:w-full">
         {/* Kop Dokumen Perusahaan */}
         <div className="flex justify-between items-start border-b-2 border-slate-900 pb-4">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight text-slate-900">
-              CV SINAR ABADI NIAGA
-            </h1>
-            <p className="text-xs text-slate-600 mt-1">
-              Distributor & Perdagangan Umum
-            </p>
-            <p className="text-xs text-slate-500">
-              Jl. Industri Niaga No. 88, Kawasan Pergudangan, Surabaya
+          <div className="space-y-1">
+            <Logo variant="monochrome" size="sm" showSubdeskripsi={true} />
+            <p className="text-[11px] text-slate-500 pt-0.5">
+              Jl. Industri Niaga No. 88, Kawasan Pergudangan, Surabaya &bull; Telp: (031) 8990-1234
             </p>
           </div>
 

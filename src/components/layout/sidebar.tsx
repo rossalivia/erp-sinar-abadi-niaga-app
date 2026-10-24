@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import type { Peran } from "@/types/auth";
 import { cn } from "@/lib/utils";
+import { Logo } from "@/components/ui/logo";
 
 export interface SidebarProps {
   peran: Peran;
@@ -181,7 +182,7 @@ export function Sidebar({
         )}
       >
         {/* Brand Header */}
-        <div className="h-14 px-3.5 flex items-center justify-between border-b border-slate-800 bg-slate-950/80 shrink-0">
+        <div className="h-14 px-3 flex items-center justify-between border-b border-slate-800 bg-slate-950/80 shrink-0">
           <Link
             href="/"
             onClick={onCloseMobile}
@@ -189,20 +190,12 @@ export function Sidebar({
               "flex items-center gap-2.5 transition-all overflow-hidden",
               isCollapsed && "justify-center w-full"
             )}
-            title="CV Sinar Abadi Niaga"
+            title="CV Sinar Abadi Niaga — Wholesale Trade of Groceries and FMCG"
           >
-            <div className="h-8 w-8 bg-indigo-600 rounded-lg flex items-center justify-center font-bold text-white text-xs tracking-wider shrink-0 shadow-xs border border-white/20">
-              SA
-            </div>
-            {!isCollapsed && (
-              <div className="flex flex-col truncate">
-                <span className="font-bold text-xs text-slate-100 tracking-tight truncate">
-                  Sinar Abadi Niaga
-                </span>
-                <span className="text-[9px] text-indigo-400 font-mono tracking-wider font-semibold">
-                  ERP DISTRIBUSI
-                </span>
-              </div>
+            {isCollapsed ? (
+              <Logo size="xs" variant="icon" />
+            ) : (
+              <Logo size="xs" inverted={true} showSubdeskripsi={false} />
             )}
           </Link>
         </div>

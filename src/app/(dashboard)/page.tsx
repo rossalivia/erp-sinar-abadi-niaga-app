@@ -206,6 +206,10 @@ export default async function DashboardPage() {
           <span className="text-slate-400 hidden md:inline text-[11px]">
             CV Sinar Abadi Niaga
           </span>
+          <span className="text-slate-300 hidden lg:inline">&bull;</span>
+          <span className="text-indigo-600 font-medium hidden lg:inline text-[11px]">
+            Wholesale Groceries &amp; FMCG
+          </span>
         </div>
 
         <div className="flex items-center gap-3 text-slate-500 text-[11px]">
