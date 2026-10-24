@@ -33,6 +33,7 @@ export interface TugasHarianManajer {
   tagihan_overdue: number;
   tagihan_tempo_hari_ini: number;
   stok_menipis: number;
+  tinjau_limit_kredit: number;
 }
 
 export type TugasHarianData =

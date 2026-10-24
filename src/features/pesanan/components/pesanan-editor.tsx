@@ -13,6 +13,8 @@ import { simpanDrafPesananAction, getKreditPelangganAction, type KreditPelanggan
 import type { BarangOption, PelangganOption } from '../types';
 import type { Peran } from '@/types/auth';
 import { formatRupiah } from '@/lib/format';
+import { useCreditAdvisory } from '@/features/kredit/hooks/useCreditAdvisory';
+import { CreditAdvisoryAlert } from '@/features/kredit/components/CreditAdvisoryAlert';
 
 interface ItemFormRow {
   key: string;
@@ -139,6 +141,8 @@ export function PesananEditor({
     });
     return hitungTotalPesanan(calcItems);
   }, [items, barangMap]);
+
+  const { warnings: creditWarnings } = useCreditAdvisory(pelangganId, totalPesanan);
 
   function handleAddItem() {
     if (items.length >= 20) {
@@ -587,6 +591,9 @@ export function PesananEditor({
           </table>
         </div>
       </div>
+
+      {/* Banner Peringatan Dini Penilaian Kredit */}
+      <CreditAdvisoryAlert warnings={creditWarnings} />
 
       {/* Baris Tombol Aksi */}
       <div className="flex items-center justify-between pt-2">

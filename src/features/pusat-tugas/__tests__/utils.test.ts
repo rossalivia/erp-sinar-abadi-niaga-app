@@ -42,6 +42,7 @@ const tugasManajer: TugasHarianManajer = {
   tagihan_overdue: 4,
   tagihan_tempo_hari_ini: 2,
   stok_menipis: 4,
+  tinjau_limit_kredit: 3,
 };
 
 const hasilPicking: PickingListResult = {
@@ -157,7 +158,7 @@ describe('Pusat Tugas Harian — pemetaan widget per peran', () => {
   it('TC-114: memetakan enam widget Manajer secara terpadu', () => {
     const widgets = getWidgetsTugasHarian(tugasManajer);
 
-    expect(widgets).toHaveLength(6);
+    expect(widgets).toHaveLength(7);
     expect(widgets.map((widget) => widget.key)).toEqual([
       'persetujuan_harga_menunggu',
       'po_menunggu_persetujuan',
@@ -165,12 +166,14 @@ describe('Pusat Tugas Harian — pemetaan widget per peran', () => {
       'tagihan_overdue',
       'tagihan_tempo_hari_ini',
       'stok_menipis',
+      'tinjau_limit_kredit',
     ]);
-    expect(widgets.map((widget) => widget.nilai)).toEqual([2, 1, 1, 4, 2, 4]);
+    expect(widgets.map((widget) => widget.nilai)).toEqual([2, 1, 1, 4, 2, 4, 3]);
     expect(widgets[0].href).toBe('/persetujuan');
     expect(widgets[1].href).toBe('/pembelian?status=diajukan');
     expect(widgets[2].href).toBe('/stok/opname?status=diajukan');
     expect(widgets[3].tone).toBe('danger');
+    expect(widgets[6].href).toBe('/kredit');
   });
 });
 

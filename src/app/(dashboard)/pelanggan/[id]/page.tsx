@@ -8,6 +8,8 @@ import { PageHeader } from '@/components/shared/page-header';
 import { PelangganDetailView } from '@/features/pelanggan/components/pelanggan-detail-view';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { ambilAnalisisKreditAction } from '@/features/kredit/actions';
+import { PenilaianKreditPanel } from '@/features/kredit/components/PenilaianKreditPanel';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -37,6 +39,13 @@ export default async function DetailPelangganPage({ params }: PageProps) {
   });
 
   const isManajer = profile.peran === 'manajer';
+  let analisisData = null;
+  if (isManajer) {
+    const analisisRes = await ambilAnalisisKreditAction(id);
+    if (analisisRes.success && analisisRes.data) {
+      analisisData = analisisRes.data;
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -67,6 +76,15 @@ export default async function DetailPelangganPage({ params }: PageProps) {
           </div>
         }
       />
+
+      {isManajer && analisisData && (
+        <div className="mb-4">
+          <PenilaianKreditPanel
+            analisis={analisisData}
+            currentBatasKredit={Number(pelanggan.batas_kredit ?? 0)}
+          />
+        </div>
+      )}
 
       <PelangganDetailView
         pelanggan={pelanggan}

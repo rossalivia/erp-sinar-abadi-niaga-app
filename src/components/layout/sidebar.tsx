@@ -23,6 +23,7 @@ import {
   TrendingUp,
   Mail,
   CreditCard,
+  ShieldCheck,
   LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -48,6 +49,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Upload,
   Mail,
   CreditCard,
+  ShieldCheck,
 };
 
 /** Definisi urutan dan pengelompokan section sidebar */
@@ -62,7 +64,7 @@ const SIDEBAR_SECTIONS: { label: string; hrefs: string[] }[] = [
   },
   {
     label: 'Transaksi & Penjualan',
-    hrefs: ['/pelanggan', '/pesanan', '/penagihan', '/pembayaran', '/persetujuan', '/pembelian', '/pemasok'],
+    hrefs: ['/pelanggan', '/pesanan', '/penagihan', '/kredit', '/pembayaran', '/persetujuan', '/pembelian', '/pemasok'],
   },
   {
     label: 'Keuangan & Laporan',

@@ -2204,6 +2204,127 @@ export type Database = {
         Args: { p_peran: string; p_profile_id: string }
         Returns: Json
       }
+      fn_parameter_kredit: {
+        Args: Record<string, never>
+        Returns: {
+          min_faktur_lunas: number
+          min_lama_pelanggan_hari: number
+          min_hari_jendela: number
+          max_hari_jendela: number
+          bobot_tepat_waktu: number
+          bobot_keterlambatan: number
+          hari_toleransi_terlambat: number
+          bobot_kondisi_sekarang: number
+          skor_overdue_nol: number
+          skor_overdue_1_7: number
+          skor_overdue_8_30: number
+          skor_overdue_gt_30: number
+          bobot_kedalaman: number
+          ambang_kelas_a: number
+          ambang_kelas_b: number
+          ambang_kelas_c: number
+          faktor_kelas_a: number
+          faktor_kelas_b: number
+          faktor_kelas_c: number
+          faktor_kelas_d: number
+          hari_jeda_eksposur: number
+          faktor_cap_faktur_terbesar: number
+          faktor_cap_kenaikan_limit: number
+          kelipatan_pembulatan: number
+          ambang_penurunan_persen: number
+          hari_perlu_tinjau: number
+          hari_terlambat_tinjau: number
+          ambang_peringatan_limit: number
+          faktor_peringatan_kebiasaan: number
+          min_pesanan_kebiasaan: number
+        }[]
+      }
+      fn_analisis_kredit_pelanggan: {
+        Args: {
+          p_pelanggan_id: string
+        }
+        Returns: {
+          pelanggan_id: string
+          data_cukup: boolean
+          alasan_data_kurang: string | null
+          faktur_lunas: number
+          tepat_waktu: number
+          persen_tepat_waktu: number
+          rata_hari_terlambat: number
+          faktur_overdue_sekarang: number
+          hari_overdue_terlama: number
+          lama_pelanggan_hari: number
+          faktur_lunas_terbesar: number
+          rata_nilai_pesanan: number
+          rata_belanja_per_30_hari: number
+          piutang_berjalan: number
+          pemakaian_limit_persen: number
+          skor_tepat_waktu: number | null
+          skor_keterlambatan: number | null
+          skor_kondisi_sekarang: number | null
+          skor_kedalaman: number | null
+          skor_total: number | null
+          kelas: string
+          kebutuhan_limit: number | null
+          rekomendasi_limit: number | null
+          selisih_limit: number | null
+          pembatas_mengikat: string | null
+          status_rekomendasi: string | null
+          hari_sejak_tinjau_limit: number
+          status_tinjau: string
+        }[]
+      }
+      fn_daftar_pemantauan_kredit: {
+        Args: Record<string, never>
+        Returns: {
+          pelanggan_id: string
+          kode: string
+          nama_toko: string
+          batas_kredit: number
+          piutang_berjalan: number
+          pemakaian_limit_persen: number
+          hari_overdue_terlama: number
+          faktur_overdue_sekarang: number
+          kelas: string
+          skor_total: number | null
+          rekomendasi_limit: number | null
+          selisih_limit: number | null
+          pembatas_mengikat: string | null
+          status_rekomendasi: string | null
+          hari_sejak_tinjau_limit: number
+          status_tinjau: string
+          data_cukup: boolean
+        }[]
+      }
+      fn_simulasi_limit_kredit: {
+        Args: {
+          p_pelanggan_id: string
+          p_limit_hipotetik: number
+        }
+        Returns: {
+          limit_sekarang: number
+          limit_hipotetik: number
+          piutang_berjalan: number
+          pemakaian_persen_sekarang: number
+          pemakaian_persen_hipotetik: number
+          kebutuhan_rekomendasi: number | null
+          rekomendasi_resmi: number | null
+          selisih_terhadap_rekomendasi: number
+          total_limit_semua_sebelum: number
+          total_limit_semua_sesudah: number
+        }[]
+      }
+      fn_peringatan_editor_pesanan: {
+        Args: {
+          p_pelanggan_id: string
+          p_total_estimasi: number
+        }
+        Returns: {
+          jenis: string
+          level: string
+          pesan: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

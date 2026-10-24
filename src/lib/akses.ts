@@ -57,6 +57,12 @@ export const MENU_ITEMS: MenuItem[] = [
     roles: ['penjualan', 'manajer'],
   },
   {
+    title: 'Pemantauan Kredit',
+    href: '/kredit',
+    icon: 'ShieldCheck',
+    roles: ['manajer'],
+  },
+  {
     title: 'Persetujuan Harga',
     href: '/persetujuan',
     icon: 'ClipboardCheck',
@@ -135,6 +141,7 @@ export const ROUTE_PERMISSIONS: { pattern: RegExp; roles: Peran[] }[] = [
   { pattern: /^\/pesanan\/[^\/]+\/surat-jalan/, roles: ['penjualan', 'gudang', 'manajer'] },
   { pattern: /^\/pesanan/, roles: ['penjualan', 'gudang', 'manajer'] },
   { pattern: /^\/penagihan/, roles: ['penjualan', 'manajer'] },
+  { pattern: /^\/kredit/, roles: ['manajer'] },
   { pattern: /^\/pembayaran/, roles: ['manajer'] },
   { pattern: /^\/persetujuan/, roles: ['manajer'] },
   { pattern: /^\/pembelian/, roles: ['gudang', 'manajer'] },

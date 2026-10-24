@@ -85,6 +85,7 @@ export function parseTugasHarian(nilai: unknown): TugasHarianData | null {
       tagihan_overdue: keAngka(raw.tagihan_overdue),
       tagihan_tempo_hari_ini: keAngka(raw.tagihan_tempo_hari_ini),
       stok_menipis: keAngka(raw.stok_menipis),
+      tinjau_limit_kredit: keAngka(raw.tinjau_limit_kredit),
     };
     return data;
   }
@@ -355,6 +356,15 @@ export function getWidgetsTugasHarian(data: TugasHarianData): WidgetTugas[] {
       indikator: 'Restock diperlukan',
       tone: 'danger',
       href: '/barang?menipis=true',
+    },
+    {
+      key: 'tinjau_limit_kredit',
+      judul: 'Tinjau Batas Kredit',
+      nilai: data.tinjau_limit_kredit,
+      keterangan: 'Toko mencapai batas waktu evaluasi limit',
+      indikator: 'Perlu evaluasi',
+      tone: 'warning',
+      href: '/kredit',
     },
   ];
 }
