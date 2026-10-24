@@ -759,6 +759,47 @@ Terdapat 14 tabel di dalam skema public (9 tabel inti + 2 modul stock opname + 1
 | TC-170 | supabase/tests/12_notifikasi_email.sql | SQL | Otomatis | Hak akses database rpc_sistem_* dicabut dari authenticated/anon (service_role only) |
 | TC-171 | supabase/tests/12_notifikasi_email.sql, src/lib/akses.ts | SQL + Route Guard | Otomatis | Otorisasi rpc_riwayat_notifikasi_manajer & rute /notifikasi khusus Manajer |
 | TC-172 | supabase/tests/12_notifikasi_email.sql | SQL | Otomatis | Rate limiting tombol uji kirim dibatasi 1 kali per menit |
+| TC-173 | src/features/pembayaran/__tests__/mayar.test.ts | Vitest | Otomatis | Pembuatan tagihan sukses via MockMayarClient & HttpMayarClient |
+| TC-174 | supabase/tests/13_tautan_bayar_mayar.sql | SQL | Otomatis | Penolakan tagihan pada pesanan berstatus selain dikirim (E0067) |
+| TC-175 | supabase/tests/13_tautan_bayar_mayar.sql | SQL | Otomatis | Idempotensi tagihan aktif (hanya 1 tagihan aktif per pesanan) |
+| TC-176 | src/features/pembayaran/actions.ts | Action | Otomatis | Validasi email pelanggan dan normalisasi nomor telepon 628xxx |
+| TC-177 | supabase/tests/13_tautan_bayar_mayar.sql | SQL | Otomatis | Penutupan tagihan aktif oleh Manajer (status ditutup) |
+| TC-178 | supabase/tests/13_tautan_bayar_mayar.sql | SQL | Otomatis | Penutupan otomatis tagihan Mayar aktif saat pelunasan manual |
+| TC-179 | src/features/pembayaran/__tests__/mayar.test.ts | Vitest | Otomatis | Verifikasi token webhook constant-time (timingSafeEqual) |
+| TC-180 | src/features/pembayaran/__tests__/mayar.test.ts | Vitest | Otomatis | Penolakan webhook token tidak cocok menghasilkan 404 |
+| TC-181 | src/features/pembayaran/__tests__/mayar.test.ts | Vitest | Otomatis | Penolakan metode selain POST pada webhook (HTTP 405) |
+| TC-182 | src/features/pembayaran/__tests__/mayar.test.ts | Vitest | Otomatis | Penolakan payload webhook melebihi 100 KB (HTTP 413) |
+| TC-183 | src/features/pembayaran/__tests__/mayar.test.ts | Vitest | Otomatis | Penolakan format JSON rusak pada webhook (HTTP 400) |
+| TC-184 | src/features/pembayaran/__tests__/mayar.test.ts, supabase/tests/13_tautan_bayar_mayar.sql | Vitest + SQL | Otomatis | Verifikasi 2 arah: payment.received memicu GET /invoice ke API Mayar |
+| TC-185 | supabase/tests/13_tautan_bayar_mayar.sql | SQL | Otomatis | Idempotensi webhook event (event_id sama tidak diproses ulang) |
+| TC-186 | supabase/tests/13_tautan_bayar_mayar.sql | SQL | Otomatis | Penanganan anomali nominal dialihkan ke status perlu_tinjau |
+| TC-187 | supabase/tests/13_tautan_bayar_mayar.sql | SQL | Otomatis | Pelunasan otomatis via rpc_sistem_lunaskan_dari_mayar |
+| TC-188 | src/app/pembayaran/selesai/page.tsx | Build | Otomatis | Halaman pembayaran selesai statis, noindex, dan bebas sesi DB |
+| TC-189 | src/middleware.ts | Middleware | Otomatis | Middleware meloloskan /pembayaran/selesai tanpa sesi auth |
+| TC-190 | Select-String .next\static | PowerShell | Otomatis | Zero-leakage data finansial rahasia pada seluruh modul pembayaran |
+| TC-191 | src/lib/akses.ts | Route Guard | Otomatis | Otorisasi UI: Hanya Manajer yang dapat mengakses rute /pembayaran |
+| TC-192 | supabase/tests/13_tautan_bayar_mayar.sql | SQL | Otomatis | Hak akses database: rpc_sistem_* dicabut dari anon dan authenticated |
+| TC-193 | supabase/tests/14_pemantauan_kredit.sql | SQL | Otomatis | Ambang batas data cukup: < 3 pesanan berstatus data_kurang |
+| TC-194 | supabase/tests/14_pemantauan_kredit.sql | SQL | Otomatis | Ambang batas data cukup: rentang < 60 hari berstatus data_kurang |
+| TC-195 | supabase/tests/14_pemantauan_kredit.sql | SQL | Otomatis | Ketepatan bayar batas WIB: pelunasan hari tempo 23:59:59 dihitung 0 hari |
+| TC-196 | supabase/tests/14_pemantauan_kredit.sql | SQL | Otomatis | Skenario 2 hitung tangan: 4 pilar dihitung presisi, skor 100 |
+| TC-197 | supabase/tests/14_pemantauan_kredit.sql | SQL | Otomatis | Batas skor kelas: rentang skor ke kelas risiko A-E |
+| TC-198 | supabase/tests/14_pemantauan_kredit.sql | SQL | Otomatis | Skenario 3 override kelas: overdue > 30 hari memicu penalti kelas E |
+| TC-199 | supabase/tests/14_pemantauan_kredit.sql | SQL | Otomatis | Formula rekomendasi limit: batas atas, median, bawah konsisten |
+| TC-200 | supabase/tests/14_pemantauan_kredit.sql | SQL | Otomatis | Pembulatan ke bawah kelipatan Rp100.000 pada nominal rekomendasi |
+| TC-201 | supabase/tests/14_pemantauan_kredit.sql | SQL | Otomatis | Cap rekomendasi limit 3x faktur terbesar 12 bulan terakhir |
+| TC-202 | supabase/tests/14_pemantauan_kredit.sql | SQL | Otomatis | Cap kenaikan limit 1.5x limit saat ini (bila limit berjalan > 0) |
+| TC-203 | supabase/tests/14_pemantauan_kredit.sql | SQL | Otomatis | Plafon berjalan Rp0 tidak dibatasi 1.5x (mengikuti cap 3x omzet) |
+| TC-204 | supabase/tests/14_pemantauan_kredit.sql | SQL | Otomatis | Rekomendasi limit kelas E selalu bernilai Rp0 |
+| TC-205 | supabase/tests/14_pemantauan_kredit.sql | SQL | Otomatis | Eksekusi fungsi fn_simulasi_limit_kredit mengembalikan sisa & utilisasi baru |
+| TC-206 | supabase/tests/14_pemantauan_kredit.sql | SQL | Otomatis | Aksi terapkan rekomendasi memanggil rpc_set_batas_kredit & tercatat di audit log |
+| TC-207 | supabase/tests/14_pemantauan_kredit.sql | SQL | Otomatis | Hak akses database: fungsi khusus Manajer menolak Penjualan & Gudang (E0001) |
+| TC-208 | supabase/tests/14_pemantauan_kredit.sql | SQL | Otomatis | Advisory warning editor pesanan: status terlambat_tinjau |
+| TC-209 | supabase/tests/14_pemantauan_kredit.sql | SQL | Otomatis | Advisory warning editor pesanan: kelas risiko D atau E |
+| TC-210 | supabase/tests/14_pemantauan_kredit.sql | SQL | Otomatis | Advisory warning bersifat non-blocking terhadap draf & konfirmasi |
+| TC-211 | supabase/tests/14_pemantauan_kredit.sql | SQL | Otomatis | Perhitungan status tinjau limit kredit (>= 90 hari = perlu_tinjau) |
+| TC-212 | supabase/tests/14_pemantauan_kredit.sql | SQL | Otomatis | Pelanggan baru 0 pesanan menghasilkan data_kurang tanpa pembagian nol |
+| TC-213 | supabase/tests/14_pemantauan_kredit.sql | SQL | Otomatis | Eksekusi fn_daftar_pemantauan_kredit menghasilkan data pemantauan utuh |
 
 ---
 

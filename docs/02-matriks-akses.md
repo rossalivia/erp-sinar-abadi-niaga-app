@@ -149,6 +149,7 @@ Kolom rahasia: `barang.harga_pokok`, `pembelian.harga_beli_satuan`, `item_pesana
 | `/notifikasi` | Log Notifikasi Email | ❌ | ❌ | ✅ | Riwayat pengiriman email stok menipis harian & tombol uji coba | MW, Server Component, RPC `rpc_riwayat_notifikasi_manajer` |
 | `/pembayaran` | Pembayaran Mayar | ❌ | ❌ | ✅ | Monitoring status tagihan gateway Mayar, tombol refresh, batalkan tagihan | MW, Server Component, RLS, RPC |
 | `/pembayaran/selesai` | Pembayaran Selesai | publik | publik | publik | Halaman pendaratan pelanggan usai bayar di Mayar; statis, noindex, tanpa kueri DB | MW (dikecualikan dari auth), X-Robots-Tag: noindex |
+| `/kredit` | Pemantauan & Rekomendasi Kredit | ❌ | ❌ | ✅ | Monitoring skor kredit, kelas risiko, pilar penilaian, simulasi limit, dan rekam jejak batas kredit | MW, Server Component, RPC `fn_daftar_pemantauan_kredit` |
 | `/api/cron/notifikasi-stok` | Endpoint Cron Notifikasi | ❌ | ❌ | ❌ (Sistem) | Pemicu cron harian stok menipis Netlify (Bearer `CRON_SECRET` & `service_role`) | TimingSafeEqual, `service_role` only RPC |
 | `/api/webhooks/mayar/[token]` | Webhook Masuk Mayar | ❌ | ❌ | ❌ (Gateway) | Menerima notifikasi pelunasan gateway Mayar sandbox/live | Constant-time token, Verifikasi 2 arah, `service_role` only RPC |
 | `/pengaturan/akun` | Akun & Peran | ❌ | ❌ | ✅ | — | MW, RPC |
@@ -224,6 +225,23 @@ Kolom rahasia: `barang.harga_pokok`, `pembelian.harga_beli_satuan`, `item_pesana
 | View `public.v_surat_jalan` | ⚠️ (miliknya) | ✅ | ✅ | Filter status = 'dikirim', hanya memuat kolom non-uang (kode, nama pelanggan, alamat, telepon, nomor, tgl kirim) |
 | View `public.v_surat_jalan_item` | ⚠️ (miliknya) | ✅ | ✅ | Filter status = 'dikirim', hanya memuat kuantitas fisik (kode, nama barang, satuan, jumlah). Zero-leakage data uang |
 | Tombol "Cetak Surat Jalan" | ⚠️ (miliknya) | ✅ | ✅ | Ditampilkan di `/pesanan/[id]` hanya pada pesanan berstatus `dikirim` |
+
+---
+
+## I. Modul Pemantauan dan Rekomendasi Kredit (PRD 11.2 / C1–C13)
+
+| Objek / Fitur | P | G | M | Aturan & Lapisan Penegak |
+|---|---|---|---|---|
+| Halaman `/kredit` | ❌ | ❌ | ✅ | Route Guard MW, Server Component redirect `/tidak-berwenang`, filter `fn_is_manajer()` |
+| Panel Penilaian Kredit (`/pelanggan/[id]`) | ❌ | ❌ | ✅ | Hanya dirender di server untuk Manajer (`isManajer = true`). Skor, kelas, dan pilar tidak dikirim ke RSC P/G |
+| Fungsi `fn_parameter_kredit()` | ❌ | ❌ | ✅ | Parameter scoring kredit (bobot, ambang batas, kelipatan). SECURITY DEFINER, filter `fn_is_manajer()` |
+| Fungsi `fn_analisis_kredit_pelanggan()` | ❌ | ❌ | ✅ | Perhitungan 4 pilar, skor 0-100, kelas A-E, dan rekomendasi limit. SECURITY DEFINER, filter `fn_is_manajer()` |
+| Fungsi `fn_daftar_pemantauan_kredit()` | ❌ | ❌ | ✅ | Daftar komprehensif pemantauan kredit seluruh pelanggan untuk Manajer. SECURITY DEFINER, filter `fn_is_manajer()` |
+| Fungsi `fn_simulasi_limit_kredit()` | ❌ | ❌ | ✅ | Simulasi dampak perubahan limit kredit pelanggan. SECURITY DEFINER, filter `fn_is_manajer()` |
+| Fungsi `fn_peringatan_editor_pesanan()` | ✅ | ❌ | ✅ | Advisory warning (non-blocking) di editor pesanan. Mengembalikan kode, tingkat, dan pesan tetap. Zero-leakage data pesanan lain |
+| Aksi Terapkan Rekomendasi | ❌ | ❌ | ✅ | Memakai `rpc_set_batas_kredit` yang sudah ada melalui Server Action Manajer. Tidak ada jalur tulis baru |
+| Tugas `tinjau_limit_kredit` di Dasbor | ❌ | ❌ | ✅ | Bagian dari `rpc_get_tugas_harian` untuk Manajer (pelanggan berstatus `perlu_tinjau` atau `terlambat`) |
+
 
 
 

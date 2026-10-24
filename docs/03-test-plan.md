@@ -372,5 +372,34 @@ Urutan validasi `konfirmasi_pesanan`: (1) akses/kepemilikan → E01/E02, (2) sta
 | **TC-191** | Otorisasi UI: Hanya peran Manajer yang dapat mengakses modul pembayaran | P, G, M | Route Guard | **Lulus** | 2026-10-24 | `src/lib/akses.ts` | Penjualan dan Gudang diblokir dari menu & rute `/pembayaran` (HTTP 403 / redirect). |
 | **TC-192** | Hak akses database: `rpc_sistem_*` hanya untuk `service_role` | Anon / Auth | SQL | **Lulus** | 2026-10-24 | `supabase/tests/13_tautan_bayar_mayar.sql` | PostgREST & role authenticated ditolak mengeksekusi `rpc_sistem_*` (`permission denied`). |
 
+---
+
+## 18. Test Case Tambahan: Pemantauan dan Rekomendasi Kredit (TC-193 s.d. TC-213)
+
+| ID | Fokus Uji | Aktor | Media | Status | Tanggal Uji | Bukti Uji | Ringkasan Verifikasi & Hasil |
+|---|---|---|---|---|---|---|---|
+| **TC-193** | Ambang Batas Data Cukup: Pelanggan dengan < 3 pesanan selesai diklasifikasikan `data_kurang` | M | SQL | **Lulus** | 2026-10-24 | `supabase/tests/14_pemantauan_kredit.sql` | Pelanggan dengan 2 transaksi lunas menghasilkan skor NULL dan kelas `data_kurang`. |
+| **TC-194** | Ambang Batas Data Cukup: Pelanggan dengan umur transaksi < 60 hari diklasifikasikan `data_kurang` | M | SQL | **Lulus** | 2026-10-24 | `supabase/tests/14_pemantauan_kredit.sql` | Pelanggan dengan rentang transaksi 30 hari menghasilkan kelas `data_kurang`. |
+| **TC-195** | Ketepatan Bayar Batas WIB: Pelunasan pada tanggal jatuh tempo 23:59:59 WIB dihitung tepat waktu | M | SQL | **Lulus** | 2026-10-24 | `supabase/tests/14_pemantauan_kredit.sql` | Perhitungan selisih hari pelunasan berbasis zona Asia/Jakarta menghasilkan 0 hari keterlambatan. |
+| **TC-196** | Skenario 2 Hitung Tangan: 4 pilar dihitung presisi dan skor gabungan 100 | M | SQL | **Lulus** | 2026-10-24 | `supabase/tests/14_pemantauan_kredit.sql` | Nilai pilar pembayaran (40), utilisasi (25), tren (15), histori (20) menghasilkan total skor 100.00. |
+| **TC-197** | Batas Skor Kelas: Pemetaan rentang skor ke kelas risiko (A: 80-100, B: 65-79, C: 50-64, D: 35-49, E: <35) | M | SQL | **Lulus** | 2026-10-24 | `supabase/tests/14_pemantauan_kredit.sql` | Validasi pemetaan skor sesuai fungsi `fn_analisis_kredit_pelanggan()`. |
+| **TC-198** | Skenario 3 Override Kelas: Faktur overdue > 30 hari otomatis menurunkan kelas ke E dan rekomendasi Rp0 | M | SQL | **Lulus** | 2026-10-24 | `supabase/tests/14_pemantauan_kredit.sql` | Keterlambatan faktur > 30 hari memicu penalti berat ke kelas E dan rekomendasi limit Rp0. |
+| **TC-199** | Formula Rekomendasi Limit: Menghasilkan batas atas, median, dan bawah sesuai rumus | M | SQL | **Lulus** | 2026-10-24 | `supabase/tests/14_pemantauan_kredit.sql` | Rekomendasi nominal limit konsisten dihitung berdasarkan omzet bulanan rata-rata dan kelas risiko. |
+| **TC-200** | Pembulatan ke Bawah Kelipatan Rp100.000 pada seluruh nominal rekomendasi | M | SQL | **Lulus** | 2026-10-24 | `supabase/tests/14_pemantauan_kredit.sql` | Nominal rekomendasi dibulatkan ke bawah ke kelipatan Rp100.000 terdekat (`floor(x / 100000) * 100000`). |
+| **TC-201** | Cap Rekomendasi Limit 3x Faktur Terbesar dalam 12 Bulan Terakhir | M | SQL | **Lulus** | 2026-10-24 | `supabase/tests/14_pemantauan_kredit.sql` | Rekomendasi batas atas tidak melebihi 3x nilai faktur terbesar pelanggan. |
+| **TC-202** | Cap Kenaikan Rekomendasi Limit 1.5x Limit Saat Ini | M | SQL | **Lulus** | 2026-10-24 | `supabase/tests/14_pemantauan_kredit.sql` | Rekomendasi batas atas dibatasi maksimum 1.5x batas kredit berjalan. |
+| **TC-203** | Pelanggan dengan Limit Saat Ini Rp0 Tidak Dibatasi 1.5x | M | SQL | **Lulus** | 2026-10-24 | `supabase/tests/14_pemantauan_kredit.sql` | Plafon Rp0 tetap mendapatkan rekomendasi batas atas wajar dari 3x faktur terbesar. |
+| **TC-204** | Rekomendasi Limit Kelas E Selalu Bernilai Rp0 | M | SQL | **Lulus** | 2026-10-24 | `supabase/tests/14_pemantauan_kredit.sql` | Nilai rekomendasi batas atas, median, dan bawah untuk kelas E terverifikasi Rp0. |
+| **TC-205** | Eksekusi Fungsi `fn_simulasi_limit_kredit()`: Perhitungan dampak sisa kredit & utilisasi | M | SQL | **Lulus** | 2026-10-24 | `supabase/tests/14_pemantauan_kredit.sql` | Simulasi mengembalikan batas_kredit_baru, sisa_plafon_baru, dan utilisasi_baru secara akurat. |
+| **TC-206** | Aksi Terapkan Rekomendasi Memanggil `rpc_set_batas_kredit` & Tercatat di Audit Log | M | SQL | **Lulus** | 2026-10-24 | `supabase/tests/14_pemantauan_kredit.sql` | Perubahan limit kredit dari rekomendasi tersimpan dengan aksi `ubah_batas_kredit` di `audit_log`. |
+| **TC-207** | Hak Akses Database: Fungsi Khusus Manajer Menolak Penjualan & Gudang (`E0001`) | P, G, M | SQL | **Lulus** | 2026-10-24 | `supabase/tests/14_pemantauan_kredit.sql` | Penjualan dan Gudang ditolak saat memanggil fungsi analisis dan daftar pemantauan kredit. |
+| **TC-208** | Advisory Warning Pesanan Editor: Pelanggan Status `terlambat_tinjau` | P, M | SQL | **Lulus** | 2026-10-24 | `supabase/tests/14_pemantauan_kredit.sql` | Menghasilkan kode `PERLU_TINJAU_LIMIT` dengan tingkat `peringatan`. |
+| **TC-209** | Advisory Warning Pesanan Editor: Pelanggan Kelas D atau E | P, M | SQL | **Lulus** | 2026-10-24 | `supabase/tests/14_pemantauan_kredit.sql` | Menghasilkan kode `RISIKO_KREDIT_TINGGI` dengan pesan non-blocking. |
+| **TC-210** | Advisory Warning Pesanan Editor: Non-blocking terhadap Penyimpanan Draf & Konfirmasi | P, M | SQL | **Lulus** | 2026-10-24 | `supabase/tests/14_pemantauan_kredit.sql` | Pesanan tetap dapat dikonfirmasi selama tidak melanggar batas kredit atau menunggak faktur (BR-05). |
+| **TC-211** | Perhitungan Status Tinjau Limit Kredit (>= 90 Hari Menghasilkan `perlu_tinjau`) | M | SQL | **Lulus** | 2026-10-24 | `supabase/tests/14_pemantauan_kredit.sql` | Pelanggan dengan riwayat tinjau >= 90 hari atau belum pernah ditinjau terdeteksi `perlu_tinjau`. |
+| **TC-212** | Pelanggan Baru 0 Pesanan Menghasilkan `data_kurang` Tanpa Error Division by Zero | M | SQL | **Lulus** | 2026-10-24 | `supabase/tests/14_pemantauan_kredit.sql` | Fungsi mengembalikan kelas `data_kurang` dengan aman tanpa terjadi runtime error. |
+| **TC-213** | Eksekusi `fn_daftar_pemantauan_kredit()` Menghasilkan Data Komprehensif Seluruh Pelanggan | M | SQL | **Lulus** | 2026-10-24 | `supabase/tests/14_pemantauan_kredit.sql` | Seluruh metrik kredit (skor, kelas, utilisasi, overdue, rekomendasi, status tinjau) tampil utuh. |
+
+
 
 
