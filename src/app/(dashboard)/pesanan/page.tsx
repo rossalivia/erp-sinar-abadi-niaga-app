@@ -1,17 +1,17 @@
-import * as React from 'react';
-import Link from 'next/link';
-import { Plus, Search, Truck, Filter, RotateCcw, ClipboardList } from 'lucide-react';
+import * as React from "react";
+import Link from "next/link";
+import { Plus, Search, Truck, Filter, RotateCcw, ClipboardList } from "lucide-react";
 
-import { PageHeader } from '@/components/shared/page-header';
-import { BadgeStatus } from '@/components/shared/badge-status';
-import { Pagination } from '@/components/shared/pagination';
-import { EmptyState } from '@/components/shared/empty-state';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { createServerClient } from '@/lib/supabase/server';
-import { getProfil } from '@/lib/profil';
-import { formatRupiah, formatTanggal } from '@/lib/format';
-import type { StatusPesanan } from '@/features/pesanan/types';
+import { PageHeader } from "@/components/shared/page-header";
+import { BadgeStatus } from "@/components/shared/badge-status";
+import { Pagination } from "@/components/shared/pagination";
+import { EmptyState } from "@/components/shared/empty-state";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { createServerClient } from "@/lib/supabase/server";
+import { getProfil } from "@/lib/profil";
+import { formatRupiah, formatTanggal } from "@/lib/format";
+import type { StatusPesanan } from "@/features/pesanan/types";
 
 interface PageProps {
   searchParams: Promise<{
@@ -29,49 +29,49 @@ const ITEMS_PER_PAGE = 15;
 export default async function DaftarPesananPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const profil = await getProfil();
-  const peran = profil?.peran || 'penjualan';
+  const peran = profil?.peran || "penjualan";
 
-  const q = (params.q || '').trim();
-  const statusFilter = (params.status || '') as StatusPesanan | '';
-  const pelangganFilter = params.pelanggan_id || '';
-  const dariFilter = params.dari || '';
-  const sampaiFilter = params.sampai || '';
-  const currentPage = Math.max(1, parseInt(params.page || '1', 10));
+  const q = (params.q || "").trim();
+  const statusFilter = (params.status || "") as StatusPesanan | "";
+  const pelangganFilter = params.pelanggan_id || "";
+  const dariFilter = params.dari || "";
+  const sampaiFilter = params.sampai || "";
+  const currentPage = Math.max(1, parseInt(params.page || "1", 10));
 
   const supabase = await createServerClient();
 
   // Ambil daftar pelanggan untuk opsi filter
   const { data: pelangganOptions } = await supabase
-    .from('pelanggan')
-    .select('id, nama_toko, kode')
-    .order('nama_toko', { ascending: true });
+    .from("pelanggan")
+    .select("id, nama_toko, kode")
+    .order("nama_toko", { ascending: true });
 
   // Query pesanan dengan relasi pelanggan
   let query = supabase
-    .from('pesanan_jual')
+    .from("pesanan_jual")
     .select(
-      'id, nomor, status, total, dibuat_pada, jatuh_tempo, dibuat_oleh, pelanggan:pelanggan_id (id, nama_toko, kode)',
-      { count: 'exact' }
+      "id, nomor, status, total, dibuat_pada, jatuh_tempo, dibuat_oleh, pelanggan:pelanggan_id (id, nama_toko, kode)",
+      { count: "exact" }
     );
 
   if (q) {
-    query = query.ilike('nomor', `%${q}%`);
+    query = query.ilike("nomor", `%${q}%`);
   }
 
   if (statusFilter) {
-    query = query.eq('status', statusFilter);
+    query = query.eq("status", statusFilter);
   }
 
   if (pelangganFilter) {
-    query = query.eq('pelanggan_id', pelangganFilter);
+    query = query.eq("pelanggan_id", pelangganFilter);
   }
 
   if (dariFilter) {
-    query = query.gte('dibuat_pada', `${dariFilter}T00:00:00+07:00`);
+    query = query.gte("dibuat_pada", `${dariFilter}T00:00:00+07:00`);
   }
 
   if (sampaiFilter) {
-    query = query.lte('dibuat_pada', `${sampaiFilter}T23:59:59+07:00`);
+    query = query.lte("dibuat_pada", `${sampaiFilter}T23:59:59+07:00`);
   }
 
   // Paginasi
@@ -79,14 +79,14 @@ export default async function DaftarPesananPage({ searchParams }: PageProps) {
   const to = from + ITEMS_PER_PAGE - 1;
 
   const { data: pesananList, count } = await query
-    .order('dibuat_pada', { ascending: false })
+    .order("dibuat_pada", { ascending: false })
     .range(from, to);
 
   const totalCount = count || 0;
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
-  const canCreate = peran === 'penjualan' || peran === 'manajer';
-  const dapatPicking = peran === 'gudang' || peran === 'manajer';
+  const canCreate = peran === "penjualan" || peran === "manajer";
+  const dapatPicking = peran === "gudang" || peran === "manajer";
 
   return (
     <div className="space-y-4">
@@ -95,7 +95,11 @@ export default async function DaftarPesananPage({ searchParams }: PageProps) {
         description="Kelola seluruh pesanan pelanggan mulai dari draf, konfirmasi, pengiriman, hingga pelunasan."
         action={
           canCreate ? (
-            <Button asChild size="sm" className="gap-1.5 bg-slate-900 text-white hover:bg-slate-800 shadow-none text-xs h-9">
+            <Button
+              asChild
+              size="sm"
+              className="gap-1.5 bg-slate-900 text-white hover:bg-slate-800 text-xs h-8.5 rounded-lg font-semibold shadow-xs transition-all active:scale-98"
+            >
               <Link href="/pesanan/baru">
                 <Plus className="w-4 h-4" />
                 Buat Pesanan Baru
@@ -105,51 +109,52 @@ export default async function DaftarPesananPage({ searchParams }: PageProps) {
         }
       />
 
-      {/* Baris Pintasan Gudang */}
+      {/* Baris Pintasan Gudang (Single Surface) */}
       {dapatPicking && (
-        <div className="flex flex-col gap-2 p-3 bg-blue-50/80 backdrop-blur-md border border-blue-200/80 rounded-2xl text-xs text-blue-900 shadow-neu-sm sm:flex-row sm:items-center">
-          <div className="flex items-center gap-2">
+        <div className="surface-raised rounded-xl p-3 border-blue-200/80 bg-linear-to-r from-blue-50/50 via-white to-blue-50/30 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 text-xs">
+          <div className="flex items-center gap-2 text-blue-900">
             <Truck className="w-4 h-4 text-blue-700 shrink-0" />
-            <span className="font-medium">Pintasan Gudang:</span>
-            <span>Lihat daftar pesanan yang sudah dikonfirmasi dan siap untuk dikirim.</span>
+            <span className="font-semibold">Pintasan Gudang:</span>
+            <span className="text-blue-800">Pesanan siap diambil & diproses kirim</span>
           </div>
-          <div className="flex items-center gap-2 sm:ml-auto">
+          <div className="flex items-center gap-2">
             <Button
               asChild
               size="sm"
-              variant={statusFilter === 'dikonfirmasi' ? 'default' : 'outline'}
-              className="text-xs h-7 gap-1"
+              variant={statusFilter === "dikonfirmasi" ? "default" : "outline"}
+              className="text-xs h-7 gap-1 border-blue-300"
             >
-              <Link href="/pesanan?status=dikonfirmasi">
-                Siap Kirim
-              </Link>
+              <Link href="/pesanan?status=dikonfirmasi">Siap Kirim</Link>
             </Button>
             <Button
               asChild
               size="sm"
               variant="outline"
-              className="text-xs h-7 gap-1"
+              className="text-xs h-7 gap-1.5 border-blue-300 bg-white hover:bg-blue-50 text-blue-900 font-semibold"
             >
               <Link href="/gudang/picking">
-                <ClipboardList className="w-3 h-3" />
-                Daftar Ambil Barang
+                <ClipboardList className="w-3.5 h-3.5 text-blue-700" />
+                Daftar Ambil (Picking)
               </Link>
             </Button>
           </div>
         </div>
       )}
 
-      {/* Filter & Pencarian Bar */}
-      <div className="bg-white/80 backdrop-blur-md border border-white/80 rounded-2xl p-4 shadow-neu-sm space-y-3">
-        <form method="get" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2.5">
+      {/* Single Toolbar Filter & Pencarian (Anti-Double) */}
+      <div className="surface-raised rounded-xl p-3.5 space-y-3 border-slate-200">
+        <form
+          method="get"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2.5"
+        >
           {/* Cari nomor */}
           <div className="relative lg:col-span-2">
-            <Search className="w-4 h-4 text-slate-400 absolute left-2.5 top-2.5 pointer-events-none" />
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3 pointer-events-none" />
             <Input
               name="q"
               defaultValue={q}
               placeholder="Cari nomor pesanan..."
-              className="text-xs pl-8 h-9 rounded-md border-slate-300"
+              className="text-xs pl-8.5 h-9 surface-inset rounded-lg"
             />
           </div>
 
@@ -158,10 +163,10 @@ export default async function DaftarPesananPage({ searchParams }: PageProps) {
             <select
               name="status"
               defaultValue={statusFilter}
-              className="w-full text-xs h-9 rounded-md border border-slate-300 bg-white px-2.5 py-1 text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-500"
+              className="w-full text-xs h-9 surface-inset rounded-lg px-2.5 py-1 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             >
               <option value="">Semua Status</option>
-              {peran !== 'gudang' && <option value="draf">Draf</option>}
+              {peran !== "gudang" && <option value="draf">Draf</option>}
               <option value="dikonfirmasi">Dikonfirmasi</option>
               <option value="dikirim">Dikirim</option>
               <option value="lunas">Lunas</option>
@@ -174,7 +179,7 @@ export default async function DaftarPesananPage({ searchParams }: PageProps) {
             <select
               name="pelanggan_id"
               defaultValue={pelangganFilter}
-              className="w-full text-xs h-9 rounded-md border border-slate-300 bg-white px-2.5 py-1 text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-500 truncate"
+              className="w-full text-xs h-9 surface-inset rounded-lg px-2.5 py-1 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 truncate"
             >
               <option value="">Semua Pelanggan</option>
               {pelangganOptions?.map((p) => (
@@ -186,37 +191,43 @@ export default async function DaftarPesananPage({ searchParams }: PageProps) {
           </div>
 
           {/* Rentang Tanggal */}
-          <div className="flex items-center gap-1">
+          <div>
             <Input
               type="date"
               name="dari"
               defaultValue={dariFilter}
-              className="text-xs h-9 rounded-md border-slate-300 px-2"
+              className="text-xs h-9 surface-inset rounded-lg px-2"
               title="Dari tanggal"
             />
           </div>
 
-          <div className="flex items-center gap-1">
+          <div>
             <Input
               type="date"
               name="sampai"
               defaultValue={sampaiFilter}
-              className="text-xs h-9 rounded-md border-slate-300 px-2"
+              className="text-xs h-9 surface-inset rounded-lg px-2"
               title="Sampai tanggal"
             />
           </div>
 
-          {/* Tombol Terapkan & Reset */}
-          <div className="lg:col-span-6 flex items-center justify-end gap-2 pt-1">
+          {/* Tombol Aksi Filter */}
+          <div className="lg:col-span-6 flex items-center justify-end gap-2 pt-0.5">
             <Button
               type="submit"
               size="sm"
-              className="text-xs h-8 gap-1 bg-slate-900 text-white hover:bg-slate-800"
+              className="text-xs h-8 gap-1.5 bg-slate-900 text-white hover:bg-slate-800 rounded-lg font-medium"
             >
               <Filter className="w-3.5 h-3.5" />
               Terapkan Filter
             </Button>
-            <Button asChild type="button" variant="outline" size="sm" className="text-xs h-8 gap-1">
+            <Button
+              asChild
+              type="button"
+              variant="outline"
+              size="sm"
+              className="text-xs h-8 gap-1.5 border-slate-300 rounded-lg"
+            >
               <Link href="/pesanan">
                 <RotateCcw className="w-3.5 h-3.5" />
                 Reset
@@ -227,14 +238,14 @@ export default async function DaftarPesananPage({ searchParams }: PageProps) {
       </div>
 
       {/* Tabel Data Pesanan */}
-      <div className="bg-white rounded-2xl border border-white/80 shadow-neu-sm overflow-hidden">
-        {(!pesananList || pesananList.length === 0) ? (
+      <div className="surface-raised rounded-xl overflow-hidden border-slate-200">
+        {!pesananList || pesananList.length === 0 ? (
           <EmptyState
             title="Tidak ada pesanan jual ditemukan"
             description={
               q || statusFilter || pelangganFilter
-                ? 'Coba sesuaikan kata kunci pencarian atau filter status yang dipilih.'
-                : 'Belum ada data pesanan jual. Klik tombol Buat Pesanan Baru untuk memulai.'
+                ? "Coba sesuaikan kata kunci pencarian atau filter status yang dipilih."
+                : "Belum ada data pesanan jual. Klik tombol Buat Pesanan Baru untuk memulai."
             }
           />
         ) : (
@@ -242,13 +253,13 @@ export default async function DaftarPesananPage({ searchParams }: PageProps) {
             <table className="w-full text-left text-xs border-collapse">
               <thead className="bg-slate-100 text-slate-700 font-medium border-b border-slate-200 sticky top-0">
                 <tr>
-                  <th className="py-2.5 px-3 w-36">Nomor</th>
-                  <th className="py-2.5 px-3 min-w-[200px]">Pelanggan</th>
-                  <th className="py-2.5 px-3 w-28">Tanggal</th>
-                  <th className="py-2.5 px-3 w-28 text-center">Status</th>
-                  <th className="py-2.5 px-3 w-32 text-right">Total Nilai</th>
-                  <th className="py-2.5 px-3 w-28">Jatuh Tempo</th>
-                  <th className="py-2.5 px-3 w-24 text-right">Aksi</th>
+                  <th className="py-2.5 px-3.5 w-36">Nomor</th>
+                  <th className="py-2.5 px-3.5 min-w-[200px]">Pelanggan</th>
+                  <th className="py-2.5 px-3.5 w-28">Tanggal</th>
+                  <th className="py-2.5 px-3.5 w-28 text-center">Status</th>
+                  <th className="py-2.5 px-3.5 w-32 text-right">Total Nilai</th>
+                  <th className="py-2.5 px-3.5 w-28">Jatuh Tempo</th>
+                  <th className="py-2.5 px-3.5 w-24 text-right">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 bg-white">
@@ -260,42 +271,48 @@ export default async function DaftarPesananPage({ searchParams }: PageProps) {
                   return (
                     <tr
                       key={item.id}
-                      className={idx % 2 === 1 ? 'bg-slate-50/50 hover:bg-slate-50' : 'hover:bg-slate-50/50'}
+                      className={
+                        idx % 2 === 1
+                          ? "bg-slate-50/50 hover:bg-slate-50 transition-colors"
+                          : "hover:bg-slate-50/50 transition-colors"
+                      }
                     >
-                      <td className="py-2.5 px-3 font-mono font-medium text-slate-900">
+                      <td className="py-2.5 px-3.5 font-mono font-medium text-slate-900">
                         <Link
                           href={`/pesanan/${item.id}`}
-                          className="hover:underline text-blue-900 hover:text-blue-800"
+                          className="hover:underline text-indigo-700 hover:text-indigo-900 font-semibold"
                         >
                           {item.nomor}
                         </Link>
                       </td>
-                      <td className="py-2.5 px-3 text-slate-800">
-                        <div className="font-medium text-slate-900">{pel?.nama_toko || '-'}</div>
-                        <div className="text-[11px] text-slate-400 font-mono">{pel?.kode || ''}</div>
+                      <td className="py-2.5 px-3.5 text-slate-800">
+                        <div className="font-semibold text-slate-900">
+                          {pel?.nama_toko || "-"}
+                        </div>
+                        <div className="text-[11px] text-slate-400 font-mono">
+                          {pel?.kode || ""}
+                        </div>
                       </td>
-                      <td className="py-2.5 px-3 text-slate-600">
+                      <td className="py-2.5 px-3.5 text-slate-600">
                         {formatTanggal(item.dibuat_pada)}
                       </td>
-                      <td className="py-2.5 px-3 text-center">
+                      <td className="py-2.5 px-3.5 text-center">
                         <BadgeStatus status={item.status} />
                       </td>
-                      <td className="py-2.5 px-3 text-right font-mono tabular-nums font-semibold text-slate-900">
+                      <td className="py-2.5 px-3.5 text-right font-mono tabular-nums font-bold text-slate-900">
                         {formatRupiah(item.total)}
                       </td>
-                      <td className="py-2.5 px-3 text-slate-600">
-                        {item.jatuh_tempo ? formatTanggal(item.jatuh_tempo) : '-'}
+                      <td className="py-2.5 px-3.5 text-slate-600">
+                        {item.jatuh_tempo ? formatTanggal(item.jatuh_tempo) : "-"}
                       </td>
-                      <td className="py-2.5 px-3 text-right">
+                      <td className="py-2.5 px-3.5 text-right">
                         <Button
                           asChild
                           variant="outline"
                           size="sm"
-                          className="text-xs h-7 px-2 border-slate-300"
+                          className="text-xs h-7 px-2.5 border-slate-300 hover:border-slate-400 rounded-md"
                         >
-                          <Link href={`/pesanan/${item.id}`}>
-                            Detail
-                          </Link>
+                          <Link href={`/pesanan/${item.id}`}>Detail</Link>
                         </Button>
                       </td>
                     </tr>
@@ -308,7 +325,7 @@ export default async function DaftarPesananPage({ searchParams }: PageProps) {
 
         {/* Paginasi */}
         {totalPages > 1 && (
-          <div className="p-3 border-t border-slate-200 bg-slate-50">
+          <div className="p-3 border-t border-slate-200 bg-slate-50/80">
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}

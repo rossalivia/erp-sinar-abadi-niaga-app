@@ -1,12 +1,18 @@
-'use client';
+"use client";
 
-import * as React from 'react';
-import Link from 'next/link';
-import { Menu, LogOut, User, Search } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { logoutAction } from '@/app/login/actions';
-import type { UserProfile } from '@/types/auth';
+import * as React from "react";
+import Link from "next/link";
+import {
+  Menu,
+  LogOut,
+  User,
+  Search,
+  ChevronDown,
+  Building,
+} from "lucide-react";
+import { logoutAction } from "@/app/login/actions";
+import type { UserProfile } from "@/types/auth";
+import { cn } from "@/lib/utils";
 
 interface HeaderProps {
   user: UserProfile;
@@ -14,17 +20,40 @@ interface HeaderProps {
   onOpenSearch?: () => void;
 }
 
-const PERAN_BADGE_STYLE: Record<string, { label: string; variant: 'secondary' | 'info' | 'default' }> = {
-  penjualan: { label: 'Staf Penjualan', variant: 'secondary' },
-  gudang: { label: 'Staf Gudang', variant: 'info' },
-  manajer: { label: 'Manajer', variant: 'default' },
+const PERAN_BADGE_STYLE: Record<
+  string,
+  { label: string; bg: string; text: string }
+> = {
+  penjualan: {
+    label: "Staf Penjualan",
+    bg: "bg-blue-50 border-blue-200/80",
+    text: "text-blue-800",
+  },
+  gudang: {
+    label: "Staf Gudang",
+    bg: "bg-amber-50 border-amber-200/80",
+    text: "text-amber-800",
+  },
+  manajer: {
+    label: "Manajer",
+    bg: "bg-indigo-50 border-indigo-200/80",
+    text: "text-indigo-800",
+  },
 };
 
-export function Header({ user, onOpenMobileSidebar, onOpenSearch }: HeaderProps) {
+export function Header({
+  user,
+  onOpenMobileSidebar,
+  onOpenSearch,
+}: HeaderProps) {
   const [isPending, startTransition] = React.useTransition();
+  const [isProfileOpen, setIsProfileOpen] = React.useState(false);
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
+
   const peranInfo = PERAN_BADGE_STYLE[user.peran] || {
     label: user.peran,
-    variant: 'secondary' as const,
+    bg: "bg-slate-50 border-slate-200",
+    text: "text-slate-800",
   };
 
   const handleLogout = () => {
@@ -33,73 +62,132 @@ export function Header({ user, onOpenMobileSidebar, onOpenSearch }: HeaderProps)
     });
   };
 
+  // Close dropdown on outside click
+  React.useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
+        setIsProfileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-20 flex h-14 w-full items-center justify-between border-b border-white/70 bg-white/75 backdrop-blur-md px-4 sm:px-6 shadow-neu-flat">
-      {/* Sisi Kiri: Tombol Menu Mobile & Search Quick Trigger */}
+    <header className="sticky top-0 z-30 flex h-14 w-full items-center justify-between border-b border-slate-200/70 surface-glass px-4 sm:px-6">
+      {/* Sisi Kiri: Mobile Hamburger & Brand/Breadcrumb */}
       <div className="flex items-center gap-3">
         <button
           onClick={onOpenMobileSidebar}
-          className="rounded-xl p-1.5 text-slate-600 hover:bg-slate-100/80 active:scale-95 transition-all md:hidden"
+          className="rounded-lg p-1.5 text-slate-600 hover:bg-slate-100 active:scale-95 transition-all md:hidden cursor-pointer"
           aria-label="Buka navigasi"
         >
           <Menu className="h-5 w-5" />
         </button>
-        <div className="hidden sm:block text-xs font-bold text-slate-800 tracking-tight">
-          CV Sinar Abadi Niaga
-        </div>
 
-        {onOpenSearch && (
-          <button
-            type="button"
-            onClick={onOpenSearch}
-            className="hidden md:flex items-center gap-2.5 px-3 py-1.5 text-xs text-slate-500 bg-[#f4f7fb] hover:bg-white hover:text-indigo-600 border border-white/90 shadow-neu-sm rounded-xl transition-all cursor-pointer group"
-            title="Cari Cepat Menu (Ctrl+K)"
-          >
-            <Search className="h-3.5 w-3.5 text-slate-400 group-hover:text-indigo-600 transition-colors" />
-            <span className="text-[11px] font-mono">Cepat cari menu...</span>
-            <kbd className="text-[10px] font-mono px-1.5 py-0.2 bg-white/90 border border-slate-200/80 rounded-md text-slate-400 shadow-xs">
-              Ctrl+K
-            </kbd>
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          <Building className="h-4 w-4 text-indigo-600 hidden sm:block" />
+          <span className="text-xs font-bold text-slate-800 tracking-tight hidden sm:inline">
+            CV Sinar Abadi Niaga
+          </span>
+        </div>
       </div>
 
-      {/* Sisi Kanan: Pengguna & Tombol Keluar */}
-      <div className="flex items-center gap-2.5">
-        <Link
-          href="/profil"
-          className="flex items-center gap-2.5 bg-white/60 hover:bg-white/90 border border-white/80 p-1.5 pr-2.5 rounded-full shadow-neu-sm transition-all"
-          title="Buka Profil Saya"
+      {/* Sisi Tengah: Single Command Palette Trigger */}
+      {onOpenSearch && (
+        <button
+          type="button"
+          onClick={onOpenSearch}
+          className="flex items-center gap-2 px-3 py-1.5 text-xs text-slate-500 surface-inset rounded-lg hover:text-slate-800 hover:border-slate-300 transition-all cursor-pointer group max-w-xs sm:w-64 justify-between"
+          title="Cari Cepat Menu (Ctrl+K)"
         >
-          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-600 text-white font-bold text-xs shadow-xs">
-            {user.nama_lengkap ? user.nama_lengkap.charAt(0).toUpperCase() : <User className="h-3.5 w-3.5" />}
+          <div className="flex items-center gap-2">
+            <Search className="h-3.5 w-3.5 text-slate-400 group-hover:text-indigo-600 transition-colors" />
+            <span className="text-xs truncate">Cari menu & pintasan...</span>
           </div>
-          <div className="flex flex-col text-right">
-            <span className="text-xs font-bold text-slate-800 leading-none">
+          <kbd className="hidden sm:inline-block text-[10px] font-mono px-1.5 py-0.2 bg-white border border-slate-200 rounded text-slate-500 shadow-2xs">
+            Ctrl+K
+          </kbd>
+        </button>
+      )}
+
+      {/* Sisi Kanan: Unified Profile & Account Menu */}
+      <div className="relative" ref={dropdownRef}>
+        <button
+          type="button"
+          onClick={() => setIsProfileOpen((prev) => !prev)}
+          className="flex items-center gap-2 p-1 pl-1.5 pr-2 rounded-lg hover:bg-slate-100/80 transition-colors cursor-pointer select-none"
+        >
+          <div className="h-7 w-7 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs">
+            {user.nama_lengkap
+              ? user.nama_lengkap.charAt(0).toUpperCase()
+              : <User className="h-3.5 w-3.5" />}
+          </div>
+
+          <div className="hidden sm:flex flex-col text-left">
+            <span className="text-xs font-semibold text-slate-800 leading-tight">
               {user.nama_lengkap}
             </span>
-            <span className="text-[9px] text-slate-400 capitalize mt-0.5">
+            <span className="text-[10px] text-slate-500 leading-tight">
               {peranInfo.label}
             </span>
           </div>
-          <Badge variant={peranInfo.variant} className="ml-1 text-[9px] py-0 px-2">
-            {user.peran}
-          </Badge>
-        </Link>
 
-        <div className="h-4 w-px bg-slate-200/80 mx-0.5" />
+          <ChevronDown
+            className={cn(
+              "w-3.5 h-3.5 text-slate-400 transition-transform duration-150",
+              isProfileOpen && "rotate-180"
+            )}
+          />
+        </button>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleLogout}
-          disabled={isPending}
-          className="text-slate-500 hover:text-red-600 hover:bg-red-50/80 rounded-xl text-xs px-2.5 gap-1.5"
-          title="Keluar dari sistem"
-        >
-          <LogOut className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">Keluar</span>
-        </Button>
+        {/* Dropdown Menu */}
+        {isProfileOpen && (
+          <div className="absolute right-0 mt-1.5 w-56 rounded-xl glass-dropdown border border-slate-200/80 shadow-lg py-1.5 z-50 animate-in fade-in-50 zoom-in-95 duration-150">
+            <div className="px-3.5 py-2 border-b border-slate-100">
+              <p className="text-xs font-bold text-slate-900 truncate">
+                {user.nama_lengkap}
+              </p>
+              <div className="mt-1 flex items-center gap-1.5">
+                <span
+                  className={cn(
+                    "text-[10px] px-2 py-0.2 rounded-full border font-semibold",
+                    peranInfo.bg,
+                    peranInfo.text
+                  )}
+                >
+                  {peranInfo.label}
+                </span>
+              </div>
+            </div>
+
+            <div className="py-1">
+              <Link
+                href="/profil"
+                onClick={() => setIsProfileOpen(false)}
+                className="flex items-center gap-2.5 px-3.5 py-1.5 text-xs text-slate-700 hover:bg-slate-50 transition-colors"
+              >
+                <User className="w-3.5 h-3.5 text-slate-400" />
+                <span>Profil & Pengaturan Akun</span>
+              </Link>
+            </div>
+
+            <div className="pt-1 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={handleLogout}
+                disabled={isPending}
+                className="w-full flex items-center gap-2.5 px-3.5 py-1.5 text-xs text-red-600 hover:bg-red-50/80 transition-colors cursor-pointer text-left"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>{isPending ? "Sedang keluar..." : "Keluar dari Sistem"}</span>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </header>
   );

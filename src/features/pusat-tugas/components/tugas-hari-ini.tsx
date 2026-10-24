@@ -1,34 +1,42 @@
-import Link from 'next/link';
-import { ArrowRight, CheckSquare, ClipboardList } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { toneEfektif } from '../utils';
-import type { ToneTugas, WidgetTugas } from '../types';
-import type { Peran } from '@/types/auth';
+"use client";
 
-const GAYA_KARTU: Record<ToneTugas, string> = {
-  neutral: 'border-white/80 bg-white/80 backdrop-blur-md shadow-neu-sm hover:bg-white',
-  info: 'border-blue-200/80 bg-blue-50/70 backdrop-blur-md shadow-neu-sm hover:bg-blue-50/90',
-  warning: 'border-amber-200/80 bg-amber-50/70 backdrop-blur-md shadow-neu-sm hover:bg-amber-50/90',
-  danger: 'border-red-200/80 bg-red-50/70 backdrop-blur-md shadow-neu-sm hover:bg-red-50/90',
+import React, { useState } from "react";
+import Link from "next/link";
+import {
+  ArrowRight,
+  CheckCircle2,
+  ChevronDown,
+  ClipboardList,
+  Sparkles,
+  Zap,
+} from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { Button } from "@/components/ui/button";
+import { CountUpNumber } from "@/lib/motion";
+import { cn } from "@/lib/utils";
+import { toneEfektif } from "../utils";
+import type { ToneTugas, WidgetTugas } from "../types";
+import type { Peran } from "@/types/auth";
+
+const ACCENT_BORDER: Record<ToneTugas, string> = {
+  neutral: "border-slate-200/90 hover:border-slate-300",
+  info: "border-blue-200/90 hover:border-blue-300",
+  warning: "border-amber-300/90 hover:border-amber-400 bg-linear-to-b from-amber-50/40 to-white",
+  danger: "border-red-300/90 hover:border-red-400 bg-linear-to-b from-red-50/40 to-white",
 };
 
-const GAYA_ANGKA: Record<ToneTugas, string> = {
-  neutral: 'text-slate-900',
-  info: 'text-blue-800',
-  warning: 'text-amber-800',
-  danger: 'text-red-700',
+const PILL_COLOR: Record<ToneTugas, string> = {
+  neutral: "bg-slate-100 text-slate-700",
+  info: "bg-blue-100/80 text-blue-800",
+  warning: "bg-amber-100/90 text-amber-900 font-semibold",
+  danger: "bg-red-100/90 text-red-900 font-semibold",
 };
 
-const VARIAN_BADGE: Record<
-  ToneTugas,
-  'neutral' | 'info' | 'warning' | 'danger'
-> = {
-  neutral: 'neutral',
-  info: 'info',
-  warning: 'warning',
-  danger: 'danger',
+const TEXT_COLOR: Record<ToneTugas, string> = {
+  neutral: "text-slate-900",
+  info: "text-blue-900",
+  warning: "text-amber-900",
+  danger: "text-red-700",
 };
 
 interface TugasHariIniProps {
@@ -44,31 +52,30 @@ export function TugasHariIniHeader({
   denganAksi?: boolean;
 }) {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-      <div className="flex items-start gap-2">
-        <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded border border-slate-200 bg-slate-100 text-slate-600">
-          <CheckSquare className="h-3.5 w-3.5" />
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="flex items-center gap-2.5">
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-white shadow-xs">
+          <Zap className="h-4 w-4" />
         </div>
         <div>
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">
-            Tugas Hari Ini
-          </h3>
-          <p className="text-[11px] text-slate-500">
-            Antrean pekerjaan dan status operasional yang memerlukan perhatian
-            Anda hari ini
+          <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
+            Prioritas Kerja Hari Ini
+          </h2>
+          <p className="text-xs text-slate-500">
+            Antrean operasional dan transaksi yang memerlukan tindakan segera
           </p>
         </div>
       </div>
-      {denganAksi && peran !== 'penjualan' && (
+
+      {denganAksi && peran !== "penjualan" && (
         <Button
           asChild
           size="sm"
-          variant="outline"
-          className="h-8 gap-1.5 self-start text-xs sm:self-auto"
+          className="h-8 gap-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold shadow-xs transition-all active:scale-98"
         >
           <Link href="/gudang/picking">
             <ClipboardList className="h-3.5 w-3.5" />
-            Daftar Ambil Barang
+            <span>Buka Daftar Ambil (Picking)</span>
           </Link>
         </Button>
       )}
@@ -77,66 +84,146 @@ export function TugasHariIniHeader({
 }
 
 export function TugasHariIni({ widgets, peran }: TugasHariIniProps) {
+  const [showClearTasks, setShowClearTasks] = useState(false);
+
+  // Pisahkan tugas mendesak (nilai > 0) dan tugas beres (nilai === 0)
+  const urgentTasks = widgets.filter((w) => w.nilai > 0);
+  const clearTasks = widgets.filter((w) => w.nilai === 0);
+
   return (
-    <section className="space-y-3" aria-label="Tugas Hari Ini">
+    <section className="space-y-3.5" aria-label="Tugas Hari Ini">
       <TugasHariIniHeader peran={peran} />
 
-      <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-5">
-        {widgets.map((widget) => {
-          const tone = toneEfektif(widget.tone, widget.nilai);
-          const nol = widget.nilai === 0;
+      {/* Jika ada antrean mendesak */}
+      {urgentTasks.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
+          {urgentTasks.map((widget) => {
+            const tone = toneEfektif(widget.tone, widget.nilai);
 
-          return (
-            <Link
-              key={widget.key}
-              href={widget.href}
-              className={cn(
-                'group flex flex-col justify-between rounded-2xl border p-4 transition-all duration-200',
-                GAYA_KARTU[tone]
-              )}
-            >
-              <div>
-                <div className="flex items-start justify-between gap-1.5">
-                  <p className="text-[11px] font-semibold leading-snug text-slate-700">
-                    {widget.judul}
-                  </p>
-                  {!nol && (
-                    <Badge
-                      variant={VARIAN_BADGE[tone]}
-                      className="shrink-0 text-[9px] leading-tight"
+            return (
+              <Link
+                key={widget.key}
+                href={widget.href}
+                className={cn(
+                  "group relative surface-raised rounded-xl p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md flex flex-col justify-between border",
+                  ACCENT_BORDER[tone]
+                )}
+              >
+                <div>
+                  <div className="flex items-start justify-between gap-2">
+                    <span
+                      className={cn(
+                        "text-[10px] uppercase font-mono tracking-wider px-2 py-0.5 rounded-md",
+                        PILL_COLOR[tone]
+                      )}
                     >
                       {widget.indikator}
-                    </Badge>
-                  )}
-                </div>
-
-                <p
-                  className={cn(
-                    'mt-1.5 text-2xl font-bold leading-none tabular-nums',
-                    nol ? 'text-slate-400' : GAYA_ANGKA[tone]
-                  )}
-                >
-                  {widget.nilai.toLocaleString('id-ID')}
-                  {widget.satuan && (
-                    <span className="ml-1 text-[10px] font-medium text-slate-500">
-                      {widget.satuan}
                     </span>
-                  )}
-                </p>
+                    <span className="text-[10px] font-semibold text-slate-400 group-hover:text-indigo-600 transition-colors inline-flex items-center gap-0.5">
+                      Tindakan
+                      <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
+                    </span>
+                  </div>
 
-                <p className="mt-1 text-[10px] leading-snug text-slate-500">
-                  {widget.keterangan}
-                </p>
-              </div>
+                  <h3 className="mt-2.5 text-xs font-bold text-slate-800 line-clamp-1">
+                    {widget.judul}
+                  </h3>
 
-              <span className="mt-2 inline-flex items-center gap-1 text-[10px] font-semibold text-slate-600 group-hover:text-slate-900">
-                Buka antrean
-                <ArrowRight className="h-3 w-3" />
+                  <div className="mt-1 flex items-baseline gap-1.5">
+                    <span
+                      className={cn(
+                        "text-2xl font-extrabold tracking-tight tabular-nums",
+                        TEXT_COLOR[tone]
+                      )}
+                    >
+                      <CountUpNumber value={widget.nilai} />
+                    </span>
+                    {widget.satuan && (
+                      <span className="text-xs font-medium text-slate-500">
+                        {widget.satuan}
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="mt-1 text-[11px] leading-relaxed text-slate-500 line-clamp-2">
+                    {widget.keterangan}
+                  </p>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      ) : (
+        /* Status Semua Beres */
+        <div className="surface-raised rounded-xl p-6 text-center flex flex-col items-center justify-center border border-emerald-200/80 bg-linear-to-b from-emerald-50/30 to-white">
+          <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 mb-2">
+            <CheckCircle2 className="w-6 h-6" />
+          </div>
+          <h3 className="text-sm font-bold text-slate-900">
+            Luar Biasa! Semua Antrean Beres
+          </h3>
+          <p className="text-xs text-slate-500 mt-1 max-w-md">
+            Tidak ada pesanan tertahan, approval tertunda, atau tagihan mendesak
+            yang membutuhkan tindakan saat ini.
+          </p>
+        </div>
+      )}
+
+      {/* Collapsible Bar untuk Tugas Bernilai 0 (Menghilangkan kekosongan grid) */}
+      {clearTasks.length > 0 && urgentTasks.length > 0 && (
+        <div className="surface-inset rounded-lg p-2.5">
+          <button
+            type="button"
+            onClick={() => setShowClearTasks((prev) => !prev)}
+            className="w-full flex items-center justify-between text-xs text-slate-600 hover:text-slate-900 transition-colors px-1"
+          >
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="font-medium text-slate-700">
+                {clearTasks.length} Antrean Dalam Kondisi Terkendali (0 tertunda)
               </span>
-            </Link>
-          );
-        })}
-      </div>
+            </div>
+            <div className="flex items-center gap-1 text-[11px] text-slate-500">
+              <span>{showClearTasks ? "Sembunyikan" : "Lihat rincian"}</span>
+              <ChevronDown
+                className={cn(
+                  "w-3.5 h-3.5 transition-transform duration-200",
+                  showClearTasks && "rotate-180"
+                )}
+              />
+            </div>
+          </button>
+
+          <AnimatePresence>
+            {showClearTasks && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden pt-2.5 mt-2 border-t border-slate-200/60"
+              >
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                  {clearTasks.map((task) => (
+                    <Link
+                      key={task.key}
+                      href={task.href}
+                      className="flex items-center justify-between px-2.5 py-1.5 rounded-md bg-white/70 hover:bg-white text-xs border border-slate-200/50 transition-colors"
+                    >
+                      <span className="text-slate-600 truncate text-[11px]">
+                        {task.judul}
+                      </span>
+                      <span className="text-emerald-700 font-mono text-[10px] font-bold shrink-0 ml-1.5">
+                        0 Beres
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
     </section>
   );
 }

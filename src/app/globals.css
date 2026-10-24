@@ -64,14 +64,43 @@
 }
 
 /* ==========================================================================
+   4-TIER STRICT SURFACE HIERARCHY (ANTI-DOUBLE RULE)
+   ========================================================================== */
+.surface-raised {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 4px 4px 14px rgba(160, 175, 200, 0.16), -4px -4px 14px rgba(255, 255, 255, 0.9);
+}
+
+.surface-glass {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+}
+
+.surface-inset {
+  background: rgba(241, 245, 249, 0.7);
+  box-shadow: inset 1.5px 1.5px 4px rgba(160, 175, 200, 0.25), inset -1.5px -1.5px 4px rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(226, 232, 240, 0.7);
+}
+
+.surface-flat {
+  background: transparent;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* ==========================================================================
    GLASSMORPHISM TOKENS & UTILITIES
    ========================================================================== */
 .glass-card {
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.75);
-  box-shadow: 4px 4px 14px rgba(160, 175, 200, 0.18), -4px -4px 14px rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 4px 4px 14px rgba(160, 175, 200, 0.15), -4px -4px 14px rgba(255, 255, 255, 0.9);
 }
 
 .glass-panel {
