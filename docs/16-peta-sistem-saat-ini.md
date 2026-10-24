@@ -362,6 +362,48 @@ Terdapat 14 tabel di dalam skema public (9 tabel inti + 2 modul stock opname + 1
 
 ---
 
+### 15. public.tagihan_mayar (Invoice Gateway Mayar)
+* Tujuan: Menyimpan rekam jejak invoice pembayaran digital Mayar sandbox/live per pesanan jual berstatus dikirim (M1..M5).
+* Kolom:
+  * id (uuid, PRIMARY KEY DEFAULT gen_random_uuid())
+  * pesanan_jual_id (uuid, NOT NULL, REFERENCES public.pesanan_jual(id) ON DELETE RESTRICT)
+  * mayar_invoice_id (text, NOT NULL)
+  * link_pembayaran (text, NOT NULL)
+  * total (numeric(14,0), NOT NULL, CHECK total > 0)
+  * status (status_tagihan_mayar, NOT NULL, DEFAULT 'dibuat')
+  * berlaku_hingga (timestamptz, NOT NULL)
+  * dibayar_pada (timestamptz, nullable)
+  * dibuat_pada (timestamptz, NOT NULL, DEFAULT now())
+  * diperbarui_pada (timestamptz, NOT NULL, DEFAULT now())
+* Indeks Unik: `uq_tagihan_mayar_pesanan_aktif` UNIQUE (pesanan_jual_id) WHERE status = 'dibuat' (menjamin maksimal 1 tagihan aktif per pesanan).
+* Hak Akses Kolom (Grants):
+  * SELECT: TO authenticated (dibatasi RLS khusus Manajer).
+  * INSERT, UPDATE, DELETE: TIDAK DI-GRANT langsung (seluruh mutasi lewat RPC).
+* Kebijakan RLS:
+  * tagihan_mayar_select_manajer: FOR SELECT USING (fn_is_manajer() = true). Penjualan dan Gudang 0 baris.
+  * tagihan_mayar_block_modify: FOR ALL USING (false) WITH CHECK (false).
+
+---
+
+### 16. public.mayar_webhook_event (Log Idempotensi Webhook)
+* Tujuan: Mencegah replay attack dan eksekusi ganda webhook pembayaran Mayar secara aman tanpa menyimpan muatan data pribadi pelanggan (M3, M7, M8).
+* Kolom:
+  * id (uuid, PRIMARY KEY DEFAULT gen_random_uuid())
+  * event_id (text, NOT NULL, UNIQUE)
+  * event_type (text, NOT NULL)
+  * mayar_invoice_id (text, nullable)
+  * mayar_payment_id (text, nullable)
+  * status_pembayaran (text, nullable)
+  * nominal (numeric(14,0), nullable)
+  * hasil_proses (hasil_webhook_mayar, NOT NULL)
+  * catatan (text, nullable)
+  * diterima_pada (timestamptz, NOT NULL, DEFAULT now())
+* Hak Akses:
+  * Dicabut seluruhnya dari PUBLIC, anon, authenticated.
+  * HANYA dapat diakses oleh fungsi `rpc_sistem_*` berhak `service_role`.
+
+---
+
 ## B. Peta View Basis Data
 
 | Nama View | Definisi Singkat | Security Option | Peran yang Dapat Membaca | Kolom Sensitif / Rahasia |

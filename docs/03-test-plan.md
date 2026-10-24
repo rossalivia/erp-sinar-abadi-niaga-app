@@ -345,5 +345,32 @@ Urutan validasi `konfirmasi_pesanan`: (1) akses/kepemilikan → E01/E02, (2) sta
 | **TC-171** | Otorisasi Halaman `/notifikasi` Khusus Manajer (Penjualan & Gudang Ditolak) | P, G, M | SQL + Route Guard | **Lulus** | 2026-10-23 | `supabase/tests/12_notifikasi_email.sql`<br>`src/lib/akses.ts` | Manajer sukses membaca riwayat log; Penjualan dan Gudang ditolak di tingkat database (E0001) dan route guard (403). |
 | **TC-172** | Rate Limiting Tombol Uji Kirim (1 Kali per Menit) | M | SQL / Action | **Lulus** | 2026-10-23 | `supabase/tests/12_notifikasi_email.sql` | Panggilan uji coba kedua dalam kurun waktu kurang dari 60 detik ditolak dengan pesan pembatasan laju. |
 
+---
+
+## 17. Test Case Tambahan: Tautan Bayar Piutang lewat Mayar (TC-173 s.d. TC-192)
+
+| ID | Fokus Uji | Aktor | Media | Status | Tanggal Uji | Bukti Uji | Ringkasan Verifikasi & Hasil |
+|---|---|---|---|---|---|---|---|
+| **TC-173** | Pembuatan tagihan sukses via MockMayarClient & HttpMayarClient | M | Vitest | **Lulus** | 2026-10-24 | `src/features/pembayaran/__tests__/mayar.test.ts` | Berhasil membuat, membaca, dan menutup invoice tagihan dengan atribut lengkap dan header token. |
+| **TC-174** | Penolakan tagihan pada pesanan berstatus selain `dikirim` | M | SQL | **Lulus** | 2026-10-24 | `supabase/tests/13_tautan_bayar_mayar.sql` | Pesanan berstatus draf, dikonfirmasi, atau lunas ditolak tegas dengan kode galat `E0067`. |
+| **TC-175** | Idempotensi tagihan aktif (hanya 1 tagihan aktif per pesanan) | M | SQL | **Lulus** | 2026-10-24 | `supabase/tests/13_tautan_bayar_mayar.sql` | Pembuatan tagihan kedua saat masih ada tagihan berstatus dibuat ditolak dengan indeks unik `uq_tagihan_mayar_pesanan_aktif` (`E0066`). |
+| **TC-176** | Validasi email pelanggan dan normalisasi telepon | M | Action | **Lulus** | 2026-10-24 | `src/features/pembayaran/actions.ts` | Email divalidasi via Zod; nomor telepon dinormalisasi format 628xxx sebelum dikirim ke gateway. |
+| **TC-177** | Penutupan tagihan aktif oleh Manajer | M | SQL | **Lulus** | 2026-10-24 | `supabase/tests/13_tautan_bayar_mayar.sql` | Eksekusi `rpc_tutup_tagihan_mayar` sukses mengubah status tagihan menjadi `ditutup`. |
+| **TC-178** | Penutupan otomatis tagihan Mayar saat pelunasan manual | M | SQL | **Lulus** | 2026-10-24 | `supabase/tests/13_tautan_bayar_mayar.sql` | Pemanggilan `rpc_catat_pelunasan` otomatis menutup tagihan Mayar aktif menjadi `ditutup`. |
+| **TC-179** | Verifikasi token webhook constant-time (`timingSafeEqual`) | Sistem | Vitest + SQL | **Lulus** | 2026-10-24 | `src/features/pembayaran/__tests__/mayar.test.ts`<br>`supabase/tests/13_tautan_bayar_mayar.sql` | Perbandingan token aman dari serangan timing attack pada panjang karakter sama maupun beda. |
+| **TC-180** | Penolakan webhook token tidak cocok (404 Not Found) | Publik | Vitest | **Lulus** | 2026-10-24 | `src/features/pembayaran/__tests__/mayar.test.ts` | Request dengan token salah ditolak dengan HTTP 404 tanpa mengekspos eksistensi endpoint. |
+| **TC-181** | Penolakan metode HTTP selain POST pada route webhook (405) | Publik | Vitest | **Lulus** | 2026-10-24 | `src/features/pembayaran/__tests__/mayar.test.ts` | Request GET atau PUT menghasilkan respon `405 Method Not Allowed` dengan header `Allow: POST`. |
+| **TC-182** | Penolakan payload webhook melebihi 100 KB (413 Payload Too Large) | Publik | Vitest | **Lulus** | 2026-10-24 | `src/features/pembayaran/__tests__/mayar.test.ts` | Payload $> 100\text{ KB}$ ditolak langsung sebelum parsing dengan HTTP 413. |
+| **TC-183** | Penolakan format JSON rusak pada webhook (400 Bad Request) | Publik | Vitest | **Lulus** | 2026-10-24 | `src/features/pembayaran/__tests__/mayar.test.ts` | Payload JSON malformed ditolak dengan status HTTP 400. |
+| **TC-184** | Verifikasi 2 arah: Webhook payment.received memicu GET /invoice | Sistem | Vitest + SQL | **Lulus** | 2026-10-24 | `src/features/pembayaran/__tests__/mayar.test.ts`<br>`supabase/tests/13_tautan_bayar_mayar.sql` | Sistem memvalidasi ulang status invoice ke gateway Mayar sebelum memproses pelunasan pesanan. |
+| **TC-185** | Idempotensi webhook event (event_id sama tidak diproses ulang) | Sistem | SQL | **Lulus** | 2026-10-24 | `supabase/tests/13_tautan_bayar_mayar.sql` | Pengiriman ulang webhook dengan `event_id` yang sama dicatat `diabaikan` dan dihindari double-settlement. |
+| **TC-186** | Penanganan ketidaksesuaian nominal / status anomali (`perlu_tinjau`) | Sistem | SQL | **Lulus** | 2026-10-24 | `supabase/tests/13_tautan_bayar_mayar.sql` | Nominal yang tidak cocok menandai tagihan `perlu_tinjau` tanpa mengubah status pesanan ke lunas. |
+| **TC-187** | Pelunasan pesanan otomatis saat status terverifikasi `paid` | Sistem | SQL | **Lulus** | 2026-10-24 | `supabase/tests/13_tautan_bayar_mayar.sql` | Eksekusi `rpc_sistem_lunaskan_dari_mayar` sukses melunasi pesanan, memperbarui status tagihan, dan mencatat audit log. |
+| **TC-188** | Halaman `/pembayaran/selesai` statis, noindex, dan bebas sesi DB | Publik | Build / MW | **Lulus** | 2026-10-24 | `src/app/pembayaran/selesai/page.tsx` | Halaman pendaratan statis bebas render server dan memuat meta robots noindex. |
+| **TC-189** | Middleware meloloskan `/pembayaran/selesai` tanpa redirect login | Publik | Middleware | **Lulus** | 2026-10-24 | `src/middleware.ts` | Pengguna publik tanpa sesi auth dapat membuka halaman sukses pembayaran. |
+| **TC-190** | Zero-leakage data finansial rahasia (harga_pokok, HPP, margin) | All | SQL + Build | **Lulus** | 2026-10-24 | `powershell Select-String .next\static` | Verifikasi bundle klien dan respon RPC/tabel terbukti 100% bebas dari kolom rahasia. |
+| **TC-191** | Otorisasi UI: Hanya peran Manajer yang dapat mengakses modul pembayaran | P, G, M | Route Guard | **Lulus** | 2026-10-24 | `src/lib/akses.ts` | Penjualan dan Gudang diblokir dari menu & rute `/pembayaran` (HTTP 403 / redirect). |
+| **TC-192** | Hak akses database: `rpc_sistem_*` hanya untuk `service_role` | Anon / Auth | SQL | **Lulus** | 2026-10-24 | `supabase/tests/13_tautan_bayar_mayar.sql` | PostgREST & role authenticated ditolak mengeksekusi `rpc_sistem_*` (`permission denied`). |
+
 
 

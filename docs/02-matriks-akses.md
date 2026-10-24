@@ -147,12 +147,15 @@ Kolom rahasia: `barang.harga_pokok`, `pembelian.harga_beli_satuan`, `item_pesana
 | `/impor/riwayat` | Riwayat Impor Data | ❌ | ❌ | ✅ | Rekam jejak seluruh transaksi impor data CSV | MW, RLS |
 | `/gudang/picking` | Daftar Ambil Barang (Picking) | ❌ | ✅ | ✅ | Konsolidasi barang pesanan terkonfirmasi, cetak siap fisik (@media print), bebas nilai uang | MW, RLS, RPC `rpc_ambil_daftar_picking` |
 | `/notifikasi` | Log Notifikasi Email | ❌ | ❌ | ✅ | Riwayat pengiriman email stok menipis harian & tombol uji coba | MW, Server Component, RPC `rpc_riwayat_notifikasi_manajer` |
+| `/pembayaran` | Pembayaran Mayar | ❌ | ❌ | ✅ | Monitoring status tagihan gateway Mayar, tombol refresh, batalkan tagihan | MW, Server Component, RLS, RPC |
+| `/pembayaran/selesai` | Pembayaran Selesai | publik | publik | publik | Halaman pendaratan pelanggan usai bayar di Mayar; statis, noindex, tanpa kueri DB | MW (dikecualikan dari auth), X-Robots-Tag: noindex |
 | `/api/cron/notifikasi-stok` | Endpoint Cron Notifikasi | ❌ | ❌ | ❌ (Sistem) | Pemicu cron harian stok menipis Netlify (Bearer `CRON_SECRET` & `service_role`) | TimingSafeEqual, `service_role` only RPC |
+| `/api/webhooks/mayar/[token]` | Webhook Masuk Mayar | ❌ | ❌ | ❌ (Gateway) | Menerima notifikasi pelunasan gateway Mayar sandbox/live | Constant-time token, Verifikasi 2 arah, `service_role` only RPC |
 | `/pengaturan/akun` | Akun & Peran | ❌ | ❌ | ✅ | — | MW, RPC |
 | `/pengaturan/audit-log` | Audit Log | ❌ | ❌ | ✅ | Filter aksi & tanggal | MW, RLS |
 
 > [!NOTE]
-> Jika P/G membuka `/laporan` atau `/pengaturan/*` lewat URL, MW mengarahkan ke `/dashboard`. Bila MW dilewati (memanggil REST/RPC langsung), database tetap mengembalikan 0 baris atau error `Akses ditolak`.
+> Jika P/G membuka `/laporan`, `/pembayaran`, atau `/pengaturan/*` lewat URL, MW mengarahkan ke `/tidak-berwenang` atau `/dashboard`. Bila MW dilewati (memanggil REST/RPC langsung), database tetap mengembalikan 0 baris atau error `Akses ditolak`.
 
 ---
 
