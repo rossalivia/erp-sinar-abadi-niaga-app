@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { Menu, LogOut, User } from 'lucide-react';
+import { Menu, LogOut, User, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { logoutAction } from '@/app/login/actions';
@@ -11,6 +11,7 @@ import type { UserProfile } from '@/types/auth';
 interface HeaderProps {
   user: UserProfile;
   onOpenMobileSidebar?: () => void;
+  onOpenSearch?: () => void;
 }
 
 const PERAN_BADGE_STYLE: Record<string, { label: string; variant: 'secondary' | 'info' | 'default' }> = {
@@ -19,7 +20,7 @@ const PERAN_BADGE_STYLE: Record<string, { label: string; variant: 'secondary' | 
   manajer: { label: 'Manajer', variant: 'default' },
 };
 
-export function Header({ user, onOpenMobileSidebar }: HeaderProps) {
+export function Header({ user, onOpenMobileSidebar, onOpenSearch }: HeaderProps) {
   const [isPending, startTransition] = React.useTransition();
   const peranInfo = PERAN_BADGE_STYLE[user.peran] || {
     label: user.peran,
@@ -34,7 +35,7 @@ export function Header({ user, onOpenMobileSidebar }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-20 flex h-14 w-full items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-6">
-      {/* Sisi Kiri: Tombol Menu Mobile */}
+      {/* Sisi Kiri: Tombol Menu Mobile & Search Quick Trigger */}
       <div className="flex items-center gap-3">
         <button
           onClick={onOpenMobileSidebar}
@@ -46,6 +47,21 @@ export function Header({ user, onOpenMobileSidebar }: HeaderProps) {
         <div className="hidden sm:block text-xs text-slate-500 font-medium">
           CV Sinar Abadi Niaga
         </div>
+
+        {onOpenSearch && (
+          <button
+            type="button"
+            onClick={onOpenSearch}
+            className="hidden md:flex items-center gap-2 px-2.5 py-1 text-xs text-slate-500 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-none transition-colors cursor-pointer"
+            title="Cari Cepat Menu (Ctrl+K)"
+          >
+            <Search className="h-3.5 w-3.5 text-slate-400" />
+            <span className="text-[11px] font-mono">Cari cepat...</span>
+            <kbd className="text-[10px] font-mono px-1 py-0.2 bg-white border border-slate-200 text-slate-400">
+              Ctrl+K
+            </kbd>
+          </button>
+        )}
       </div>
 
       {/* Sisi Kanan: Pengguna & Tombol Keluar */}
