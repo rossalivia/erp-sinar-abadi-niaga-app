@@ -66,6 +66,14 @@ export const ERROR_MESSAGES: Record<string, string> = {
   E0063: 'Pilih minimal satu pesanan untuk membuat daftar ambil barang',
   E0064: 'Terdapat pesanan yang tidak valid atau bukan berstatus dikonfirmasi',
   E0065: 'Hanya Staf Gudang dan Manajer yang berwenang mengakses daftar ambil barang',
+  E0066: 'Tagihan Mayar hanya dapat dibuat untuk pesanan berstatus dikirim',
+  E0067: 'Pesanan sudah memiliki tagihan Mayar aktif',
+  E0068: 'Total pesanan harus lebih besar dari 0 untuk membuat tagihan',
+  E0069: 'Email pelanggan wajib diisi dengan format valid',
+  E0070: 'Masa berlaku tagihan harus antara 1 sampai 30 hari',
+  E0071: 'Tagihan Mayar tidak ditemukan atau bukan berstatus aktif',
+  E0072: 'Jumlah tagihan tidak sesuai dengan total pesanan',
+  E0073: 'Hanya Manajer yang berwenang mengelola tagihan Mayar',
 };
 
 interface SupabasePostgresError {

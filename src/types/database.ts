@@ -48,7 +48,7 @@ export type Database = {
           nama_tabel: string
           nilai_baru: Json | null
           nilai_lama: Json | null
-          pelaku_id: string
+          pelaku_id: string | null
         }
         Insert: {
           aksi: string
@@ -58,7 +58,7 @@ export type Database = {
           nama_tabel: string
           nilai_baru?: Json | null
           nilai_lama?: Json | null
-          pelaku_id: string
+          pelaku_id?: string | null
         }
         Update: {
           aksi?: string
@@ -644,6 +644,92 @@ export type Database = {
             referencedColumns: ["id"]
           }
         ]
+      }
+      tagihan_mayar: {
+        Row: {
+          berlaku_hingga: string
+          dibayar_pada: string | null
+          dibuat_pada: string
+          diperbarui_pada: string
+          id: string
+          link_pembayaran: string
+          mayar_invoice_id: string
+          pesanan_jual_id: string
+          status: 'dibuat' | 'dibayar' | 'ditutup' | 'perlu_tinjau'
+          total: number
+        }
+        Insert: {
+          berlaku_hingga: string
+          dibayar_pada?: string | null
+          dibuat_pada?: string
+          diperbarui_pada?: string
+          id?: string
+          link_pembayaran: string
+          mayar_invoice_id: string
+          pesanan_jual_id: string
+          status?: 'dibuat' | 'dibayar' | 'ditutup' | 'perlu_tinjau'
+          total: number
+        }
+        Update: {
+          berlaku_hingga?: string
+          dibayar_pada?: string | null
+          dibuat_pada?: string
+          diperbarui_pada?: string
+          id?: string
+          link_pembayaran?: string
+          mayar_invoice_id?: string
+          pesanan_jual_id?: string
+          status?: 'dibuat' | 'dibayar' | 'ditutup' | 'perlu_tinjau'
+          total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tagihan_mayar_pesanan_jual_id_fkey"
+            columns: ["pesanan_jual_id"]
+            isOneToOne: false
+            referencedRelation: "pesanan_jual"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      mayar_webhook_event: {
+        Row: {
+          catatan: string | null
+          diterima_pada: string
+          event_id: string
+          event_type: string
+          hasil_proses: 'sukses' | 'diabaikan' | 'perlu_tinjau' | 'gagal'
+          id: string
+          mayar_invoice_id: string | null
+          mayar_payment_id: string | null
+          nominal: number | null
+          status_pembayaran: string | null
+        }
+        Insert: {
+          catatan?: string | null
+          diterima_pada?: string
+          event_id: string
+          event_type: string
+          hasil_proses: 'sukses' | 'diabaikan' | 'perlu_tinjau' | 'gagal'
+          id?: string
+          mayar_invoice_id?: string | null
+          mayar_payment_id?: string | null
+          nominal?: number | null
+          status_pembayaran?: string | null
+        }
+        Update: {
+          catatan?: string | null
+          diterima_pada?: string
+          event_id?: string
+          event_type?: string
+          hasil_proses?: 'sukses' | 'diabaikan' | 'perlu_tinjau' | 'gagal'
+          id?: string
+          mayar_invoice_id?: string | null
+          mayar_payment_id?: string | null
+          nominal?: number | null
+          status_pembayaran?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {
