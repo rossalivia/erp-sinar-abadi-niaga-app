@@ -78,7 +78,7 @@ export default async function LaporanPiutangPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <PageHeader
           title="Laporan Piutang & Aging Tagihan"
-          description="Monitoring piutang toko kelontong mitra, analisis umur tagihan, dan pelunasan — CV Sinar Abadi Niaga (Wholesale Trade of Groceries and FMCG)."
+          description="Monitoring piutang toko kelontong mitra, analisis umur tagihan, dan pelunasan tempo — CV Sinar Abadi Niaga (Bekasi & Jakarta Timur)."
         />
         <a
           href="/api/laporan/piutang/csv"

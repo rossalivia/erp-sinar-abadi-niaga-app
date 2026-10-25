@@ -8,7 +8,6 @@ import { formatTanggal, formatRupiah } from "@/lib/format";
 import {
   AlertTriangle,
   Clock,
-  Shield,
   ShoppingCart,
   TrendingUp,
   DollarSign,
@@ -304,7 +303,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           <div className="flex items-center gap-2 text-slate-500 text-[11px]">
             <span className="font-medium text-slate-600">CV Sinar Abadi Niaga</span>
             <span className="text-slate-300">&bull;</span>
-            <span className="text-[#2563eb] font-semibold">Wholesale Groceries &amp; FMCG</span>
+            <span className="text-[#2563eb] font-semibold">Distributor Kebutuhan Toko Kelontong</span>
           </div>
         </div>
 

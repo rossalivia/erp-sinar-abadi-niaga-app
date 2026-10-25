@@ -5,19 +5,10 @@ import Link from 'next/link';
 import {
   FileText,
   Star,
-  Download,
-  Calendar,
   Sparkles,
   ArrowRight,
   Clock,
-  CheckCircle2,
-  AlertCircle,
-  Truck,
-  ShoppingCart,
-  Boxes,
-  BadgePercent,
   Search,
-  SlidersHorizontal,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -123,7 +114,7 @@ interface ScheduleItem {
 const SCHEDULE_ITEMS: ScheduleItem[] = [
   {
     id: 's1',
-    title: 'Pengiriman Rute 1 (Pasar Grosir)',
+    title: 'Pengiriman Armada Rute Bekasi & Jaktim',
     schedule: 'Setiap Hari 08:00 WIB',
     pic: 'AM',
     formats: ['PDF'],
@@ -159,7 +150,7 @@ export interface DashboardMidRowProps {
   peran: Peran;
 }
 
-export function DashboardMidRow({ peran }: DashboardMidRowProps) {
+export function DashboardMidRow({}: DashboardMidRowProps) {
   const [activeTab, setActiveTab] = React.useState<'semua' | 'favorit' | 'penjualan' | 'gudang' | 'keuangan'>('semua');
   const [searchQuery, setSearchQuery] = React.useState('');
   const [schedules, setSchedules] = React.useState<ScheduleItem[]>(SCHEDULE_ITEMS);
@@ -190,7 +181,7 @@ export function DashboardMidRow({ peran }: DashboardMidRowProps) {
     setTimeout(() => {
       setIsGenerating(false);
       setAiResponse(
-        `Analisis AI Selesai: Berdasarkan data 30 hari terakhir, permintaan Beras IR64 diproyeksikan meningkat 24% dalam 10 hari mendatang. Disarankan menambah kuota PO ke PT Sumber Beras Nusantara minimal 150 sak.`
+        `Analisis AI Selesai: Berdasarkan data 30 hari terakhir, permintaan Minyak Goreng Sawit 2L dan Mi Instan diproyeksikan meningkat 24% dalam 10 hari mendatang. Disarankan menambah kuota PO ke pemasok utama minimal 120 karton.`
       );
     }, 800);
   };
@@ -496,16 +487,16 @@ export function DashboardMidRow({ peran }: DashboardMidRowProps) {
             <button
               type="button"
               onClick={() => {
-                setAiPrompt('Analisis restock Beras IR64 25kg');
+                setAiPrompt('Analisis restock Minyak Goreng Sawit 2L');
                 setAiResponse(
-                  'Beras IR64 25kg sisa 12 sak (batas aman 20 sak). Penjualan harian rata-rata 4 sak/hari. Disarankan ajukan PO sebelum lusa.'
+                  'Minyak Goreng Sawit 2L sisa 14 karton (batas aman 25 karton). Penjualan harian rata-rata 5 karton/hari ke toko kelontong mitra. Disarankan ajukan PO ke pemasok utama.'
                 );
               }}
               className="w-full text-left p-2 rounded-lg bg-white border border-slate-200/80 hover:border-indigo-300 hover:bg-indigo-50/50 transition-all text-[11px] text-slate-700 cursor-pointer"
             >
               <div className="flex items-center gap-1.5 font-semibold text-indigo-950">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                Prediksi Re-order Beras IR64
+                Prediksi Re-order Minyak Goreng 2L
               </div>
               <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-1">
                 Stok menipis, sisa 3 hari operasional toko

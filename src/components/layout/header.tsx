@@ -8,7 +8,6 @@ import {
   User,
   Search,
   ChevronDown,
-  Building,
 } from "lucide-react";
 import { logoutAction } from "@/app/login/actions";
 import type { UserProfile } from "@/types/auth";

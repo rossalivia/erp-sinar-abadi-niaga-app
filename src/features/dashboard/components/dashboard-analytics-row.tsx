@@ -3,14 +3,8 @@
 import * as React from 'react';
 import Link from 'next/link';
 import {
-  FileText,
   Download,
-  Calendar,
-  Layers,
-  ArrowRight,
   Printer,
-  FileSpreadsheet,
-  FileCheck,
 } from 'lucide-react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { Button } from '@/components/ui/button';
@@ -27,24 +21,24 @@ interface CommodityActivity {
 
 const COMMODITY_MATRIX: CommodityActivity[] = [
   {
-    category: 'Beras & Sembako',
-    values: [2, 3, 4, 4, 3, 2, 3, 4, 4, 4, 3, 4],
-  },
-  {
     category: 'Minyak Goreng',
     values: [3, 2, 3, 4, 4, 3, 2, 3, 3, 4, 3, 4],
   },
   {
-    category: 'Gula & Bumbu',
-    values: [1, 2, 2, 4, 3, 1, 2, 2, 3, 3, 2, 3],
+    category: 'Gula Pasir',
+    values: [2, 3, 4, 4, 3, 2, 3, 4, 4, 4, 3, 4],
   },
   {
-    category: 'Minuman FMCG',
-    values: [2, 2, 3, 4, 4, 3, 3, 2, 2, 3, 3, 4],
-  },
-  {
-    category: 'Tepung & Lainnya',
+    category: 'Tepung Terigu',
     values: [1, 1, 2, 3, 2, 1, 1, 2, 2, 2, 2, 3],
+  },
+  {
+    category: 'Mi Instan',
+    values: [3, 3, 4, 4, 4, 3, 3, 4, 4, 4, 3, 4],
+  },
+  {
+    category: 'Kopi Sachet',
+    values: [2, 2, 3, 4, 4, 3, 3, 2, 2, 3, 3, 4],
   },
 ];
 
@@ -118,8 +112,7 @@ export interface DashboardAnalyticsRowProps {
   peran: Peran;
 }
 
-export function DashboardAnalyticsRow({ peran }: DashboardAnalyticsRowProps) {
-  const isManajer = peran === 'manajer';
+export function DashboardAnalyticsRow({}: DashboardAnalyticsRowProps) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
@@ -132,7 +125,7 @@ export function DashboardAnalyticsRow({ peran }: DashboardAnalyticsRowProps) {
                 Aktivitas Komoditas Bulanan
               </h3>
               <p className="text-[11px] text-slate-500">
-                Pola intensitas pergerakan barang wholesale sepanjang tahun
+                Pola intensitas pergerakan pasokan komoditas kelontong sepanjang tahun
               </p>
             </div>
             <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 text-slate-600">
@@ -292,7 +285,7 @@ export function DashboardAnalyticsRow({ peran }: DashboardAnalyticsRowProps) {
                   ))}
                 </Pie>
                 <Tooltip
-                  formatter={(val: any) => [`${val}%`, 'Persentase']}
+                  formatter={(val: unknown) => [`${val}%`, 'Persentase']}
                   contentStyle={{
                     backgroundColor: 'rgba(12, 27, 58, 0.95)',
                     borderRadius: '8px',

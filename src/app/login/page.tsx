@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Building2, Lock, Mail, Eye, EyeOff, ArrowRight, AlertCircle, ShieldAlert } from 'lucide-react';
+import { Lock, Mail, Eye, EyeOff, ArrowRight, AlertCircle, ShieldAlert } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -262,10 +262,10 @@ export default function LoginPage() {
 
             <div className="space-y-2">
               <h2 className="text-xl font-bold tracking-tight text-white leading-snug">
-                Perdagangan Grosir Sembako &amp; Kebutuhan Toko Kelontong
+                Distributor Kebutuhan Toko Kelontong
               </h2>
               <p className="text-xs text-[#8ea2c2] leading-relaxed">
-                Platform operasional internal CV Sinar Abadi Niaga untuk pencatatan persediaan barang, otomatisasi pesanan penjualan, penerbitan surat jalan logistik, serta pemantauan limit kredit toko rekanan.
+                Platform operasional internal CV Sinar Abadi Niaga untuk pencatatan persediaan 1 gudang pusat, penerimaan dari 4 pemasok utama, otomatisasi pesanan tempo, dan distribusi ke ~60 toko kelontong di Bekasi dan Jakarta Timur.
               </p>
             </div>
           </div>
@@ -280,11 +280,11 @@ export default function LoginPage() {
             <div className="grid grid-cols-2 gap-3 text-[11px]">
               <div>
                 <span className="text-[#566e94] block">Kategori Usaha</span>
-                <span className="font-medium text-slate-200">Wholesale Trade of Groceries &amp; FMCG</span>
+                <span className="font-medium text-slate-200">Distributor Kebutuhan Toko Kelontong</span>
               </div>
               <div>
                 <span className="text-[#566e94] block">Wilayah Distribusi</span>
-                <span className="font-medium text-slate-200">Jawa Timur &amp; Sekitarnya</span>
+                <span className="font-medium text-slate-200">Bekasi &amp; Jakarta Timur</span>
               </div>
             </div>
 

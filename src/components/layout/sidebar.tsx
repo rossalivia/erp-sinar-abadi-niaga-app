@@ -190,7 +190,7 @@ export function Sidebar({
               "flex items-center gap-2.5 transition-all overflow-hidden",
               isCollapsed && "justify-center w-full"
             )}
-            title="CV Sinar Abadi Niaga — Wholesale Trade of Groceries and FMCG"
+            title="CV Sinar Abadi Niaga — Distributor Kebutuhan Toko Kelontong"
           >
             {isCollapsed ? (
               <Logo size="xs" variant="icon" />

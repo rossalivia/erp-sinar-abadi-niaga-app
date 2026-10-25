@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { redirect } from 'next/navigation';
-import { UserCheck, Mail, Shield, Calendar, Building2, Store, Truck } from 'lucide-react';
+import { UserCheck, Mail, Shield, Calendar } from 'lucide-react';
 import { Logo } from '@/components/ui/logo';
 import { createServerClient } from '@/lib/supabase/server';
 import { getProfil } from '@/lib/profil';
@@ -55,26 +55,26 @@ export default async function ProfilPage() {
             <Logo size="sm" showSubdeskripsi={true} />
             <div className="text-left sm:text-right text-xs">
               <span className="text-slate-400 block text-[10px]">Basis Operasional</span>
-              <span className="font-semibold text-slate-800">Kawasan Pergudangan Niaga, Surabaya</span>
+              <span className="font-semibold text-slate-800">Kawasan Pergudangan Niaga, Bekasi</span>
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
             <div className="p-3 rounded-lg bg-slate-50 border border-slate-100">
               <span className="text-[10px] text-slate-400 block font-mono uppercase">Klasifikasi Usaha</span>
-              <span className="font-semibold text-slate-900 mt-0.5 block">Wholesale Groceries &amp; FMCG</span>
+              <span className="font-semibold text-slate-900 mt-0.5 block">Distributor Kebutuhan Toko Kelontong</span>
             </div>
             <div className="p-3 rounded-lg bg-slate-50 border border-slate-100">
               <span className="text-[10px] text-slate-400 block font-mono uppercase">Layanan Utama</span>
-              <span className="font-semibold text-slate-900 mt-0.5 block">Distribusi Sembako &amp; Toko Kelontong</span>
+              <span className="font-semibold text-slate-900 mt-0.5 block">Distribusi Toko Kelontong &amp; Minimarket (Tempo)</span>
             </div>
             <div className="p-3 rounded-lg bg-slate-50 border border-slate-100">
               <span className="text-[10px] text-slate-400 block font-mono uppercase">Komoditas Inti</span>
-              <span className="font-semibold text-slate-900 mt-0.5 block">Beras, Minyak, Gula, Tepung, FMCG</span>
+              <span className="font-semibold text-slate-900 mt-0.5 block">Minyak Goreng, Gula, Tepung, Mi Instan, Kopi Sachet</span>
             </div>
             <div className="p-3 rounded-lg bg-slate-50 border border-slate-100">
               <span className="text-[10px] text-slate-400 block font-mono uppercase">Jaringan Pelanggan</span>
-              <span className="font-semibold text-slate-900 mt-0.5 block">Toko Kelontong &amp; Ritel Mitra</span>
+              <span className="font-semibold text-slate-900 mt-0.5 block">~60 Toko Kelontong &amp; Minimarket (Bekasi &amp; Jaktim)</span>
             </div>
           </div>
         </CardContent>

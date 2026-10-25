@@ -4,15 +4,10 @@ import * as React from 'react';
 import Link from 'next/link';
 import {
   TrendingUp,
-  TrendingDown,
-  ShoppingBag,
   Package,
-  Layers,
   CheckCircle2,
-  Users,
   Store,
   Truck,
-  ArrowUpRight,
 } from 'lucide-react';
 import { formatRupiah } from '@/lib/format';
 import type { Peran } from '@/types/auth';
@@ -41,8 +36,8 @@ export function DashboardKpiRow({
   pesananProses = 0,
   pesananMenunggu = 0,
   totalBarang = 48,
-  totalPelanggan = 24,
-  totalPemasok = 8,
+  totalPelanggan = 60,
+  totalPemasok = 4,
 }: DashboardKpiRowProps) {
   const isManajer = peran === 'manajer';
 
@@ -61,42 +56,42 @@ export function DashboardKpiRow({
 
         {/* Treemap Segmented Grid */}
         <div className="grid grid-cols-5 grid-rows-2 gap-1.5 h-28 rounded-xl overflow-hidden p-1 bg-slate-50 border border-slate-100">
-          {/* Sembako & Beras: 3 cols, 2 rows (42%) */}
+          {/* Minyak Goreng & Tepung: 3 cols, 2 rows (38%) */}
           <div className="col-span-3 row-span-2 bg-[#0c1b3a] rounded-lg p-2.5 text-white flex flex-col justify-between transition-transform hover:scale-[1.01]">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-medium text-blue-200 truncate">Beras &amp; Sembako</span>
+              <span className="text-[10px] font-medium text-blue-200 truncate">Minyak Goreng &amp; Tepung</span>
               <Package className="w-3 h-3 text-blue-300 shrink-0" />
             </div>
             <div>
-              <span className="text-xl font-black tabular-nums tracking-tight">42%</span>
-              <p className="text-[9px] text-blue-200/80 leading-none mt-0.5">Komoditas Pokok</p>
+              <span className="text-xl font-black tabular-nums tracking-tight">38%</span>
+              <p className="text-[9px] text-blue-200/80 leading-none mt-0.5">Jerigen, Pouch &amp; Sak</p>
             </div>
           </div>
 
-          {/* Minyak Goreng & Margarin: 2 cols, 1 row (28%) */}
+          {/* Mi Instan & Kopi Sachet: 2 cols, 1 row (28%) */}
           <div className="col-span-2 bg-[#2563eb] rounded-lg p-2 text-white flex flex-col justify-between transition-transform hover:scale-[1.01]">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-medium text-blue-100 truncate">Minyak Goreng</span>
+              <span className="text-[10px] font-medium text-blue-100 truncate">Mi Instan &amp; Kopi</span>
               <span className="text-[10px] font-bold">28%</span>
             </div>
-            <p className="text-[8px] text-blue-100/80 leading-none">Kemasan &amp; Jerigen</p>
+            <p className="text-[8px] text-blue-100/80 leading-none">Dus Karton &amp; Renceng</p>
           </div>
 
-          {/* Gula & Bumbu: 1 col, 1 row (17%) */}
+          {/* Gula Pasir: 1 col, 1 row (18%) */}
           <div className="bg-[#059669] rounded-lg p-1.5 text-white flex flex-col justify-between transition-transform hover:scale-[1.01]">
-            <span className="text-[9px] font-medium truncate">Gula/Bumbu</span>
-            <span className="text-[10px] font-bold">17%</span>
+            <span className="text-[9px] font-medium truncate">Gula Pasir</span>
+            <span className="text-[10px] font-bold">18%</span>
           </div>
 
-          {/* Minuman & FMCG: 1 col, 1 row (13%) */}
+          {/* Sembako & FMCG: 1 col, 1 row (16%) */}
           <div className="bg-[#d97706] rounded-lg p-1.5 text-white flex flex-col justify-between transition-transform hover:scale-[1.01]">
-            <span className="text-[9px] font-medium truncate">FMCG Retail</span>
-            <span className="text-[10px] font-bold">13%</span>
+            <span className="text-[9px] font-medium truncate">Sembako</span>
+            <span className="text-[10px] font-bold">16%</span>
           </div>
         </div>
 
         <div className="mt-3 flex items-center justify-between text-[11px] text-slate-500">
-          <span>Total 4 Kluster Utama</span>
+          <span>4 Kluster Komoditas Kelontong</span>
           <Link href="/barang" className="font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-0.5">
             Katalog SKU &rarr;
           </Link>
@@ -290,18 +285,21 @@ export function DashboardKpiRow({
         </div>
 
         {/* Badges Ecosystem Matrix */}
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-50 border border-slate-200/80 text-[11px] font-medium text-slate-700">
-            <Store className="w-3.5 h-3.5 text-blue-600" />
-            <span>{totalPelanggan} Toko</span>
-          </div>
+        <div className="mt-3 flex flex-wrap items-center gap-1.5">
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-50 border border-slate-200/80 text-[11px] font-medium text-slate-700">
             <Truck className="w-3.5 h-3.5 text-indigo-600" />
-            <span>{totalPemasok} Supplier</span>
+            <span>{totalPemasok || 4} Pemasok Utama</span>
           </div>
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-50 border border-slate-200/80 text-[11px] font-medium text-slate-700">
-            <Users className="w-3.5 h-3.5 text-amber-600" />
-            <span>3 Divisi ERP</span>
+            <Store className="w-3.5 h-3.5 text-blue-600" />
+            <span>{totalPelanggan || 60} Toko (Bekasi &amp; Jaktim)</span>
+          </div>
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-50 border border-slate-200/80 text-[11px] font-medium text-slate-700">
+            <Package className="w-3.5 h-3.5 text-amber-600" />
+            <span>1 Gudang Pusat</span>
+          </div>
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-50 border border-emerald-200 text-[10px] font-bold text-emerald-800">
+            <span>Sistem Tempo</span>
           </div>
         </div>
 

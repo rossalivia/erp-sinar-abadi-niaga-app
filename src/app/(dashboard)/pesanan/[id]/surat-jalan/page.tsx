@@ -122,7 +122,7 @@ export default async function SuratJalanPage({ params }: PageProps) {
           <div className="space-y-1">
             <Logo variant="monochrome" size="sm" showSubdeskripsi={true} />
             <p className="text-[11px] text-slate-500 pt-0.5">
-              Jl. Industri Niaga No. 88, Kawasan Pergudangan, Surabaya &bull; Telp: (031) 8990-1234
+              Jl. Industri Niaga No. 88, Kawasan Pergudangan, Bekasi &bull; Telp: (021) 8990-1234
             </p>
           </div>
 

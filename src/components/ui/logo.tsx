@@ -135,11 +135,11 @@ export function Logo({
             CV Sinar Abadi Niaga
           </span>
           <span className={cn('font-medium text-slate-700 tracking-normal', descSizeClass)}>
-            Wholesale Trade of Groceries and FMCG
+            Distributor Kebutuhan Toko Kelontong
           </span>
           {showSubdeskripsi && (
             <span className={cn('text-slate-500', subSizeClass)}>
-              Distribusi Sembako dan Kebutuhan Toko Kelontong
+              Bekasi &amp; Jakarta Timur &bull; 1 Gudang &bull; Tempo
             </span>
           )}
         </div>
@@ -174,7 +174,7 @@ export function Logo({
             inverted ? 'text-slate-300' : 'text-slate-600'
           )}
         >
-          Wholesale Trade of Groceries and FMCG
+          Distributor Kebutuhan Toko Kelontong
         </span>
 
         {showSubdeskripsi && (
@@ -185,7 +185,7 @@ export function Logo({
               inverted ? 'text-slate-400' : 'text-slate-500'
             )}
           >
-            Distribusi Sembako dan Kebutuhan Toko Kelontong
+            Bekasi &amp; Jakarta Timur &bull; 1 Gudang &bull; Tempo
           </span>
         )}
       </div>

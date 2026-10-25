@@ -32,6 +32,7 @@ export function DashboardDateFilter({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  const [prevProps, setPrevProps] = React.useState({ dari, sampai });
   const [inputDari, setInputDari] = React.useState(dari);
   const [inputSampai, setInputSampai] = React.useState(sampai);
   const [showCustomRange, setShowCustomRange] = React.useState(
@@ -39,11 +40,12 @@ export function DashboardDateFilter({
   );
   const [isPending, startTransition] = React.useTransition();
 
-  // Sinkronkan input lokal jika props berubah
-  React.useEffect(() => {
+  // Sinkronkan input lokal jika props berubah tanpa cascading render
+  if (prevProps.dari !== dari || prevProps.sampai !== sampai) {
+    setPrevProps({ dari, sampai });
     setInputDari(dari);
     setInputSampai(sampai);
-  }, [dari, sampai]);
+  }
 
   const handleApplyPreset = (selectedPreset: string) => {
     const params = new URLSearchParams(searchParams.toString());

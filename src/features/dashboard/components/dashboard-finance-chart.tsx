@@ -13,7 +13,7 @@ import {
   Tooltip,
   Legend,
 } from 'recharts';
-import { TrendingUp, BarChart2, LineChart as LineIcon, DollarSign, PieChart } from 'lucide-react';
+import { TrendingUp, BarChart2, LineChart as LineIcon, PieChart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatRupiah } from '@/lib/format';
 import type { LaporanMarginMingguanItem, LaporanRingkasan } from '@/features/laporan/types';
