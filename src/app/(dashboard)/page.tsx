@@ -15,11 +15,13 @@ import {
   ReceiptText,
   ArrowRight,
 } from "lucide-react";
-import type { LaporanRingkasan, LaporanAgingPiutang } from "@/features/laporan/types";
+import type { LaporanRingkasan, LaporanAgingPiutang, LaporanMarginMingguanItem } from "@/features/laporan/types";
 import {
   TugasHariIniSkeleton,
   TugasHariIniSection,
 } from "@/features/pusat-tugas/components/tugas-hari-ini-section";
+import { DashboardDateFilter } from "@/features/dashboard/components/dashboard-date-filter";
+import { DashboardFinanceChart } from "@/features/dashboard/components/dashboard-finance-chart";
 
 interface BarangMenipis {
   id: string;
@@ -31,11 +33,95 @@ interface BarangMenipis {
   stok_menipis: boolean;
 }
 
-export default async function DashboardPage() {
+interface DashboardPageProps {
+  searchParams: Promise<{
+    preset?: string;
+    dari?: string;
+    sampai?: string;
+  }>;
+}
+
+export default async function DashboardPage({ searchParams }: DashboardPageProps) {
   const user = await getProfil();
   const supabase = await createServerClient();
+  const params = await searchParams;
 
   const isManajer = user?.peran === "manajer";
+
+  // Hitung tanggal zona Asia/Jakarta
+  const now = new Date();
+  const todayStr = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jakarta",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(now);
+
+  // Default preset jika tidak ada query param adalah 'minggu_ini'
+  const preset = params.preset || (params.dari ? "custom" : "minggu_ini");
+
+  let dari = params.dari || "";
+  let sampai = params.sampai || todayStr;
+
+  if (preset === "hari_ini") {
+    dari = todayStr;
+    sampai = todayStr;
+  } else if (preset === "7h") {
+    const d = new Date(now);
+    d.setDate(d.getDate() - 6);
+    dari = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Jakarta",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(d);
+    sampai = todayStr;
+  } else if (preset === "minggu_ini") {
+    const day = now.getDay();
+    const diffToMonday = (day === 0 ? -6 : 1) - day;
+    const monday = new Date(now);
+    monday.setDate(now.getDate() + diffToMonday);
+    dari = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Jakarta",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(monday);
+    sampai = todayStr;
+  } else if (preset === "bulan_ini") {
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    dari = `${year}-${month}-01`;
+    sampai = todayStr;
+  } else if (preset === "30h") {
+    const d = new Date(now);
+    d.setDate(d.getDate() - 29);
+    dari = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Jakarta",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(d);
+    sampai = todayStr;
+  } else if (!dari) {
+    dari = todayStr;
+  }
+
+  // Label dinamis periode aktif
+  let periodeJudul = "Minggu Berjalan";
+  if (preset === "hari_ini") {
+    periodeJudul = `Hari Ini (${formatTanggal(todayStr)})`;
+  } else if (preset === "7h") {
+    periodeJudul = `7 Hari Terakhir (${formatTanggal(dari)} s.d. ${formatTanggal(sampai)})`;
+  } else if (preset === "minggu_ini") {
+    periodeJudul = `Minggu Berjalan (${formatTanggal(dari)} s.d. ${formatTanggal(sampai)})`;
+  } else if (preset === "bulan_ini") {
+    periodeJudul = `Bulan Ini (${formatTanggal(dari)} s.d. ${formatTanggal(sampai)})`;
+  } else if (preset === "30h") {
+    periodeJudul = `30 Hari Terakhir (${formatTanggal(dari)} s.d. ${formatTanggal(sampai)})`;
+  } else {
+    periodeJudul = `Periode Terpilih (${formatTanggal(dari)} s.d. ${formatTanggal(sampai)})`;
+  }
 
   // Ambil data stok menipis (untuk semua peran)
   const { data: barangMenipisData, error: stokError } = await supabase
@@ -54,31 +140,25 @@ export default async function DashboardPage() {
     stok_menipis: item.stok_menipis ?? true,
   }));
 
-  // Jika Manajer, ambil KPI ringkas minggu berjalan & piutang tempo
-  let kpiMinggu: LaporanRingkasan | null = null;
+  // Jika Manajer, ambil data finansial, grafik margin mingguan, dan aging piutang sesuai rentang tanggal
+  let kpiFinansial: LaporanRingkasan | null = null;
+  let marginData: LaporanMarginMingguanItem[] = [];
   let agingPiutang: LaporanAgingPiutang | null = null;
   let jumlahPersetujuanMenunggu = 0;
 
   if (isManajer) {
-    const now = new Date();
-    // Hitung awal minggu ini (Senin)
-    const day = now.getDay();
-    const diffToMonday = (day === 0 ? -6 : 1) - day;
-    const monday = new Date(now);
-    monday.setDate(now.getDate() + diffToMonday);
-    const mondayStr = monday.toISOString().split("T")[0];
-    const todayStr = now.toISOString().split("T")[0];
-
-    const [ringkasanRes, agingRes, persetujuanRes] = await Promise.all([
-      supabase.rpc("rpc_laporan_ringkasan", { p_dari: mondayStr, p_sampai: todayStr }),
+    const [ringkasanRes, marginRes, agingRes, persetujuanRes] = await Promise.all([
+      supabase.rpc("rpc_laporan_ringkasan", { p_dari: dari, p_sampai: sampai }),
+      supabase.rpc("rpc_laporan_margin_mingguan", { p_dari: dari, p_sampai: sampai }),
       supabase.rpc("rpc_laporan_aging_piutang"),
       supabase.from("v_persetujuan_harga").select("id", { count: "exact", head: true }).eq("status", "menunggu"),
     ]);
     jumlahPersetujuanMenunggu = persetujuanRes.count ?? 0;
+    marginData = (marginRes.data || []) as LaporanMarginMingguanItem[];
 
     const ringkasanRaw = Array.isArray(ringkasanRes.data) ? ringkasanRes.data[0] : ringkasanRes.data;
     if (ringkasanRaw) {
-      kpiMinggu = {
+      kpiFinansial = {
         total_omzet: Number(ringkasanRaw.total_omzet) || 0,
         total_hpp: Number(ringkasanRaw.total_hpp) || 0,
         total_margin: Number(ringkasanRaw.total_margin) || 0,
@@ -273,14 +353,22 @@ export default async function DashboardPage() {
         <TugasHariIniSection />
       </Suspense>
 
-      {/* 4. Panel Khusus Manajer: Bento Grid Keuangan */}
+      {/* 4. Panel Khusus Manajer: Filter Tanggal, Bento Grid Finansial, dan Grafik */}
       {isManajer && (
-        <section className="space-y-3" aria-label="Keuangan Manajer">
+        <section className="space-y-4" aria-label="Keuangan Manajer">
+          {/* Komponen Filter Jangka Waktu Tanggal Dashboard */}
+          <DashboardDateFilter
+            dari={dari}
+            sampai={sampai}
+            preset={preset}
+            periodeLabel={periodeJudul}
+          />
+
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="h-5 w-1 bg-indigo-600 rounded-full" />
               <h2 className="text-xs font-bold text-slate-800 uppercase tracking-wider font-mono">
-                Ringkasan Finansial Minggu Berjalan
+                Ringkasan Finansial — {periodeJudul}
               </h2>
             </div>
             <Link
@@ -302,11 +390,11 @@ export default async function DashboardPage() {
                       <DollarSign className="w-4 h-4" />
                     </div>
                     <span className="text-xs font-semibold text-slate-600">
-                      Omzet & Margin Kotor Minggu Ini
+                      Omzet &amp; Margin Kotor
                     </span>
                   </div>
                   <span className="text-[11px] font-mono text-slate-400">
-                    Senin s.d. Hari Ini
+                    {formatTanggal(dari)} s.d. {formatTanggal(sampai)}
                   </span>
                 </div>
 
@@ -314,17 +402,17 @@ export default async function DashboardPage() {
                   <div>
                     <span className="text-xs text-slate-500 font-medium">Total Omzet</span>
                     <div className="text-2xl font-extrabold text-slate-900 tabular-nums">
-                      {formatRupiah(kpiMinggu?.total_omzet || 0)}
+                      {formatRupiah(kpiFinansial?.total_omzet || 0)}
                     </div>
                   </div>
 
                   <div className="sm:border-l sm:border-slate-200 sm:pl-6">
                     <span className="text-xs text-emerald-700 font-semibold flex items-center gap-1">
                       <TrendingUp className="w-3.5 h-3.5" />
-                      Margin Kotor ({kpiMinggu?.margin_persen || 0}%)
+                      Margin Kotor ({kpiFinansial?.margin_persen || 0}%)
                     </span>
                     <div className="text-2xl font-extrabold text-emerald-700 tabular-nums">
-                      {formatRupiah(kpiMinggu?.total_margin || 0)}
+                      {formatRupiah(kpiFinansial?.total_margin || 0)}
                     </div>
                   </div>
                 </div>
@@ -332,16 +420,16 @@ export default async function DashboardPage() {
                 {/* Progress Bar Visual Margin */}
                 <div className="mt-4">
                   <div className="flex justify-between text-[11px] text-slate-500 mb-1">
-                    <span>{kpiMinggu?.jumlah_pesanan || 0} pesanan selesai</span>
+                    <span>{kpiFinansial?.jumlah_pesanan || 0} pesanan selesai</span>
                     <span className="font-semibold text-slate-700">
-                      Rasio Margin: {kpiMinggu?.margin_persen || 0}%
+                      Rasio Margin: {kpiFinansial?.margin_persen || 0}%
                     </span>
                   </div>
                   <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-emerald-600 rounded-full transition-all duration-500"
                       style={{
-                        width: `${Math.min(Math.max(kpiMinggu?.margin_persen || 0, 0), 100)}%`,
+                        width: `${Math.min(Math.max(kpiFinansial?.margin_persen || 0, 0), 100)}%`,
                       }}
                     />
                   </div>
@@ -408,6 +496,13 @@ export default async function DashboardPage() {
               </Link>
             </div>
           </div>
+
+          {/* 4b. Grafik Visual Tren Omzet & Margin Finansial Dashboard */}
+          <DashboardFinanceChart
+            data={marginData}
+            ringkasan={kpiFinansial}
+            periodeLabel={periodeJudul}
+          />
         </section>
       )}
 
