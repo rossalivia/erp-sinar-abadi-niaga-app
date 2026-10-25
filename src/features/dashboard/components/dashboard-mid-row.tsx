@@ -24,20 +24,22 @@ interface ModuleCard {
   formats: ('PDF' | 'XLSX' | 'DOC')[];
   lastRun: string;
   href: string;
+  roles: Peran[];
   isFavorite?: boolean;
 }
 
 const INITIAL_MODULES: ModuleCard[] = [
   {
     id: 'm1',
-    title: 'Faktur & Omzet Penjualan',
+    title: 'Pesanan Jual & Faktur',
     category: 'penjualan',
-    description: 'Rekapitulasi penjualan per sales, faktur tertagih, dan tren komoditas.',
+    description: 'Penerbitan faktur penjualan toko kelontong, draf transaksi, dan riwayat pesanan.',
     iconBg: 'bg-[#0c1b3a]',
     iconColor: 'text-white',
     formats: ['PDF', 'XLSX'],
     lastRun: '15 mnt lalu',
     href: '/pesanan',
+    roles: ['penjualan', 'manajer'],
     isFavorite: true,
   },
   {
@@ -50,6 +52,7 @@ const INITIAL_MODULES: ModuleCard[] = [
     formats: ['PDF', 'XLSX'],
     lastRun: '40 mnt lalu',
     href: '/stok',
+    roles: ['gudang', 'manajer'],
     isFavorite: true,
   },
   {
@@ -62,6 +65,7 @@ const INITIAL_MODULES: ModuleCard[] = [
     formats: ['PDF', 'XLSX'],
     lastRun: '1 jam lalu',
     href: '/kredit',
+    roles: ['manajer'],
     isFavorite: false,
   },
   {
@@ -74,18 +78,20 @@ const INITIAL_MODULES: ModuleCard[] = [
     formats: ['PDF'],
     lastRun: '2 jam lalu',
     href: '/gudang/picking',
+    roles: ['gudang', 'manajer'],
     isFavorite: false,
   },
   {
     id: 'm5',
     title: 'Pengadaan & PO Pemasok',
-    category: 'penjualan',
+    category: 'gudang',
     description: 'Purchase Order resmi bahan pokok grosir dan verifikasi penerimaan.',
     iconBg: 'bg-[#7c3aed]',
     iconColor: 'text-white',
     formats: ['PDF', 'XLSX'],
     lastRun: '1 hari lalu',
     href: '/pembelian',
+    roles: ['gudang', 'manajer'],
     isFavorite: true,
   },
   {
@@ -98,6 +104,46 @@ const INITIAL_MODULES: ModuleCard[] = [
     formats: ['PDF', 'XLSX'],
     lastRun: '3 hari lalu',
     href: '/stok/opname',
+    roles: ['gudang', 'manajer'],
+    isFavorite: false,
+  },
+  {
+    id: 'm7',
+    title: 'Database Toko & Pelanggan',
+    category: 'penjualan',
+    description: 'Buku mitra toko kelontong, kontak pemilik, dan riwayat transaksi.',
+    iconBg: 'bg-[#0d9488]',
+    iconColor: 'text-white',
+    formats: ['PDF', 'XLSX'],
+    lastRun: '2 jam lalu',
+    href: '/pelanggan',
+    roles: ['penjualan', 'manajer'],
+    isFavorite: true,
+  },
+  {
+    id: 'm8',
+    title: 'Monitoring Penagihan Piutang',
+    category: 'penjualan',
+    description: 'Rekapitulasi jadwal jatuh tempo faktur toko untuk kelancaran pemesanan.',
+    iconBg: 'bg-[#ea580c]',
+    iconColor: 'text-white',
+    formats: ['PDF'],
+    lastRun: '30 mnt lalu',
+    href: '/penagihan',
+    roles: ['penjualan', 'manajer'],
+    isFavorite: false,
+  },
+  {
+    id: 'm9',
+    title: 'Katalog SKU & Komoditas',
+    category: 'gudang',
+    description: 'Daftar kode barang, satuan, sisa stok gudang, dan stok minimum.',
+    iconBg: 'bg-[#334155]',
+    iconColor: 'text-white',
+    formats: ['PDF', 'XLSX'],
+    lastRun: '10 mnt lalu',
+    href: '/barang',
+    roles: ['penjualan', 'gudang', 'manajer'],
     isFavorite: false,
   },
 ];
@@ -109,6 +155,7 @@ interface ScheduleItem {
   pic: string;
   formats: ('PDF' | 'XLSX' | 'PPT')[];
   enabled: boolean;
+  roles: Peran[];
 }
 
 const SCHEDULE_ITEMS: ScheduleItem[] = [
@@ -119,30 +166,43 @@ const SCHEDULE_ITEMS: ScheduleItem[] = [
     pic: 'AM',
     formats: ['PDF'],
     enabled: true,
+    roles: ['gudang', 'manajer'],
   },
   {
     id: 's2',
-    title: 'Pemberitahuan Tempo Jatuh Piutang',
+    title: 'Pemberitahuan Tempo Jatuh Piutang Toko',
     schedule: 'Setiap Senin 09:00 WIB',
-    pic: 'AM',
+    pic: 'SL',
     formats: ['PDF', 'XLSX'],
     enabled: true,
+    roles: ['penjualan', 'manajer'],
   },
   {
     id: 's3',
     title: 'Evaluasi Penjualan & Margin Mingguan',
     schedule: 'Jumat 16:30 WIB',
-    pic: 'JS',
+    pic: 'MN',
     formats: ['PDF'],
     enabled: true,
+    roles: ['manajer'],
   },
   {
     id: 's4',
     title: 'Rekapitulasi Kas & Mutasi Stok Harian',
     schedule: 'Setiap Hari 17:00 WIB',
-    pic: 'AM',
+    pic: 'GD',
     formats: ['XLSX'],
     enabled: false,
+    roles: ['gudang', 'manajer'],
+  },
+  {
+    id: 's5',
+    title: 'Follow-up Toko Menjelang Jatuh Tempo',
+    schedule: 'Setiap Hari 10:00 WIB',
+    pic: 'SL',
+    formats: ['PDF'],
+    enabled: true,
+    roles: ['penjualan', 'manajer'],
   },
 ];
 
@@ -150,14 +210,17 @@ export interface DashboardMidRowProps {
   peran: Peran;
 }
 
-export function DashboardMidRow({}: DashboardMidRowProps) {
-  const [activeTab, setActiveTab] = React.useState<'semua' | 'favorit' | 'penjualan' | 'gudang' | 'keuangan'>('semua');
+export function DashboardMidRow({ peran = 'penjualan' }: DashboardMidRowProps) {
+  const [activeTab, setActiveTab] = React.useState<string>('semua');
   const [searchQuery, setSearchQuery] = React.useState('');
-  const [schedules, setSchedules] = React.useState<ScheduleItem[]>(SCHEDULE_ITEMS);
+  const [schedules, setSchedules] = React.useState<ScheduleItem[]>(() =>
+    SCHEDULE_ITEMS.filter((s) => s.roles.includes(peran))
+  );
   const [favorites, setFavorites] = React.useState<Record<string, boolean>>({
     m1: true,
     m2: true,
     m5: true,
+    m7: true,
   });
 
   // AI Prompt Interactive State
@@ -180,14 +243,54 @@ export function DashboardMidRow({}: DashboardMidRowProps) {
     setIsGenerating(true);
     setTimeout(() => {
       setIsGenerating(false);
-      setAiResponse(
-        `Analisis AI Selesai: Berdasarkan data 30 hari terakhir, permintaan Minyak Goreng Sawit 2L dan Mi Instan diproyeksikan meningkat 24% dalam 10 hari mendatang. Disarankan menambah kuota PO ke pemasok utama minimal 120 karton.`
-      );
-    }, 800);
+      if (peran === 'gudang') {
+        setAiResponse(
+          `Analisis Logistik: Stok Minyak Goreng Sawit 2L sisa 14 karton dan Beras Ramos 25kg sisa 18 sak. Direkomendasikan segera memproses penerimaan PO dari PT Sinar Mas dan menjadwalkan muatan rute Rawalumbu besok pagi.`
+        );
+      } else if (peran === 'penjualan') {
+        setAiResponse(
+          `Analisis Penjualan: Toko Berkah Jaya dan Toko Rezeki Baru memiliki transaksi pesanan aktif. Tagihan berjalan Toko Berkah masih dalam batas aman (65% plafon). Anda dapat menawarkan promo Minyak Goreng 2L.`
+        );
+      } else {
+        setAiResponse(
+          `Analisis Finansial: Margin kotor minggu ini berada di 13.8% (target 12.5%). Rasio piutang tertagih tepat waktu mencapai 85%. Disarankan menyetujui pengajuan diskon volume untuk Toko Subur Makmur.`
+        );
+      }
+    }, 700);
   };
 
-  // Filter modules
-  const filteredModules = INITIAL_MODULES.filter((mod) => {
+  // Saring modul sesuai peran pengguna
+  const roleModules = React.useMemo(() => {
+    return INITIAL_MODULES.filter((m) => m.roles.includes(peran));
+  }, [peran]);
+
+  // Tab filter sesuai hak akses peran
+  const availableTabs = React.useMemo(() => {
+    if (peran === 'penjualan') {
+      return [
+        { id: 'semua', label: 'Semua Modul' },
+        { id: 'favorit', label: '★ Favorit' },
+        { id: 'penjualan', label: 'Penjualan' },
+      ];
+    }
+    if (peran === 'gudang') {
+      return [
+        { id: 'semua', label: 'Semua Modul' },
+        { id: 'favorit', label: '★ Favorit' },
+        { id: 'gudang', label: 'Pergudangan' },
+      ];
+    }
+    return [
+      { id: 'semua', label: 'Semua Modul' },
+      { id: 'favorit', label: '★ Favorit' },
+      { id: 'penjualan', label: 'Penjualan' },
+      { id: 'gudang', label: 'Gudang' },
+      { id: 'keuangan', label: 'Keuangan' },
+    ];
+  }, [peran]);
+
+  // Filter modules berdasarkan tab & search
+  const filteredModules = roleModules.filter((mod) => {
     const isFav = favorites[mod.id];
     if (activeTab === 'favorit' && !isFav) return false;
     if (activeTab === 'penjualan' && mod.category !== 'penjualan') return false;
@@ -210,10 +313,18 @@ export function DashboardMidRow({}: DashboardMidRowProps) {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <div>
               <h2 className="text-sm font-bold text-[#0c1a30]">
-                Pusat Dokumen &amp; Modul Operasional
+                {peran === 'gudang'
+                  ? 'Pusat Dokumen & Logistik Pergudangan'
+                  : peran === 'penjualan'
+                  ? 'Pusat Dokumen & Transaksi Penjualan'
+                  : 'Pusat Dokumen & Modul ERP'}
               </h2>
               <p className="text-xs text-slate-500">
-                Pintasan instan penerbitan faktur, surat jalan, dan kartu stok
+                {peran === 'gudang'
+                  ? 'Pintasan instan surat jalan, kartu stok, dan PO masuk'
+                  : peran === 'penjualan'
+                  ? 'Pintasan instan faktur penjualan, data toko, dan tagihan'
+                  : 'Pintasan instan faktur, surat jalan, modul keuangan, dan audit'}
               </p>
             </div>
 
@@ -233,15 +344,7 @@ export function DashboardMidRow({}: DashboardMidRowProps) {
 
           {/* Filter Tabs */}
           <div className="flex items-center gap-1 border-b border-slate-100 pb-2 mb-4 overflow-x-auto scrollbar-none text-xs">
-            {(
-              [
-                { id: 'semua', label: 'Semua Modul' },
-                { id: 'favorit', label: '★ Favorit' },
-                { id: 'penjualan', label: 'Penjualan' },
-                { id: 'gudang', label: 'Gudang' },
-                { id: 'keuangan', label: 'Keuangan' },
-              ] as const
-            ).map((tab) => (
+            {availableTabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
@@ -340,10 +443,22 @@ export function DashboardMidRow({}: DashboardMidRowProps) {
         </div>
 
         <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-          <span className="text-slate-500 text-[11px]">Menampilkan {filteredModules.length} modul</span>
-          <Link href="/laporan" className="font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1">
-            Lihat semua laporan terpusat &rarr;
-          </Link>
+          <span className="text-slate-500 text-[11px]">
+            Menampilkan {filteredModules.length} modul berhak akses
+          </span>
+          {peran === 'manajer' ? (
+            <Link href="/laporan" className="font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1">
+              Lihat semua laporan &rarr;
+            </Link>
+          ) : peran === 'gudang' ? (
+            <Link href="/stok" className="font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1">
+              Buku Kartu Stok Gudang &rarr;
+            </Link>
+          ) : (
+            <Link href="/pesanan" className="font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1">
+              Semua Pesanan Penjualan &rarr;
+            </Link>
+          )}
         </div>
       </div>
 
@@ -353,7 +468,11 @@ export function DashboardMidRow({}: DashboardMidRowProps) {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-xs font-bold text-[#0c1a30] uppercase tracking-wider font-mono">
-                Jadwal &amp; Antrean
+                {peran === 'gudang'
+                  ? 'Jadwal Muatan & Armada'
+                  : peran === 'penjualan'
+                  ? 'Jadwal Penagihan & Order'
+                  : 'Jadwal & Antrean'}
               </h3>
               <p className="text-[11px] text-slate-500">Operasional terprogram</p>
             </div>
@@ -420,9 +539,19 @@ export function DashboardMidRow({}: DashboardMidRowProps) {
         </div>
 
         <div className="mt-4 pt-3 border-t border-slate-100 text-center">
-          <Link href="/penagihan" className="text-xs font-semibold text-blue-600 hover:text-blue-800">
-            Buka Kalender Pengiriman &rarr;
-          </Link>
+          {peran === 'gudang' ? (
+            <Link href="/gudang/picking" className="text-xs font-semibold text-blue-600 hover:text-blue-800">
+              Buka Jadwal Muatan Truk &rarr;
+            </Link>
+          ) : peran === 'penjualan' ? (
+            <Link href="/penagihan" className="text-xs font-semibold text-blue-600 hover:text-blue-800">
+              Buka Jadwal Penagihan &rarr;
+            </Link>
+          ) : (
+            <Link href="/laporan" className="text-xs font-semibold text-blue-600 hover:text-blue-800">
+              Semua Jadwal &amp; Laporan &rarr;
+            </Link>
+          )}
         </div>
       </div>
 
@@ -444,7 +573,11 @@ export function DashboardMidRow({}: DashboardMidRowProps) {
           </div>
 
           <p className="text-xs text-slate-600 mb-3 leading-relaxed">
-            Asisten analitik cerdas untuk estimasi kebutuhan stok sembako dan mitigasi risiko piutang.
+            {peran === 'gudang'
+              ? 'Asisten analitik cerdas untuk estimasi kebutuhan restock komoditas dan jadwal bongkar muat.'
+              : peran === 'penjualan'
+              ? 'Asisten analitik cerdas untuk estimasi permintaan toko kelontong dan prioritas penagihan.'
+              : 'Asisten analitik cerdas untuk estimasi kebutuhan stok sembako dan mitigasi risiko piutang.'}
           </p>
 
           {/* Interactive Simulation Input */}
@@ -452,7 +585,13 @@ export function DashboardMidRow({}: DashboardMidRowProps) {
             <div className="relative">
               <input
                 type="text"
-                placeholder="misal: Cek stok aman minyak goreng..."
+                placeholder={
+                  peran === 'gudang'
+                    ? 'misal: Cek sisa stok fisik beras...'
+                    : peran === 'penjualan'
+                    ? 'misal: Cek batas kredit toko...'
+                    : 'misal: Cek stok aman minyak goreng...'
+                }
                 value={aiPrompt}
                 onChange={(e) => setAiPrompt(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleGenerateAi()}
@@ -484,50 +623,141 @@ export function DashboardMidRow({}: DashboardMidRowProps) {
               Rekomendasi Terkini
             </span>
 
-            <button
-              type="button"
-              onClick={() => {
-                setAiPrompt('Analisis restock Minyak Goreng Sawit 2L');
-                setAiResponse(
-                  'Minyak Goreng Sawit 2L sisa 14 karton (batas aman 25 karton). Penjualan harian rata-rata 5 karton/hari ke toko kelontong mitra. Disarankan ajukan PO ke pemasok utama.'
-                );
-              }}
-              className="w-full text-left p-2 rounded-lg bg-white border border-slate-200/80 hover:border-indigo-300 hover:bg-indigo-50/50 transition-all text-[11px] text-slate-700 cursor-pointer"
-            >
-              <div className="flex items-center gap-1.5 font-semibold text-indigo-950">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                Prediksi Re-order Minyak Goreng 2L
-              </div>
-              <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-1">
-                Stok menipis, sisa 3 hari operasional toko
-              </p>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setAiPrompt('Plafon kredit Toko Berkah');
-                setAiResponse(
-                  'Toko Berkah Jaya memiliki piutang Rp 8.500.000 dari plafon Rp 10.000.000 (85% terpakai). Rekomendasikan pembayaran sebelum pesanan baru.'
-                );
-              }}
-              className="w-full text-left p-2 rounded-lg bg-white border border-slate-200/80 hover:border-indigo-300 hover:bg-indigo-50/50 transition-all text-[11px] text-slate-700 cursor-pointer"
-            >
-              <div className="flex items-center gap-1.5 font-semibold text-indigo-950">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                Peringatan Plafon Kredit Toko
-              </div>
-              <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-1">
-                2 toko mendekati ambang batas 80% kredit
-              </p>
-            </button>
+            {peran === 'gudang' ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAiPrompt('Analisis restock Minyak Goreng Sawit 2L');
+                    setAiResponse(
+                      'Minyak Goreng Sawit 2L sisa 14 karton (batas minimum 25 karton). Rekomendasikan segera buat pengajuan PO ke pemasok resmi.'
+                    );
+                  }}
+                  className="w-full text-left p-2 rounded-lg bg-white border border-slate-200/80 hover:border-indigo-300 hover:bg-indigo-50/50 transition-all text-[11px] text-slate-700 cursor-pointer"
+                >
+                  <div className="flex items-center gap-1.5 font-semibold text-indigo-950">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                    Peringatan Restock Minyak Goreng
+                  </div>
+                  <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-1">
+                    Stok kritis, sisa di bawah stok minimum
+                  </p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAiPrompt('Jadwal Stock Opname');
+                    setAiResponse(
+                      'Sesi stock opname kuartal ini mencakup 48 SKU aktif. Disarankan verifikasi fisik tepung terigu dan beras sebelum akhir pekan.'
+                    );
+                  }}
+                  className="w-full text-left p-2 rounded-lg bg-white border border-slate-200/80 hover:border-indigo-300 hover:bg-indigo-50/50 transition-all text-[11px] text-slate-700 cursor-pointer"
+                >
+                  <div className="flex items-center gap-1.5 font-semibold text-indigo-950">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                    Audit Fisik Rutin Gudang
+                  </div>
+                  <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-1">
+                    Sinkronisasi fisik vs kartu mutasi stok
+                  </p>
+                </button>
+              </>
+            ) : peran === 'penjualan' ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAiPrompt('Plafon kredit Toko Berkah Jaya');
+                    setAiResponse(
+                      'Toko Berkah Jaya memiliki sisa batas kredit Rp 3.500.000. Masih memenuhi syarat pesanan draf berikutnya dengan termin 14 hari.'
+                    );
+                  }}
+                  className="w-full text-left p-2 rounded-lg bg-white border border-slate-200/80 hover:border-indigo-300 hover:bg-indigo-50/50 transition-all text-[11px] text-slate-700 cursor-pointer"
+                >
+                  <div className="flex items-center gap-1.5 font-semibold text-indigo-950">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    Kelayakan Kredit Toko Berkah
+                  </div>
+                  <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-1">
+                    Batas kredit aman untuk order baru
+                  </p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAiPrompt('Prioritas follow-up jatuh tempo');
+                    setAiResponse(
+                      'Terdapat faktur Toko Subur Makmur mendekati batas jatuh tempo. Lakukan konfirmasi penerimaan barang dan jadwal pelunasan.'
+                    );
+                  }}
+                  className="w-full text-left p-2 rounded-lg bg-white border border-slate-200/80 hover:border-indigo-300 hover:bg-indigo-50/50 transition-all text-[11px] text-slate-700 cursor-pointer"
+                >
+                  <div className="flex items-center gap-1.5 font-semibold text-indigo-950">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                    Follow-up Tagihan Toko
+                  </div>
+                  <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-1">
+                    Mencegah tagihan lewat jatuh tempo
+                  </p>
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAiPrompt('Analisis restock Minyak Goreng Sawit 2L');
+                    setAiResponse(
+                      'Minyak Goreng Sawit 2L sisa 14 karton (batas aman 25 karton). Penjualan harian rata-rata 5 karton/hari ke toko kelontong mitra. Disarankan ajukan PO ke pemasok utama.'
+                    );
+                  }}
+                  className="w-full text-left p-2 rounded-lg bg-white border border-slate-200/80 hover:border-indigo-300 hover:bg-indigo-50/50 transition-all text-[11px] text-slate-700 cursor-pointer"
+                >
+                  <div className="flex items-center gap-1.5 font-semibold text-indigo-950">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                    Prediksi Re-order Minyak Goreng 2L
+                  </div>
+                  <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-1">
+                    Stok menipis, sisa 3 hari operasional toko
+                  </p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAiPrompt('Plafon kredit Toko Berkah');
+                    setAiResponse(
+                      'Toko Berkah Jaya memiliki piutang Rp 8.500.000 dari plafon Rp 10.000.000 (85% terpakai). Rekomendasikan pembayaran sebelum pesanan baru.'
+                    );
+                  }}
+                  className="w-full text-left p-2 rounded-lg bg-white border border-slate-200/80 hover:border-indigo-300 hover:bg-indigo-50/50 transition-all text-[11px] text-slate-700 cursor-pointer"
+                >
+                  <div className="flex items-center gap-1.5 font-semibold text-indigo-950">
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                    Peringatan Plafon Kredit Toko
+                  </div>
+                  <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-1">
+                    2 toko mendekati ambang batas 80% kredit
+                  </p>
+                </button>
+              </>
+            )}
           </div>
         </div>
 
         <div className="mt-3 pt-2 text-center">
-          <Link href="/analitik" className="text-xs font-semibold text-indigo-600 hover:text-indigo-800">
-            Jelajahi Analitik Komprehensif &rarr;
-          </Link>
+          {peran === 'manajer' ? (
+            <Link href="/analitik" className="text-xs font-semibold text-indigo-600 hover:text-indigo-800">
+              Jelajahi Analitik Komprehensif &rarr;
+            </Link>
+          ) : peran === 'gudang' ? (
+            <Link href="/barang" className="text-xs font-semibold text-indigo-600 hover:text-indigo-800">
+              Katalog SKU &amp; Stok Gudang &rarr;
+            </Link>
+          ) : (
+            <Link href="/pesanan" className="text-xs font-semibold text-indigo-600 hover:text-indigo-800">
+              Kelola Pesanan Penjualan &rarr;
+            </Link>
+          )}
         </div>
       </div>
     </div>

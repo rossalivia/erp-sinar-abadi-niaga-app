@@ -14,12 +14,22 @@ import {
 import { Button } from '@/components/ui/button';
 import { formatTanggal } from '@/lib/format';
 import type { UserProfile } from '@/types/auth';
+import {
+  ClipboardList,
+  FileSpreadsheet,
+  Users,
+  ReceiptText,
+} from 'lucide-react';
 
-interface DashboardHeroBannerProps {
+export interface DashboardHeroBannerProps {
   user: UserProfile | null;
   totalPesanan?: number;
   totalPelanggan?: number;
   stokMenipisCount?: number;
+  pesananSiapKirimCount?: number;
+  poMenungguPenerimaanCount?: number;
+  drafPesananCount?: number;
+  pengajuanHargaMenungguCount?: number;
 }
 
 function getGreetingWIB(): string {
@@ -61,6 +71,10 @@ export function DashboardHeroBanner({
   totalPesanan = 156,
   totalPelanggan = 60,
   stokMenipisCount = 0,
+  pesananSiapKirimCount = 0,
+  poMenungguPenerimaanCount = 0,
+  drafPesananCount = 0,
+  pengajuanHargaMenungguCount = 0,
 }: DashboardHeroBannerProps) {
   // Hitung sapaan dan tanggal secara sinkron
   const [sapaan] = React.useState(getGreetingWIB);
@@ -76,6 +90,24 @@ export function DashboardHeroBanner({
       : peran === 'gudang'
       ? 'Staf Gudang & Logistik'
       : 'Staf Penjualan';
+
+  const deskripsiKonteks =
+    peran === 'manajer'
+      ? 'Berikut pantauan komprehensif profitabilitas margin, arus piutang toko kelontong, dan operasional rantai pasok CV Sinar Abadi Niaga hari ini.'
+      : peran === 'gudang'
+      ? 'Berikut pantauan fisik stok gudang pusat, antrean pesanan siap kirim armada, dan jadwal penerimaan pasokan bahan pokok hari ini.'
+      : 'Berikut pantauan aktivitas penjualan, penagihan jatuh tempo toko mitra, dan pengelolaan pesanan sembako Anda hari ini.';
+
+  const aiSummaryText =
+    peran === 'gudang'
+      ? `${pesananSiapKirimCount} pesanan siap kirim muatan truk. ${poMenungguPenerimaanCount} PO pemasok menunggu terima, dan ${stokMenipisCount} SKU stok menipis.`
+      : peran === 'penjualan'
+      ? stokMenipisCount > 0
+        ? `${stokMenipisCount} SKU menipis. Melayani ${totalPelanggan} toko kelontong aktif (${drafPesananCount} draf pesanan, ${pengajuanHargaMenungguCount} pengajuan harga).`
+        : `Semua SKU aman. Melayani ${totalPelanggan} toko kelontong aktif (${drafPesananCount} draf pesanan berjalan).`
+      : stokMenipisCount > 0
+      ? `${stokMenipisCount} SKU stok menipis perlu PO. Rantai distribusi melayani ${totalPelanggan} toko aktif (${totalPesanan} transaksi).`
+      : `Semua 48 SKU aman. Rantai distribusi melayani ${totalPelanggan} toko kelontong aktif lancar (${totalPesanan} total transaksi).`;
 
   return (
     <div className="relative overflow-hidden rounded-2xl border border-[#d6e4f5] bg-gradient-to-br from-white via-[#f6faff] to-[#eaf3fd] p-5 sm:p-6 shadow-sm flex-1 flex flex-col justify-between">
@@ -103,7 +135,7 @@ export function DashboardHeroBanner({
 
         {/* Company Context Description */}
         <p className="mt-2 text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed">
-          Berikut pantauan operasional distribusi sembako, stok gudang, dan aktivitas pesanan toko kelontong CV Sinar Abadi Niaga hari ini.
+          {deskripsiKonteks}
         </p>
 
         {/* Meta Info Bar: Date, Weather, Live Status */}
@@ -138,7 +170,9 @@ export function DashboardHeroBanner({
           {/* Circular Score Gauge */}
           <div className="relative flex items-center justify-center w-12 h-12 rounded-full bg-[#f0f6ff] border-2 border-blue-500 shrink-0">
             <div className="text-center leading-none">
-              <span className="text-sm font-black text-[#0c1a30]">94</span>
+              <span className="text-sm font-black text-[#0c1a30]">
+                {peran === 'gudang' ? '96' : peran === 'penjualan' ? '92' : '94'}
+              </span>
               <span className="block text-[8px] font-bold text-slate-400">/100</span>
             </div>
           </div>
@@ -147,16 +181,18 @@ export function DashboardHeroBanner({
             <div className="flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-blue-600" />
               <span className="text-xs font-bold text-[#0c1a30]">
-                Kesehatan Operasional: Prima
+                {peran === 'gudang'
+                  ? 'Kesiapan Logistik: Siap Muat'
+                  : peran === 'penjualan'
+                  ? 'Target Toko: Aktif Berjalan'
+                  : 'Kesehatan Operasional: Prima'}
               </span>
               <span className="text-[10px] text-emerald-700 bg-emerald-100/70 px-1.5 py-0.2 rounded font-semibold">
                 Stabil
               </span>
             </div>
             <p className="text-[11px] text-slate-500 mt-0.5 line-clamp-1">
-              {stokMenipisCount > 0
-                ? `${stokMenipisCount} SKU stok menipis perlu PO. Rantai distribusi 60 toko kelontong aktif lancar (${totalPesanan} total pesanan).`
-                : `Semua 48 SKU aman. Rantai distribusi melayani ${totalPelanggan} toko kelontong aktif lancar (${totalPesanan} total pesanan).`}
+              {aiSummaryText}
             </p>
           </div>
 
@@ -169,33 +205,116 @@ export function DashboardHeroBanner({
           </Link>
         </div>
 
-        {/* Quick Action Buttons */}
-        <div className="flex items-center gap-2 shrink-0">
-          {(peran === 'manajer' || peran === 'penjualan') && (
-            <Button
-              asChild
-              size="sm"
-              className="h-9 px-3.5 text-xs bg-[#0c1b3a] hover:bg-[#152a54] text-white rounded-xl shadow-xs gap-1.5 font-medium transition-all"
-            >
-              <Link href="/pesanan/baru">
-                <Plus className="w-3.5 h-3.5" />
-                <span>+ Pesanan Jual</span>
-              </Link>
-            </Button>
+        {/* Quick Action Buttons per Role */}
+        <div className="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap">
+          {peran === 'penjualan' && (
+            <>
+              <Button
+                asChild
+                size="sm"
+                className="h-9 px-3.5 text-xs bg-[#0c1b3a] hover:bg-[#152a54] text-white rounded-xl shadow-xs gap-1.5 font-medium transition-all"
+              >
+                <Link href="/pesanan/baru">
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>+ Pesanan Jual</span>
+                </Link>
+              </Button>
+              <Button
+                asChild
+                size="sm"
+                variant="outline"
+                className="h-9 px-3 text-xs bg-white border-slate-300 hover:bg-slate-50 hover:border-slate-400 rounded-xl gap-1.5 font-medium shadow-2xs transition-all"
+              >
+                <Link href="/pelanggan/baru">
+                  <Users className="w-3.5 h-3.5 text-blue-600" />
+                  <span>+ Toko Baru</span>
+                </Link>
+              </Button>
+              <Button
+                asChild
+                size="sm"
+                variant="outline"
+                className="h-9 px-3 text-xs bg-white border-amber-300 text-amber-900 hover:bg-amber-50 rounded-xl gap-1.5 font-medium shadow-2xs transition-all"
+              >
+                <Link href="/penagihan">
+                  <ReceiptText className="w-3.5 h-3.5 text-amber-600" />
+                  <span>Penagihan</span>
+                </Link>
+              </Button>
+            </>
           )}
 
-          {(peran === 'manajer' || peran === 'gudang') && (
-            <Button
-              asChild
-              size="sm"
-              variant="outline"
-              className="h-9 px-3 text-xs bg-white border-slate-300 hover:bg-slate-50 hover:border-slate-400 rounded-xl gap-1.5 font-medium shadow-2xs transition-all"
-            >
-              <Link href="/pembelian/baru">
-                <ShoppingCart className="w-3.5 h-3.5 text-slate-600" />
-                <span>+ Ajukan PO</span>
-              </Link>
-            </Button>
+          {peran === 'gudang' && (
+            <>
+              <Button
+                asChild
+                size="sm"
+                className="h-9 px-3.5 text-xs bg-[#0c1b3a] hover:bg-[#152a54] text-white rounded-xl shadow-xs gap-1.5 font-medium transition-all"
+              >
+                <Link href="/gudang/picking">
+                  <ClipboardList className="w-3.5 h-3.5 text-sky-300" />
+                  <span>Ambil Barang</span>
+                </Link>
+              </Button>
+              <Button
+                asChild
+                size="sm"
+                variant="outline"
+                className="h-9 px-3 text-xs bg-white border-slate-300 hover:bg-slate-50 hover:border-slate-400 rounded-xl gap-1.5 font-medium shadow-2xs transition-all"
+              >
+                <Link href="/pembelian/baru">
+                  <ShoppingCart className="w-3.5 h-3.5 text-slate-600" />
+                  <span>+ Ajukan PO</span>
+                </Link>
+              </Button>
+              <Button
+                asChild
+                size="sm"
+                variant="outline"
+                className="h-9 px-3 text-xs bg-white border-slate-300 hover:bg-slate-50 hover:border-slate-400 rounded-xl gap-1.5 font-medium shadow-2xs transition-all"
+              >
+                <Link href="/stok/opname">
+                  <FileSpreadsheet className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>Stock Opname</span>
+                </Link>
+              </Button>
+            </>
+          )}
+
+          {peran === 'manajer' && (
+            <>
+              <Button
+                asChild
+                size="sm"
+                className="h-9 px-3.5 text-xs bg-[#0c1b3a] hover:bg-[#152a54] text-white rounded-xl shadow-xs gap-1.5 font-medium transition-all"
+              >
+                <Link href="/pesanan/baru">
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>+ Pesanan Jual</span>
+                </Link>
+              </Button>
+              <Button
+                asChild
+                size="sm"
+                variant="outline"
+                className="h-9 px-3 text-xs bg-white border-slate-300 hover:bg-slate-50 hover:border-slate-400 rounded-xl gap-1.5 font-medium shadow-2xs transition-all"
+              >
+                <Link href="/pembelian/baru">
+                  <ShoppingCart className="w-3.5 h-3.5 text-slate-600" />
+                  <span>+ Ajukan PO</span>
+                </Link>
+              </Button>
+              <Button
+                asChild
+                size="sm"
+                variant="outline"
+                className="h-9 px-3 text-xs bg-blue-50 border-blue-200 text-blue-900 hover:bg-blue-100 rounded-xl gap-1.5 font-medium shadow-2xs transition-all"
+              >
+                <Link href="/laporan">
+                  <span>Laporan Bisnis &rarr;</span>
+                </Link>
+              </Button>
+            </>
           )}
         </div>
       </div>

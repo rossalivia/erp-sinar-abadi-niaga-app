@@ -15,7 +15,6 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', '
 
 interface CommodityActivity {
   category: string;
-  // Intensity 0 - 4
   values: number[];
 }
 
@@ -57,6 +56,7 @@ interface RecentExport {
   timestamp: string;
   author: string;
   href: string;
+  roles: Peran[];
 }
 
 const RECENT_EXPORTS: RecentExport[] = [
@@ -67,6 +67,7 @@ const RECENT_EXPORTS: RecentExport[] = [
     timestamp: '2 mnt lalu',
     author: 'Staf Penjualan',
     href: '/pesanan',
+    roles: ['penjualan', 'manajer'],
   },
   {
     id: 'e2',
@@ -75,6 +76,7 @@ const RECENT_EXPORTS: RecentExport[] = [
     timestamp: '18 mnt lalu',
     author: 'Staf Keuangan',
     href: '/kredit',
+    roles: ['manajer'],
   },
   {
     id: 'e3',
@@ -83,6 +85,7 @@ const RECENT_EXPORTS: RecentExport[] = [
     timestamp: '1 jam lalu',
     author: 'Staf Gudang',
     href: '/pesanan',
+    roles: ['gudang', 'manajer'],
   },
   {
     id: 'e4',
@@ -91,6 +94,7 @@ const RECENT_EXPORTS: RecentExport[] = [
     timestamp: '3 jam lalu',
     author: 'Staf Pengadaan',
     href: '/pembelian',
+    roles: ['gudang', 'manajer'],
   },
   {
     id: 'e5',
@@ -99,20 +103,52 @@ const RECENT_EXPORTS: RecentExport[] = [
     timestamp: '5 jam lalu',
     author: 'Kepala Gudang',
     href: '/stok/opname',
+    roles: ['gudang', 'manajer'],
+  },
+  {
+    id: 'e6',
+    title: 'Rekap Toko Kelontong Mitra',
+    type: 'XLSX',
+    timestamp: '6 jam lalu',
+    author: 'Staf Penjualan',
+    href: '/pelanggan',
+    roles: ['penjualan', 'manajer'],
+  },
+  {
+    id: 'e7',
+    title: 'Daftar Ambil Barang Ekspedisi',
+    type: 'PDF',
+    timestamp: '7 jam lalu',
+    author: 'Staf Gudang',
+    href: '/gudang/picking',
+    roles: ['gudang', 'manajer'],
   },
 ];
 
-const DONUT_DATA = [
+// Donut data untuk Manajer & Penjualan (Status Pembayaran)
+const DONUT_DATA_PEMBAYARAN = [
   { name: 'Lunas / Tunai', value: 60, color: '#0c1b3a' },
   { name: 'Tempo Berjalan', value: 25, color: '#2563eb' },
-  { name: 'Lewat Jatuh Tempo', value: 15, color: '#38bdf8' },
+  { name: 'Lewat Jatuh Tempo', value: 15, color: '#f59e0b' },
+];
+
+// Donut data untuk Gudang (Distribusi Fisik & Muatan)
+const DONUT_DATA_GUDANG = [
+  { name: 'Terkirim Selesai', value: 70, color: '#0c1b3a' },
+  { name: 'Dalam Perjalanan Truk', value: 20, color: '#2563eb' },
+  { name: 'Antrean Muat', value: 10, color: '#38bdf8' },
 ];
 
 export interface DashboardAnalyticsRowProps {
   peran: Peran;
 }
 
-export function DashboardAnalyticsRow({}: DashboardAnalyticsRowProps) {
+export function DashboardAnalyticsRow({ peran = 'penjualan' }: DashboardAnalyticsRowProps) {
+  const roleExports = React.useMemo(() => {
+    return RECENT_EXPORTS.filter((doc) => doc.roles.includes(peran));
+  }, [peran]);
+
+  const donutData = peran === 'gudang' ? DONUT_DATA_GUDANG : DONUT_DATA_PEMBAYARAN;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
@@ -122,7 +158,11 @@ export function DashboardAnalyticsRow({}: DashboardAnalyticsRowProps) {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-xs font-bold text-[#0c1a30] uppercase tracking-wider font-mono">
-                Aktivitas Komoditas Bulanan
+                {peran === 'gudang'
+                  ? 'Aktivitas Arus Fisik Komoditas'
+                  : peran === 'penjualan'
+                  ? 'Pola Permintaan Komoditas Toko'
+                  : 'Aktivitas Komoditas Bulanan'}
               </h3>
               <p className="text-[11px] text-slate-500">
                 Pola intensitas pergerakan pasokan komoditas kelontong sepanjang tahun
@@ -150,20 +190,17 @@ export function DashboardAnalyticsRow({}: DashboardAnalyticsRowProps) {
               <div className="space-y-1.5">
                 {COMMODITY_MATRIX.map((row) => (
                   <div key={row.category} className="grid grid-cols-13 gap-1 items-center">
-                    <div
-                      className="text-[10px] text-slate-600 font-medium truncate pr-1"
-                      title={row.category}
-                    >
+                    <span className="text-[10px] font-medium text-slate-700 truncate pr-1" title={row.category}>
                       {row.category.split(' ')[0]}
-                    </div>
+                    </span>
                     {row.values.map((val, idx) => (
                       <div
                         key={idx}
                         className={cn(
-                          'h-6 rounded-md transition-all hover:scale-110 cursor-pointer shadow-2xs',
+                          'h-5 rounded-sm transition-transform hover:scale-110 cursor-pointer',
                           INTENSITY_COLORS[val]
                         )}
-                        title={`${row.category} - ${MONTHS[idx]}: Intensitas level ${val}`}
+                        title={`${row.category} - ${MONTHS[idx]}: Level ${val}`}
                       />
                     ))}
                   </div>
@@ -173,29 +210,35 @@ export function DashboardAnalyticsRow({}: DashboardAnalyticsRowProps) {
           </div>
         </div>
 
-        {/* Legend */}
+        {/* Legend Indicator */}
         <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
-          <span>Skala Frekuensi:</span>
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] text-slate-400">Rendah</span>
-            {[0, 1, 2, 3, 4].map((lvl) => (
-              <span
-                key={lvl}
-                className={cn('w-3 h-3 rounded shadow-2xs', INTENSITY_COLORS[lvl])}
-              />
-            ))}
-            <span className="text-[10px] text-slate-700 font-bold">Padat</span>
+          <span>Intensitas Pasokan:</span>
+          <div className="flex items-center gap-1.5 text-[10px]">
+            <span>Rendah</span>
+            <div className="flex items-center gap-1">
+              {[1, 2, 3, 4].map((lvl) => (
+                <div
+                  key={lvl}
+                  className={cn('w-2.5 h-2.5 rounded-xs', INTENSITY_COLORS[lvl])}
+                />
+              ))}
+            </div>
+            <span>Tinggi</span>
           </div>
         </div>
       </div>
 
-      {/* 2. BAGIAN TENGAH: RIWAYAT EKSPOR & DOKUMEN CETAK (4 Kolom Desktop) */}
+      {/* 2. BAGIAN TENGAH: BERKAS EKSPOR & RIWAYAT CETAK (4 Kolom Desktop) */}
       <div className="lg:col-span-4 rounded-2xl p-5 border border-[#e2ebf6] bg-white shadow-sm flex flex-col justify-between">
         <div>
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-3">
             <div>
               <h3 className="text-xs font-bold text-[#0c1a30] uppercase tracking-wider font-mono">
-                Dokumen &amp; Ekspor Terkini
+                {peran === 'gudang'
+                  ? 'Berkas Logistik & Surat Jalan'
+                  : peran === 'penjualan'
+                  ? 'Faktur & Dokumen Toko'
+                  : 'Dokumen Terbitan Terkini'}
               </h3>
               <p className="text-[11px] text-slate-500">Berkas transaksi terbitan terakhir</p>
             </div>
@@ -203,7 +246,7 @@ export function DashboardAnalyticsRow({}: DashboardAnalyticsRowProps) {
           </div>
 
           <div className="space-y-2">
-            {RECENT_EXPORTS.map((doc) => (
+            {roleExports.slice(0, 4).map((doc) => (
               <div
                 key={doc.id}
                 className="p-2.5 rounded-xl border border-slate-100 bg-slate-50/60 hover:bg-slate-50 hover:border-slate-200 transition-all flex items-center justify-between gap-2"
@@ -236,7 +279,7 @@ export function DashboardAnalyticsRow({}: DashboardAnalyticsRowProps) {
                   size="icon"
                   className="w-7 h-7 text-slate-400 hover:text-blue-600 hover:bg-blue-50 shrink-0"
                 >
-                  <Link href={doc.href} title="Unduh / Cetak">
+                  <Link href={doc.href} title="Buka Dokumen">
                     <Download className="w-3.5 h-3.5" />
                   </Link>
                 </Button>
@@ -246,9 +289,19 @@ export function DashboardAnalyticsRow({}: DashboardAnalyticsRowProps) {
         </div>
 
         <div className="mt-4 pt-3 border-t border-slate-100 text-center">
-          <Link href="/audit" className="text-xs font-semibold text-blue-600 hover:text-blue-800">
-            Buka Riwayat Audit &amp; Dokumen &rarr;
-          </Link>
+          {peran === 'manajer' ? (
+            <Link href="/audit" className="text-xs font-semibold text-blue-600 hover:text-blue-800">
+              Buka Riwayat Audit &amp; Dokumen &rarr;
+            </Link>
+          ) : peran === 'gudang' ? (
+            <Link href="/stok" className="text-xs font-semibold text-blue-600 hover:text-blue-800">
+              Buka Kartu Mutasi Stok Fisik &rarr;
+            </Link>
+          ) : (
+            <Link href="/pesanan" className="text-xs font-semibold text-blue-600 hover:text-blue-800">
+              Buka Seluruh Dokumen Faktur &rarr;
+            </Link>
+          )}
         </div>
       </div>
 
@@ -258,12 +311,14 @@ export function DashboardAnalyticsRow({}: DashboardAnalyticsRowProps) {
           <div className="flex items-center justify-between mb-2">
             <div>
               <h3 className="text-xs font-bold text-[#0c1a30] uppercase tracking-wider font-mono">
-                Status Pembayaran
+                {peran === 'gudang' ? 'Distribusi & Muatan' : 'Status Pembayaran'}
               </h3>
-              <p className="text-[11px] text-slate-500">Rasio kelunasan faktur</p>
+              <p className="text-[11px] text-slate-500">
+                {peran === 'gudang' ? 'Kelancaran armada pengiriman' : 'Rasio kelunasan faktur'}
+              </p>
             </div>
             <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
-              Faktur
+              {peran === 'gudang' ? 'Armada' : 'Faktur'}
             </span>
           </div>
 
@@ -272,7 +327,7 @@ export function DashboardAnalyticsRow({}: DashboardAnalyticsRowProps) {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={DONUT_DATA}
+                  data={donutData}
                   cx="50%"
                   cy="50%"
                   innerRadius={48}
@@ -280,7 +335,7 @@ export function DashboardAnalyticsRow({}: DashboardAnalyticsRowProps) {
                   paddingAngle={3}
                   dataKey="value"
                 >
-                  {DONUT_DATA.map((entry, index) => (
+                  {donutData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
@@ -300,17 +355,17 @@ export function DashboardAnalyticsRow({}: DashboardAnalyticsRowProps) {
             {/* Total Count in Center */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
               <span className="text-xl font-black text-[#0c1a30] tracking-tight leading-none">
-                128
+                {peran === 'gudang' ? '84' : '128'}
               </span>
               <span className="text-[9px] text-slate-400 uppercase font-mono mt-0.5">
-                Total Faktur
+                {peran === 'gudang' ? 'Rute Truk' : 'Total Faktur'}
               </span>
             </div>
           </div>
 
           {/* Legend Items */}
           <div className="space-y-1.5 pt-1 text-[11px]">
-            {DONUT_DATA.map((item) => (
+            {donutData.map((item) => (
               <div key={item.name} className="flex items-center justify-between text-slate-600">
                 <div className="flex items-center gap-1.5">
                   <span
@@ -328,9 +383,19 @@ export function DashboardAnalyticsRow({}: DashboardAnalyticsRowProps) {
         </div>
 
         <div className="mt-4 pt-3 border-t border-slate-100 text-center">
-          <Link href="/laporan/piutang" className="text-xs font-semibold text-blue-600 hover:text-blue-800">
-            Laporan Aging Piutang &rarr;
-          </Link>
+          {peran === 'gudang' ? (
+            <Link href="/gudang/picking" className="text-xs font-semibold text-blue-600 hover:text-blue-800">
+              Antrean Muatan Gudang &rarr;
+            </Link>
+          ) : peran === 'penjualan' ? (
+            <Link href="/penagihan" className="text-xs font-semibold text-blue-600 hover:text-blue-800">
+              Monitoring Penagihan Toko &rarr;
+            </Link>
+          ) : (
+            <Link href="/laporan/piutang" className="text-xs font-semibold text-blue-600 hover:text-blue-800">
+              Laporan Aging Piutang &rarr;
+            </Link>
+          )}
         </div>
       </div>
     </div>

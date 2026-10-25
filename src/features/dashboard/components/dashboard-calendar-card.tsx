@@ -10,6 +10,7 @@ import {
   PackageCheck,
   Clock,
 } from 'lucide-react';
+import type { Peran } from '@/types/auth';
 
 interface EventItem {
   id: string;
@@ -54,7 +55,11 @@ const NAMA_BULAN = [
 
 const emptySubscribe = () => () => {};
 
-export function DashboardCalendarCard() {
+export interface DashboardCalendarCardProps {
+  peran?: Peran;
+}
+
+export function DashboardCalendarCard({ peran = 'penjualan' }: DashboardCalendarCardProps) {
   const isClient = React.useSyncExternalStore(
     emptySubscribe,
     () => true,
@@ -98,8 +103,26 @@ export function DashboardCalendarCard() {
   const isCurrentMonthToday =
     today.getFullYear() === year && today.getMonth() === month;
 
+  // Filter events by role:
+  // - Gudang: sees 'kirim' and 'po', hides 'tempo' (keuangan)
+  // - Penjualan: sees 'kirim' and 'tempo', hides 'po' (pergudangan)
+  // - Manajer: sees all
+  const filterEventsForRole = React.useCallback(
+    (events: EventItem[] = []) => {
+      if (peran === 'gudang') {
+        return events.filter((e) => e.type !== 'tempo');
+      }
+      if (peran === 'penjualan') {
+        return events.filter((e) => e.type !== 'po');
+      }
+      return events;
+    },
+    [peran]
+  );
+
   // Selected date events
-  const activeEvents = MOCK_EVENTS[selectedDay] || [];
+  const rawEvents = MOCK_EVENTS[selectedDay] || [];
+  const activeEvents = filterEventsForRole(rawEvents);
 
   return (
     <div className="rounded-2xl border border-[#d6e4f5] bg-white p-4 sm:p-5 shadow-sm flex flex-col justify-between h-full">
@@ -112,7 +135,11 @@ export function DashboardCalendarCard() {
             </div>
             <div>
               <h3 className="text-xs font-bold text-[#0c1a30] uppercase tracking-wider font-mono">
-                Kalender Operasional
+                {peran === 'gudang'
+                  ? 'Jadwal Logistik Gudang'
+                  : peran === 'penjualan'
+                  ? 'Agenda Penjualan & Tagihan'
+                  : 'Kalender Operasional'}
               </h3>
               <p className="text-[11px] font-semibold text-slate-700">
                 {NAMA_BULAN[month]} {year}
@@ -180,7 +207,8 @@ export function DashboardCalendarCard() {
             const isToday =
               isClient && isCurrentMonthToday && today.getDate() === dayNum;
             const isSelected = selectedDay === dayNum;
-            const hasEvents = Boolean(MOCK_EVENTS[dayNum]?.length);
+            const dayEvents = filterEventsForRole(MOCK_EVENTS[dayNum] || []);
+            const hasEvents = dayEvents.length > 0;
 
             return (
               <button
@@ -200,25 +228,28 @@ export function DashboardCalendarCard() {
                 {/* Event Indicator Dots */}
                 {hasEvents && (
                   <span className="flex items-center gap-0.5 mt-0.5 leading-none">
-                    {MOCK_EVENTS[dayNum].some((e) => e.type === 'kirim') && (
+                    {dayEvents.some((e) => e.type === 'kirim') && (
                       <span
                         className={`w-1 h-1 rounded-full ${
                           isToday ? 'bg-emerald-300' : 'bg-emerald-500'
                         }`}
+                        title="Pengiriman"
                       />
                     )}
-                    {MOCK_EVENTS[dayNum].some((e) => e.type === 'tempo') && (
+                    {dayEvents.some((e) => e.type === 'tempo') && (
                       <span
                         className={`w-1 h-1 rounded-full ${
                           isToday ? 'bg-amber-300' : 'bg-amber-500'
                         }`}
+                        title="Jatuh Tempo"
                       />
                     )}
-                    {MOCK_EVENTS[dayNum].some((e) => e.type === 'po') && (
+                    {dayEvents.some((e) => e.type === 'po') && (
                       <span
                         className={`w-1 h-1 rounded-full ${
                           isToday ? 'bg-sky-300' : 'bg-sky-500'
                         }`}
+                        title="PO Penerimaan"
                       />
                     )}
                   </span>

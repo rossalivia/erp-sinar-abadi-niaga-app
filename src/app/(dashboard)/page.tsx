@@ -208,6 +208,31 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     }
   }
 
+  // Metrik operasional spesifik peran
+  let pesananSiapKirimCount = 0;
+  let poMenungguPenerimaanCount = 0;
+  let opnameAktifCount = 0;
+  let drafPesananSayaCount = 0;
+  let pengajuanHargaMenungguCount = 0;
+
+  if (user?.peran === "gudang") {
+    const [siapKirimRes, poMenungguRes, opnameRes] = await Promise.all([
+      supabase.from("pesanan_jual").select("id", { count: "exact", head: true }).eq("status", "dikonfirmasi"),
+      supabase.from("pembelian").select("id", { count: "exact", head: true }).eq("status", "disetujui"),
+      supabase.from("opname_stok").select("id", { count: "exact", head: true }).eq("status", "draf"),
+    ]);
+    pesananSiapKirimCount = siapKirimRes.count ?? 0;
+    poMenungguPenerimaanCount = poMenungguRes.count ?? 0;
+    opnameAktifCount = opnameRes.count ?? 0;
+  } else if (user?.peran === "penjualan") {
+    const [drafRes, persetujuanRes] = await Promise.all([
+      supabase.from("pesanan_jual").select("id", { count: "exact", head: true }).eq("status", "draf"),
+      supabase.from("v_persetujuan_harga").select("id", { count: "exact", head: true }).eq("status", "menunggu"),
+    ]);
+    drafPesananSayaCount = drafRes.count ?? 0;
+    pengajuanHargaMenungguCount = persetujuanRes.count ?? 0;
+  }
+
   // Ambil count data master untuk ekosistem dashboard
   const [totalBarangRes, totalPelangganRes, totalPemasokRes, totalPesananRes] = await Promise.all([
     supabase.from("v_barang").select("id", { count: "exact", head: true }),
@@ -294,10 +319,14 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             totalPesanan={totalPesananCount}
             totalPelanggan={totalPelangganCount}
             stokMenipisCount={barangMenipis.length}
+            pesananSiapKirimCount={pesananSiapKirimCount}
+            poMenungguPenerimaanCount={poMenungguPenerimaanCount}
+            drafPesananCount={drafPesananSayaCount}
+            pengajuanHargaMenungguCount={pengajuanHargaMenungguCount}
           />
         </div>
         <div className="lg:col-span-4 flex flex-col">
-          <DashboardCalendarCard />
+          <DashboardCalendarCard peran={user?.peran || "penjualan"} />
         </div>
       </div>
 
@@ -311,7 +340,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         />
       )}
 
-      {/* 3. Baris 1: 4 Kartu KPI & Visual Distribution (Treemap, Sparklines, Ecosystem) */}
+      {/* 3. Baris 1: 4 Kartu KPI Adaptif per Peran */}
       <DashboardKpiRow
         peran={user?.peran || "penjualan"}
         totalOmzet={kpiFinansial?.total_omzet}
@@ -324,6 +353,13 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         totalBarang={totalBarangCount}
         totalPelanggan={totalPelangganCount}
         totalPemasok={totalPemasokCount}
+        pesananSiapKirim={pesananSiapKirimCount}
+        poMenungguTerima={poMenungguPenerimaanCount}
+        opnameAktif={opnameAktifCount}
+        drafPesananSaya={drafPesananSayaCount}
+        tagihanOverdueCount={tagihanOverdueCount}
+        pengajuanHargaMenunggu={pengajuanHargaMenungguCount}
+        stokMenipisCount={barangMenipis.length}
       />
 
       {/* 4. Baris 2: Pusat Dokumen Library, Jadwal Operasional, & AI ERP Advisor */}
