@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { formatTanggal, formatRupiah } from "@/lib/format";
 import {
   AlertTriangle,
-  Clock,
   ShoppingCart,
   TrendingUp,
   DollarSign,
@@ -24,7 +23,8 @@ import { DashboardFinanceChart } from "@/features/dashboard/components/dashboard
 import { DashboardKpiRow } from "@/features/dashboard/components/dashboard-kpi-row";
 import { DashboardMidRow } from "@/features/dashboard/components/dashboard-mid-row";
 import { DashboardAnalyticsRow } from "@/features/dashboard/components/dashboard-analytics-row";
-import { Plus } from "lucide-react";
+import { DashboardHeroBanner } from "@/features/dashboard/components/dashboard-hero-banner";
+import { DashboardCalendarCard } from "@/features/dashboard/components/dashboard-calendar-card";
 
 interface BarangMenipis {
   id: string;
@@ -284,65 +284,20 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     },
   ];
 
-  const nowJakarta = new Date();
-
   return (
     <div className="space-y-6">
-      {/* 1. Hero Strip Ringkas dengan Quick Action Buttons */}
-      <div className="surface-raised rounded-2xl p-4 sm:p-5 border border-[#e2ebf6] bg-gradient-to-r from-white via-[#f0f5fa] to-[#e8f2fc] shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-bold text-[#0c1a30]">
-              Halo, {user?.nama_lengkap}!
-            </span>
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#e5f0fd] text-[#1e40af] border border-[#bfdbfe] uppercase font-mono">
-              {user?.peran}
-            </span>
-          </div>
-          <span className="text-slate-300 hidden sm:inline">&bull;</span>
-          <div className="flex items-center gap-2 text-slate-500 text-[11px]">
-            <span className="font-medium text-slate-600">CV Sinar Abadi Niaga</span>
-            <span className="text-slate-300">&bull;</span>
-            <span className="text-[#2563eb] font-semibold">Distributor Kebutuhan Toko Kelontong</span>
-          </div>
+      {/* 1. Hero Greeting Banner & Kalender Operasional (BuildAxis AI Reference) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+        <div className="lg:col-span-8 flex flex-col">
+          <DashboardHeroBanner
+            user={user}
+            totalPesanan={totalPesananCount}
+            totalPelanggan={totalPelangganCount}
+            stokMenipisCount={barangMenipis.length}
+          />
         </div>
-
-        <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-1.5 text-slate-500 text-[11px]">
-            <Clock className="h-3.5 w-3.5 text-slate-400" />
-            <span className="font-medium text-slate-600">
-              {formatTanggal(nowJakarta)}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {(user?.peran === "manajer" || user?.peran === "penjualan") && (
-              <Button
-                asChild
-                size="sm"
-                className="h-8 text-xs bg-[#0c1b3a] hover:bg-[#152a54] text-white rounded-xl shadow-xs gap-1.5 font-medium"
-              >
-                <Link href="/pesanan/baru">
-                  <Plus className="w-3.5 h-3.5" />
-                  + Pesanan Jual
-                </Link>
-              </Button>
-            )}
-
-            {(user?.peran === "manajer" || user?.peran === "gudang") && (
-              <Button
-                asChild
-                size="sm"
-                variant="outline"
-                className="h-8 text-xs border-slate-300 hover:border-slate-400 rounded-xl gap-1.5 font-medium"
-              >
-                <Link href="/pembelian/baru">
-                  <ShoppingCart className="w-3.5 h-3.5" />
-                  + Ajukan PO
-                </Link>
-              </Button>
-            )}
-          </div>
+        <div className="lg:col-span-4 flex flex-col">
+          <DashboardCalendarCard />
         </div>
       </div>
 
