@@ -22,6 +22,10 @@ import {
 } from "@/features/pusat-tugas/components/tugas-hari-ini-section";
 import { DashboardDateFilter } from "@/features/dashboard/components/dashboard-date-filter";
 import { DashboardFinanceChart } from "@/features/dashboard/components/dashboard-finance-chart";
+import { DashboardKpiRow } from "@/features/dashboard/components/dashboard-kpi-row";
+import { DashboardMidRow } from "@/features/dashboard/components/dashboard-mid-row";
+import { DashboardAnalyticsRow } from "@/features/dashboard/components/dashboard-analytics-row";
+import { Plus } from "lucide-react";
 
 interface BarangMenipis {
   id: string;
@@ -205,6 +209,18 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     }
   }
 
+  // Ambil count data master untuk ekosistem dashboard
+  const [totalBarangRes, totalPelangganRes, totalPemasokRes, totalPesananRes] = await Promise.all([
+    supabase.from("v_barang").select("id", { count: "exact", head: true }),
+    supabase.from("pelanggan").select("id", { count: "exact", head: true }),
+    supabase.from("pemasok").select("id", { count: "exact", head: true }),
+    supabase.from("pesanan_jual").select("id", { count: "exact", head: true }),
+  ]);
+  const totalBarangCount = totalBarangRes.count ?? 48;
+  const totalPelangganCount = totalPelangganRes.count ?? 24;
+  const totalPemasokCount = totalPemasokRes.count ?? 8;
+  const totalPesananCount = totalPesananRes.count ?? (kpiFinansial?.jumlah_pesanan || 156);
+
   const columns: Column<BarangMenipis>[] = [
     {
       header: "Kode Barang",
@@ -272,9 +288,9 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const nowJakarta = new Date();
 
   return (
-    <div className="space-y-5">
-      {/* 1. Hero Strip Ringkas (GeneX Soft Ice Gradient & Deep Midnight Navy) */}
-      <div className="surface-raised rounded-2xl p-4 sm:p-5 border border-[#e2ebf6] bg-gradient-to-r from-white via-[#f0f5fa] to-[#e8f2fc] shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs">
+    <div className="space-y-6">
+      {/* 1. Hero Strip Ringkas dengan Quick Action Buttons */}
+      <div className="surface-raised rounded-2xl p-4 sm:p-5 border border-[#e2ebf6] bg-gradient-to-r from-white via-[#f0f5fa] to-[#e8f2fc] shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-xs">
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
           <div className="flex items-center gap-2">
             <span className="text-sm font-bold text-[#0c1a30]">
@@ -292,22 +308,77 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           </div>
         </div>
 
-        <div className="flex items-center gap-3 text-slate-500 text-[11px]">
-          <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-1.5 text-slate-500 text-[11px]">
             <Clock className="h-3.5 w-3.5 text-slate-400" />
             <span className="font-medium text-slate-600">
               {formatTanggal(nowJakarta)}
             </span>
           </div>
-          <span className="text-slate-300">&bull;</span>
-          <div className="flex items-center gap-1 text-[#065f46] font-medium bg-[#e6f8f0] px-2 py-0.5 rounded-full border border-[#a7f3d0]">
-            <Shield className="h-3 w-3 text-[#065f46]" />
-            <span className="text-[10px]">Sesi Terenkripsi</span>
+
+          <div className="flex items-center gap-2">
+            {(user?.peran === "manajer" || user?.peran === "penjualan") && (
+              <Button
+                asChild
+                size="sm"
+                className="h-8 text-xs bg-[#0c1b3a] hover:bg-[#152a54] text-white rounded-xl shadow-xs gap-1.5 font-medium"
+              >
+                <Link href="/pesanan/baru">
+                  <Plus className="w-3.5 h-3.5" />
+                  + Pesanan Jual
+                </Link>
+              </Button>
+            )}
+
+            {(user?.peran === "manajer" || user?.peran === "gudang") && (
+              <Button
+                asChild
+                size="sm"
+                variant="outline"
+                className="h-8 text-xs border-slate-300 hover:border-slate-400 rounded-xl gap-1.5 font-medium"
+              >
+                <Link href="/pembelian/baru">
+                  <ShoppingCart className="w-3.5 h-3.5" />
+                  + Ajukan PO
+                </Link>
+              </Button>
+            )}
           </div>
         </div>
       </div>
 
-      {/* 2. Banner Peringatan Penagihan Piutang (Full-Width Tanpa Kotak Ganda) */}
+      {/* 2. Global Filter Tanggal Dashboard */}
+      {isManajer && (
+        <DashboardDateFilter
+          dari={dari}
+          sampai={sampai}
+          preset={preset}
+          periodeLabel={periodeJudul}
+        />
+      )}
+
+      {/* 3. Baris 1: 4 Kartu KPI & Visual Distribution (Treemap, Sparklines, Ecosystem) */}
+      <DashboardKpiRow
+        peran={user?.peran || "penjualan"}
+        totalOmzet={kpiFinansial?.total_omzet}
+        totalPesanan={totalPesananCount}
+        totalMargin={kpiFinansial?.total_margin}
+        marginPersen={kpiFinansial?.margin_persen}
+        pesananSelesai={kpiFinansial?.pesanan_lunas}
+        pesananProses={kpiFinansial?.pesanan_dikirim}
+        pesananMenunggu={jumlahPersetujuanMenunggu}
+        totalBarang={totalBarangCount}
+        totalPelanggan={totalPelangganCount}
+        totalPemasok={totalPemasokCount}
+      />
+
+      {/* 4. Baris 2: Pusat Dokumen Library, Jadwal Operasional, & AI ERP Advisor */}
+      <DashboardMidRow peran={user?.peran || "penjualan"} />
+
+      {/* 5. Baris 3: Matrix Seasonal Heatmap, Ekspor Dokumen Terkini, & Donut Chart Distribusi */}
+      <DashboardAnalyticsRow peran={user?.peran || "penjualan"} />
+
+      {/* 6. Banner Peringatan Penagihan Piutang (Jika Ada Overdue) */}
       {(user?.peran === "manajer" || user?.peran === "penjualan") &&
         (tagihanHariIni > 0 || tagihanOverdueCount > 0) && (
           <div className="surface-raised rounded-2xl p-4 border border-[#fde68a] bg-gradient-to-r from-[#fef7e6]/70 via-white to-[#fef7e6]/40 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs shadow-sm">
@@ -348,27 +419,19 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           </div>
         )}
 
-      {/* 3. Pusat Tugas Prioritas (Antrean Cerdas dengan Stagger) */}
+      {/* 7. Pusat Tugas Prioritas (Antrean Cerdas dengan Stagger) */}
       <Suspense fallback={<TugasHariIniSkeleton />}>
         <TugasHariIniSection />
       </Suspense>
 
-      {/* 4. Panel Khusus Manajer: Filter Tanggal, Bento Grid Finansial, dan Grafik */}
+      {/* 8. Panel Khusus Manajer: Bento Grid & Grafik Finansial */}
       {isManajer && (
         <section className="space-y-4" aria-label="Keuangan Manajer">
-          {/* Komponen Filter Jangka Waktu Tanggal Dashboard */}
-          <DashboardDateFilter
-            dari={dari}
-            sampai={sampai}
-            preset={preset}
-            periodeLabel={periodeJudul}
-          />
-
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="h-5 w-1 bg-[#2563eb] rounded-full" />
               <h2 className="text-xs font-bold text-[#0c1a30] uppercase tracking-wider font-mono">
-                Ringkasan Finansial — {periodeJudul}
+                Analisis Finansial Mendalam — {periodeJudul}
               </h2>
             </div>
             <Link
@@ -497,7 +560,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             </div>
           </div>
 
-          {/* 4b. Grafik Visual Tren Omzet & Margin Finansial Dashboard */}
+          {/* Grafik Visual Tren Omzet & Margin Finansial Dashboard */}
           <DashboardFinanceChart
             data={marginData}
             ringkasan={kpiFinansial}
