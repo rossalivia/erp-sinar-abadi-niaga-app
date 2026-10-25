@@ -202,23 +202,23 @@ export function TabelTagihan({ initialItems, peran }: TabelTagihanProps) {
       </div>
 
       {/* Tabel Data Padat */}
-      <div className="rounded-md border border-slate-200 bg-white overflow-hidden shadow-none">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
-            <thead className="bg-slate-100 sticky top-0 border-b border-slate-200 text-slate-700 font-medium">
+      <div className="rounded-2xl border border-[#e2ebf6] bg-white overflow-hidden shadow-sm">
+        <div className="overflow-auto max-h-[calc(100vh-230px)] min-h-[300px] scrollbar-thin">
+          <table className="w-full text-left text-xs border-separate border-spacing-0">
+            <thead className="bg-[#f0f5fa] sticky top-0 z-20">
               <tr>
-                <th className="py-2 px-3">Nomor SO</th>
-                <th className="py-2 px-3">Pelanggan</th>
-                <th className="py-2 px-3">Sales</th>
-                <th className="py-2 px-3">Tgl Kirim</th>
-                <th className="py-2 px-3">Jatuh Tempo</th>
-                <th className="py-2 px-3 text-right">Total Nilai</th>
-                <th className="py-2 px-3">Klasifikasi Umur</th>
-                <th className="py-2 px-3">Janji Bayar</th>
-                <th className="py-2 px-3 text-right">Aksi</th>
+                <th className="py-2.5 px-3 sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Nomor SO</th>
+                <th className="py-2.5 px-3 sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Pelanggan</th>
+                <th className="py-2.5 px-3 sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Sales</th>
+                <th className="py-2.5 px-3 sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Tgl Kirim</th>
+                <th className="py-2.5 px-3 sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Jatuh Tempo</th>
+                <th className="py-2.5 px-3 text-right sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Total Nilai</th>
+                <th className="py-2.5 px-3 sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Klasifikasi Umur</th>
+                <th className="py-2.5 px-3 sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Janji Bayar</th>
+                <th className="py-2.5 px-3 text-right sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-slate-800">
+            <tbody className="bg-white text-slate-800 [&_td]:border-b [&_td]:border-[#eef4fb]">
               {filteredItems.length === 0 ? (
                 <tr>
                   <td colSpan={9} className="py-8 text-center text-slate-400">

@@ -28,6 +28,7 @@ interface DataTableProps<T> {
   emptyDescription?: string;
   emptyAction?: React.ReactNode;
   className?: string;
+  containerClassName?: string;
   zebra?: boolean;
 }
 
@@ -40,16 +41,17 @@ export function DataTable<T>({
   emptyDescription = 'Belum ada data yang tersedia.',
   emptyAction,
   className,
+  containerClassName,
   zebra = false,
 }: DataTableProps<T>) {
   if (isLoading) {
     return (
-      <div className="w-full border border-slate-200 rounded-md overflow-hidden bg-white p-4">
+      <div className="w-full border border-[#e2ebf6] rounded-2xl overflow-hidden bg-white p-4">
         <div className="space-y-2">
-          <div className="h-7 bg-slate-100 rounded animate-pulse" />
-          <div className="h-6 bg-slate-50 rounded animate-pulse" />
-          <div className="h-6 bg-slate-50 rounded animate-pulse" />
-          <div className="h-6 bg-slate-50 rounded animate-pulse" />
+          <div className="h-7 bg-[#f0f5fa] rounded-lg animate-pulse" />
+          <div className="h-6 bg-slate-50 rounded-lg animate-pulse" />
+          <div className="h-6 bg-slate-50 rounded-lg animate-pulse" />
+          <div className="h-6 bg-slate-50 rounded-lg animate-pulse" />
         </div>
       </div>
     );
@@ -66,7 +68,7 @@ export function DataTable<T>({
   }
 
   return (
-    <Table className={className}>
+    <Table className={className} containerClassName={containerClassName}>
       <TableHeader>
         <TableRow>
           {columns.map((col, idx) => (

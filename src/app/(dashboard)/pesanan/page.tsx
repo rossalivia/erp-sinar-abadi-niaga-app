@@ -249,20 +249,20 @@ export default async function DaftarPesananPage({ searchParams }: PageProps) {
             }
           />
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead className="bg-slate-100 text-slate-700 font-medium border-b border-slate-200 sticky top-0">
+          <div className="overflow-auto max-h-[calc(100vh-230px)] min-h-[300px] scrollbar-thin">
+            <table className="w-full text-left text-xs border-separate border-spacing-0">
+              <thead className="bg-[#f0f5fa] sticky top-0 z-20">
                 <tr>
-                  <th className="py-2.5 px-3.5 w-36">Nomor</th>
-                  <th className="py-2.5 px-3.5 min-w-[200px]">Pelanggan</th>
-                  <th className="py-2.5 px-3.5 w-28">Tanggal</th>
-                  <th className="py-2.5 px-3.5 w-28 text-center">Status</th>
-                  <th className="py-2.5 px-3.5 w-32 text-right">Total Nilai</th>
-                  <th className="py-2.5 px-3.5 w-28">Jatuh Tempo</th>
-                  <th className="py-2.5 px-3.5 w-24 text-right">Aksi</th>
+                  <th className="py-2.5 px-3.5 w-36 sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Nomor</th>
+                  <th className="py-2.5 px-3.5 min-w-[200px] sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Pelanggan</th>
+                  <th className="py-2.5 px-3.5 w-28 sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Tanggal</th>
+                  <th className="py-2.5 px-3.5 w-28 text-center sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Status</th>
+                  <th className="py-2.5 px-3.5 w-32 text-right sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Total Nilai</th>
+                  <th className="py-2.5 px-3.5 w-28 sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Jatuh Tempo</th>
+                  <th className="py-2.5 px-3.5 w-24 text-right sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Aksi</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200 bg-white">
+              <tbody className="bg-white [&_td]:border-b [&_td]:border-[#eef4fb]">
                 {pesananList.map((item, idx) => {
                   const pel = Array.isArray(item.pelanggan)
                     ? item.pelanggan[0]

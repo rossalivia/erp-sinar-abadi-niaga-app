@@ -228,27 +228,27 @@ export default async function DaftarPembelianPage({ searchParams }: PageProps) {
             }
           />
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead className="bg-slate-100 text-slate-700 font-medium border-b border-slate-200 sticky top-0">
+          <div className="overflow-auto max-h-[calc(100vh-230px)] min-h-[300px] scrollbar-thin">
+            <table className="w-full text-left text-xs border-separate border-spacing-0">
+              <thead className="bg-[#f0f5fa] sticky top-0 z-20">
                 <tr>
-                  <th className="py-2.5 px-3 w-36">Nomor PO</th>
-                  <th className="py-2.5 px-3 min-w-[180px]">Pemasok</th>
-                  <th className="py-2.5 px-3 min-w-[200px]">Barang</th>
-                  <th className="py-2.5 px-3 w-28 text-right">Dipesan</th>
-                  <th className="py-2.5 px-3 w-28 text-right">Diterima</th>
-                  <th className="py-2.5 px-3 w-28 text-center">Status</th>
-                  <th className="py-2.5 px-3 w-28">Tanggal</th>
+                  <th className="py-2.5 px-3 w-36 sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Nomor PO</th>
+                  <th className="py-2.5 px-3 min-w-[180px] sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Pemasok</th>
+                  <th className="py-2.5 px-3 min-w-[200px] sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Barang</th>
+                  <th className="py-2.5 px-3 w-28 text-right sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Dipesan</th>
+                  <th className="py-2.5 px-3 w-28 text-right sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Diterima</th>
+                  <th className="py-2.5 px-3 w-28 text-center sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Status</th>
+                  <th className="py-2.5 px-3 w-28 sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Tanggal</th>
                   {isManajer && (
                     <>
-                      <th className="py-2.5 px-3 w-28 text-right bg-slate-200/50">Harga Beli</th>
-                      <th className="py-2.5 px-3 w-32 text-right bg-slate-200/50">Total Beli</th>
+                      <th className="py-2.5 px-3 w-28 text-right sticky top-0 z-20 bg-[#e5f0fd] text-[#1e40af] font-bold border-b border-[#bfdbfe] shadow-[0_1px_0_0_#bfdbfe]">Harga Beli</th>
+                      <th className="py-2.5 px-3 w-32 text-right sticky top-0 z-20 bg-[#e5f0fd] text-[#1e40af] font-bold border-b border-[#bfdbfe] shadow-[0_1px_0_0_#bfdbfe]">Total Beli</th>
                     </>
                   )}
-                  <th className="py-2.5 px-3 w-20 text-right">Aksi</th>
+                  <th className="py-2.5 px-3 w-20 text-right sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Aksi</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200 bg-white">
+              <tbody className="bg-white [&_td]:border-b [&_td]:border-[#eef4fb]">
                 {poList.map((item, idx) => (
                   <tr
                     key={item.id}

@@ -139,10 +139,20 @@
 }
 
 /* ==========================================================================
-   TABULAR DATA & PRINT RULES (ZONA DATAR WAJIB)
+   TABULAR DATA & STICKY TABLE HEADER
    ========================================================================== */
 .tabular-nums {
   font-variant-numeric: tabular-nums;
+}
+
+/* Memastikan setiap thead dan th di dalam container scrollable tetap sticky */
+thead.sticky th,
+thead th.sticky,
+.table-sticky th {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 20 !important;
+  background-color: #f0f5fa !important;
 }
 
 /* Media query prefers-reduced-motion untuk aksesibilitas WCAG */

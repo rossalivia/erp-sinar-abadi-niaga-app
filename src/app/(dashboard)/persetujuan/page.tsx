@@ -136,21 +136,21 @@ export default async function PersetujuanPage({ searchParams }: PageProps) {
           }
         />
       ) : (
-        <div className="bg-white border border-slate-200 rounded-md overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs text-left border-collapse">
-              <thead className="sticky top-0 bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
+        <div className="bg-white border border-[#e2ebf6] rounded-2xl overflow-hidden shadow-sm">
+          <div className="overflow-auto max-h-[calc(100vh-230px)] min-h-[300px] scrollbar-thin">
+            <table className="w-full text-xs text-left border-separate border-spacing-0">
+              <thead className="sticky top-0 z-20 bg-[#f0f5fa]">
                 <tr>
-                  <th className="py-2.5 px-3">Nomor SO</th>
-                  <th className="py-2.5 px-3">Pelanggan</th>
-                  <th className="py-2.5 px-3">Diajukan Oleh</th>
-                  <th className="py-2.5 px-3">Waktu Pengajuan</th>
-                  <th className="py-2.5 px-3 text-right">Total Pesanan</th>
-                  <th className="py-2.5 px-3">Status</th>
-                  <th className="py-2.5 px-3 text-right">Aksi</th>
+                  <th className="py-2.5 px-3 sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Nomor SO</th>
+                  <th className="py-2.5 px-3 sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Pelanggan</th>
+                  <th className="py-2.5 px-3 sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Diajukan Oleh</th>
+                  <th className="py-2.5 px-3 sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Waktu Pengajuan</th>
+                  <th className="py-2.5 px-3 text-right sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Total Pesanan</th>
+                  <th className="py-2.5 px-3 sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Status</th>
+                  <th className="py-2.5 px-3 text-right sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Aksi</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="bg-white [&_td]:border-b [&_td]:border-[#eef4fb]">
                 {items.map((row) => (
                   <tr key={row.id} className="hover:bg-slate-50/70 transition-colors">
                     <td className="py-2.5 px-3 font-mono font-medium text-slate-900">

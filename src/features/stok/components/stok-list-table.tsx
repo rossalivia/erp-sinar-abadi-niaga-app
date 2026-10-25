@@ -29,22 +29,22 @@ export function StokListTable({ items, peran }: StokListTableProps) {
 
   return (
     <>
-      <div className="overflow-x-auto">
-        <table className="w-full text-left text-xs border-collapse">
-          <thead className="bg-slate-100 text-slate-700 font-medium border-b border-slate-200 sticky top-0">
+      <div className="overflow-auto max-h-[calc(100vh-230px)] min-h-[300px] scrollbar-thin rounded-2xl border border-[#e2ebf6]">
+        <table className="w-full text-left text-xs border-separate border-spacing-0">
+          <thead className="bg-[#f0f5fa] sticky top-0 z-20">
             <tr>
-              <th className="py-2.5 px-3 w-10 text-center">No</th>
-              <th className="py-2.5 px-3 w-28">Kode</th>
-              <th className="py-2.5 px-3 min-w-[200px]">Nama Barang</th>
-              <th className="py-2.5 px-3 w-16 text-center">Satuan</th>
-              <th className="py-2.5 px-3 w-28 text-right">Stok Fisik</th>
-              <th className="py-2.5 px-3 w-28 text-right">Stok Minimum</th>
-              <th className="py-2.5 px-3 w-28 text-center">Status</th>
-              <th className="py-2.5 px-3 w-28">Pembaruan</th>
-              <th className="py-2.5 px-3 w-48 text-right">Aksi</th>
+              <th className="py-2.5 px-3 w-10 text-center sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">No</th>
+              <th className="py-2.5 px-3 w-28 sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Kode</th>
+              <th className="py-2.5 px-3 min-w-[200px] sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Nama Barang</th>
+              <th className="py-2.5 px-3 w-16 text-center sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Satuan</th>
+              <th className="py-2.5 px-3 w-28 text-right sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Stok Fisik</th>
+              <th className="py-2.5 px-3 w-28 text-right sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Stok Minimum</th>
+              <th className="py-2.5 px-3 w-28 text-center sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Status</th>
+              <th className="py-2.5 px-3 w-28 sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Pembaruan</th>
+              <th className="py-2.5 px-3 w-48 text-right sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Aksi</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-200 bg-white">
+          <tbody className="bg-white [&_td]:border-b [&_td]:border-[#eef4fb]">
             {items.map((b, idx) => (
               <tr
                 key={b.id}

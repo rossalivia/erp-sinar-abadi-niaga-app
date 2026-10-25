@@ -41,21 +41,21 @@ export function KartuStokTable({ items, satuan }: KartuStokTableProps) {
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-left text-xs border-collapse">
-        <thead className="bg-slate-100 text-slate-700 font-medium border-b border-slate-200 sticky top-0">
+    <div className="overflow-auto max-h-[calc(100vh-230px)] min-h-[300px] scrollbar-thin rounded-2xl border border-[#e2ebf6]">
+      <table className="w-full text-left text-xs border-separate border-spacing-0">
+        <thead className="bg-[#f0f5fa] sticky top-0 z-20">
           <tr>
-            <th className="py-2.5 px-3 w-10 text-center">No</th>
-            <th className="py-2.5 px-3 w-36">Waktu Mutasi</th>
-            <th className="py-2.5 px-3 w-28 text-center">Jenis</th>
-            <th className="py-2.5 px-3 w-28 text-right">Perubahan</th>
-            <th className="py-2.5 px-3 w-28 text-right">Stok Sesudah</th>
-            <th className="py-2.5 px-3 w-36">No. Dokumen</th>
-            <th className="py-2.5 px-3 min-w-[200px]">Alasan / Keterangan</th>
-            <th className="py-2.5 px-3 w-32">Pelaku</th>
+            <th className="py-2.5 px-3 w-10 text-center sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">No</th>
+            <th className="py-2.5 px-3 w-36 sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Waktu Mutasi</th>
+            <th className="py-2.5 px-3 w-28 text-center sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Jenis</th>
+            <th className="py-2.5 px-3 w-28 text-right sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Perubahan</th>
+            <th className="py-2.5 px-3 w-28 text-right sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Stok Sesudah</th>
+            <th className="py-2.5 px-3 w-36 sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">No. Dokumen</th>
+            <th className="py-2.5 px-3 min-w-[200px] sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Alasan / Keterangan</th>
+            <th className="py-2.5 px-3 w-32 sticky top-0 z-20 bg-[#f0f5fa] text-[#0c1a30] font-bold border-b border-[#e2ebf6] shadow-[0_1px_0_0_#e2ebf6]">Pelaku</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-200 bg-white">
+        <tbody className="bg-white [&_td]:border-b [&_td]:border-[#eef4fb]">
           {items.map((it, idx) => {
             const isPositif = it.jumlah > 0;
             const isNol = it.jumlah === 0;
