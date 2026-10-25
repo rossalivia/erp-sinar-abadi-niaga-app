@@ -31,8 +31,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" className={`${plusJakartaSans.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col font-sans text-slate-800 bg-[#f4f7fb] selection:bg-indigo-500 selection:text-white">
+    <html lang="id" className={`${plusJakartaSans.variable} ${geistMono.variable} h-full antialiased overflow-x-hidden w-full max-w-full`}>
+      <body className="min-h-full flex flex-col font-sans text-slate-800 bg-[#f4f7fb] selection:bg-indigo-500 selection:text-white overflow-x-hidden w-full max-w-full">
         {children}
         <Toaster />
       </body>

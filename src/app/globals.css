@@ -36,7 +36,22 @@
     --glass-blur: 16px;
   }
 
+  html {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    scrollbar-gutter: stable;
+  }
+
   body {
+    width: 100%;
+    max-width: 100%;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+    touch-action: pan-y;
+    overscroll-behavior-x: none;
     background-color: var(--background);
     color: var(--foreground);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";

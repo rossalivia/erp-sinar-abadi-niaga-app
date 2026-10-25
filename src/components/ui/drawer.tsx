@@ -67,7 +67,7 @@ export function Drawer({
               animate="open"
               exit="exit"
               className={cn(
-                "w-screen bg-white/95 backdrop-blur-xl border-l border-slate-200/80 shadow-2xl flex flex-col h-full",
+                "w-full bg-white/95 backdrop-blur-xl border-l border-slate-200/80 shadow-2xl flex flex-col h-full",
                 WIDTH_CLASSES[width],
                 className
               )}

@@ -51,7 +51,7 @@ export function AppShell({ user, children }: AppShellProps) {
   }, []);
 
   return (
-    <div className="min-h-screen flex bg-transparent">
+    <div className="min-h-screen flex bg-transparent w-full max-w-full overflow-x-hidden relative">
       {/* Sidebar (Desktop Collapsible & Mobile Drawer) */}
       <Sidebar
         peran={user.peran}
@@ -65,7 +65,7 @@ export function AppShell({ user, children }: AppShellProps) {
       {/* Main Container dengan responsive dynamic padding */}
       <div
         className={cn(
-          "flex flex-1 flex-col min-w-0 transition-all duration-250 ease-in-out",
+          "flex flex-1 flex-col min-w-0 w-full max-w-full transition-all duration-250 ease-in-out overflow-x-hidden",
           isSidebarCollapsed ? "md:pl-16" : "md:pl-60"
         )}
         data-app-shell-content
@@ -78,7 +78,7 @@ export function AppShell({ user, children }: AppShellProps) {
         />
 
         {/* Content Area dengan bottom padding untuk Apple Mobile Dock */}
-        <main className="flex-1 p-4 sm:p-6 pb-20 md:pb-8 max-w-7xl w-full mx-auto">
+        <main className="flex-1 p-4 sm:p-6 pb-20 md:pb-8 max-w-7xl w-full mx-auto min-w-0">
           {children}
         </main>
       </div>
