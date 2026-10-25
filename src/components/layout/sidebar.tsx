@@ -176,13 +176,13 @@ export function Sidebar({
 
       <aside
         className={cn(
-          "fixed top-0 left-0 bottom-0 z-50 bg-slate-900 text-slate-300 flex flex-col border-r border-slate-800 select-none transition-all duration-250 ease-in-out md:translate-x-0 shadow-xl",
+          "fixed top-0 left-0 bottom-0 z-50 bg-[#0c1b3a] text-slate-300 flex flex-col border-r border-[#152a54] select-none transition-all duration-250 ease-in-out md:translate-x-0 shadow-2xl",
           isCollapsed ? "w-16" : "w-60",
           isOpenMobile ? "translate-x-0" : "-translate-x-full"
         )}
       >
         {/* Brand Header */}
-        <div className="h-14 px-3 flex items-center justify-between border-b border-slate-800 bg-slate-950/80 shrink-0">
+        <div className="h-14 px-3 flex items-center justify-between border-b border-[#152a54] bg-[#08132b]/90 shrink-0">
           <Link
             href="/"
             onClick={onCloseMobile}
@@ -201,7 +201,7 @@ export function Sidebar({
         </div>
 
         {/* Navigation Sections */}
-        <div className="flex-1 overflow-y-auto px-2.5 py-3 space-y-4 scrollbar-thin scrollbar-thumb-slate-800">
+        <div className="flex-1 overflow-y-auto px-2.5 py-3 space-y-4 scrollbar-thin scrollbar-thumb-[#152a54]">
           {navCategories.map((category) => {
             const isCategoryCollapsed = collapsedCategories[category.title] && !isCollapsed;
 
@@ -212,7 +212,7 @@ export function Sidebar({
                   <button
                     type="button"
                     onClick={() => toggleCategory(category.title)}
-                    className="w-full flex items-center justify-between px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-300 transition-colors font-mono cursor-pointer"
+                    className="w-full flex items-center justify-between px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-[#566e94] hover:text-slate-200 transition-colors font-mono cursor-pointer"
                   >
                     <span className="truncate">{category.title}</span>
                     <ChevronDown
@@ -223,7 +223,7 @@ export function Sidebar({
                     />
                   </button>
                 ) : (
-                  <div className="my-1.5 border-t border-slate-800/80" />
+                  <div className="my-1.5 border-t border-[#152a54]/80" />
                 )}
 
                 {/* Items */}
@@ -247,19 +247,19 @@ export function Sidebar({
                             onClick={onCloseMobile}
                             title={isCollapsed ? item.label : undefined}
                             className={cn(
-                              "relative flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors group",
+                              "relative flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-colors group",
                               active
                                 ? "text-white font-semibold"
-                                : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/50",
+                                : "text-[#8ea2c2] hover:text-white hover:bg-white/6",
                               isCollapsed && "justify-center px-0 py-2"
                             )}
                           >
-                            {/* Animated Background Pill for Active Link */}
+                            {/* Animated Background Pill for Active Link (GeneX Deep Navy Pill) */}
                             {active && (
                               <motion.div
                                 layoutId="sidebar-active-pill"
                                 transition={{ type: "spring", stiffness: 450, damping: 35 }}
-                                className="absolute inset-0 bg-indigo-600 rounded-lg -z-10 shadow-xs"
+                                className="absolute inset-0 bg-[#183162] border border-[#2b4e91]/60 rounded-xl -z-10 shadow-xs"
                               />
                             )}
 
@@ -272,10 +272,10 @@ export function Sidebar({
                             {!isCollapsed && item.badge !== undefined && (
                               <span
                                 className={cn(
-                                  "px-1.5 py-0.2 rounded-full text-[10px] font-mono font-semibold shrink-0",
+                                  "px-1.5 py-0.2 rounded-full text-[10px] font-mono font-semibold shrink-0 border",
                                   item.badgeVariant === "amber"
-                                    ? "bg-amber-500/20 text-amber-300"
-                                    : "bg-indigo-500/30 text-indigo-200"
+                                    ? "bg-amber-500/20 text-amber-300 border-amber-500/30"
+                                    : "bg-blue-500/25 text-blue-200 border-blue-400/30"
                                 )}
                               >
                                 {item.badge}
@@ -293,17 +293,17 @@ export function Sidebar({
         </div>
 
         {/* Footer: User Badge & Collapse Toggle */}
-        <div className="p-2.5 border-t border-slate-800 bg-slate-950/80 flex items-center justify-between shrink-0">
+        <div className="p-2.5 border-t border-[#152a54] bg-[#08132b]/90 flex items-center justify-between shrink-0">
           <Link
             href="/profil"
             onClick={onCloseMobile}
             className={cn(
-              "flex items-center gap-2 truncate p-1 rounded-lg hover:bg-slate-800/60 transition-colors flex-1",
+              "flex items-center gap-2 truncate p-1 rounded-xl hover:bg-white/6 transition-colors flex-1",
               isCollapsed && "justify-center"
             )}
             title="Buka Profil"
           >
-            <div className="h-7 w-7 rounded-lg bg-indigo-950 border border-indigo-700/60 flex items-center justify-center text-xs font-bold text-indigo-300 shrink-0">
+            <div className="h-7 w-7 rounded-lg bg-[#183162] border border-[#2b4e91]/60 flex items-center justify-center text-xs font-bold text-blue-200 shrink-0">
               {userName ? userName.charAt(0).toUpperCase() : "U"}
             </div>
             {!isCollapsed && (
@@ -311,7 +311,7 @@ export function Sidebar({
                 <span className="text-xs font-semibold text-slate-200 truncate leading-tight">
                   {userName || "Pengguna"}
                 </span>
-                <span className="text-[9px] uppercase font-mono text-indigo-400 font-bold tracking-wider leading-tight">
+                <span className="text-[9px] uppercase font-mono text-blue-300 font-bold tracking-wider leading-tight">
                   {peran}
                 </span>
               </div>
@@ -324,7 +324,7 @@ export function Sidebar({
               type="button"
               onClick={onToggleCollapse}
               className={cn(
-                "hidden md:flex items-center justify-center h-7 w-7 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors shrink-0",
+                "hidden md:flex items-center justify-center h-7 w-7 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors shrink-0",
                 isCollapsed && "w-full mt-1"
               )}
               title={isCollapsed ? "Buka Sidebar (Expand)" : "Sempitkan Sidebar (Collapse)"}

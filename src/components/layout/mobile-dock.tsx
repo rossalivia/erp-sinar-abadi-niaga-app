@@ -29,15 +29,15 @@ export function MobileDock({
   return (
     <nav
       aria-label="Navigasi Bawah Mobile"
-      className="fixed bottom-3 left-1/2 -translate-x-1/2 z-40 md:hidden w-[90%] max-w-sm rounded-full bg-white/85 backdrop-blur-xl border border-white/80 shadow-2xl px-3 py-1.5 flex items-center justify-around transition-all"
+      className="fixed bottom-3 left-1/2 -translate-x-1/2 z-40 md:hidden w-[90%] max-w-sm rounded-full bg-white/90 backdrop-blur-xl border border-[#e2ebf6] shadow-2xl px-3 py-1.5 flex items-center justify-around transition-all"
     >
       {/* 1. Dashboard */}
       <Link
         href="/"
         className={`flex flex-col items-center justify-center p-2 rounded-full transition-all ${
           pathname === '/'
-            ? 'bg-indigo-600 text-white shadow-neu-sm'
-            : 'text-slate-600 hover:text-slate-900 active:scale-95'
+            ? 'bg-[#0c1b3a] text-white shadow-neu-sm'
+            : 'text-slate-600 hover:text-[#0c1b3a] active:scale-95'
         }`}
         title="Dashboard"
       >
@@ -50,8 +50,8 @@ export function MobileDock({
         href="/pesanan"
         className={`flex flex-col items-center justify-center p-2 rounded-full transition-all ${
           isActive('/pesanan')
-            ? 'bg-indigo-600 text-white shadow-neu-sm'
-            : 'text-slate-600 hover:text-slate-900 active:scale-95'
+            ? 'bg-[#0c1b3a] text-white shadow-neu-sm'
+            : 'text-slate-600 hover:text-[#0c1b3a] active:scale-95'
         }`}
         title="Pesanan"
       >
@@ -63,7 +63,7 @@ export function MobileDock({
       <button
         type="button"
         onClick={onOpenSearch}
-        className="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-600 text-white shadow-neu-sm hover:bg-indigo-700 active:scale-90 transition-all cursor-pointer -translate-y-2 border-2 border-white"
+        className="flex items-center justify-center h-10 w-10 rounded-full bg-[#0c1b3a] text-white shadow-neu-sm hover:bg-[#162d5c] active:scale-90 transition-all cursor-pointer -translate-y-2 border-2 border-white"
         title="Cari Cepat (Ctrl+K)"
         aria-label="Buka pencarian cepat"
       >
@@ -75,8 +75,8 @@ export function MobileDock({
         href="/barang"
         className={`flex flex-col items-center justify-center p-2 rounded-full transition-all ${
           isActive('/barang')
-            ? 'bg-indigo-600 text-white shadow-neu-sm'
-            : 'text-slate-600 hover:text-slate-900 active:scale-95'
+            ? 'bg-[#0c1b3a] text-white shadow-neu-sm'
+            : 'text-slate-600 hover:text-[#0c1b3a] active:scale-95'
         }`}
         title="Katalog Barang"
       >

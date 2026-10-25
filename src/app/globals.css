@@ -2,36 +2,37 @@
 
 @layer base {
   :root {
-    --background: #f4f7fb;
-    --foreground: #0f172a;
-    --card: rgba(255, 255, 255, 0.82);
-    --card-foreground: #0f172a;
-    --popover: rgba(255, 255, 255, 0.92);
-    --popover-foreground: #0f172a;
-    --primary: #4f46e5;
+    /* GeneX Palette: Soft Ice Blue Canvas, Deep Midnight Navy Accent */
+    --background: #f0f5fa;
+    --foreground: #0c1a30;
+    --card: #ffffff;
+    --card-foreground: #0c1a30;
+    --popover: rgba(255, 255, 255, 0.96);
+    --popover-foreground: #0c1a30;
+    --primary: #0c1b3a;
     --primary-foreground: #ffffff;
-    --secondary: #eef2f6;
-    --secondary-foreground: #1e293b;
-    --muted: #f1f5f9;
-    --muted-foreground: #64748b;
-    --accent: #4f46e5;
+    --secondary: #eaf1f9;
+    --secondary-foreground: #0c1a30;
+    --muted: #f0f4f9;
+    --muted-foreground: #5e718d;
+    --accent: #2563eb;
     --accent-foreground: #ffffff;
     --destructive: #ef4444;
     --destructive-foreground: #ffffff;
-    --border: rgba(226, 232, 240, 0.8);
-    --input: rgba(226, 232, 240, 0.9);
-    --ring: #4f46e5;
-    --radius: 0.75rem;
+    --border: #e2ebf6;
+    --input: #e2ebf6;
+    --ring: #2563eb;
+    --radius: 1rem;
 
-    /* Neumorphic Shadows */
-    --shadow-raised: 5px 5px 12px rgba(160, 175, 200, 0.28), -5px -5px 12px rgba(255, 255, 255, 0.95);
-    --shadow-raised-sm: 3px 3px 7px rgba(160, 175, 200, 0.22), -3px -3px 7px rgba(255, 255, 255, 0.95);
-    --shadow-inset: inset 2px 2px 5px rgba(160, 175, 200, 0.3), inset -2px -2px 5px rgba(255, 255, 255, 0.95);
-    --shadow-flat: 0 1px 3px 0 rgba(15, 23, 42, 0.06);
+    /* GeneX Soft Ambient Shadows */
+    --shadow-raised: 0 4px 20px -2px rgba(12, 27, 58, 0.05), 0 2px 6px -1px rgba(12, 27, 58, 0.03);
+    --shadow-raised-sm: 0 2px 8px -1px rgba(12, 27, 58, 0.04), 0 1px 3px -1px rgba(12, 27, 58, 0.02);
+    --shadow-inset: inset 1.5px 1.5px 4px rgba(160, 180, 210, 0.2), inset -1.5px -1.5px 4px rgba(255, 255, 255, 0.9);
+    --shadow-flat: 0 1px 2px 0 rgba(12, 27, 58, 0.04);
 
     /* Glass Tokens */
-    --glass-bg: rgba(255, 255, 255, 0.75);
-    --glass-border: rgba(255, 255, 255, 0.7);
+    --glass-bg: rgba(255, 255, 255, 0.88);
+    --glass-border: rgba(226, 235, 246, 0.85);
     --glass-blur: 16px;
   }
 
@@ -41,15 +42,15 @@
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     -webkit-font-smoothing: antialiased;
     background-image: 
-      radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.05) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, rgba(56, 189, 248, 0.04) 0px, transparent 50%),
-      radial-gradient(at 50% 100%, rgba(224, 231, 255, 0.3) 0px, transparent 60%);
+      radial-gradient(at 0% 0%, rgba(219, 234, 254, 0.6) 0px, transparent 55%),
+      radial-gradient(at 100% 0%, rgba(224, 238, 255, 0.45) 0px, transparent 50%),
+      radial-gradient(at 50% 100%, rgba(235, 244, 255, 0.7) 0px, transparent 65%);
     background-attachment: fixed;
   }
 }
 
 /* ==========================================================================
-   NEUMORPHISM TOKENS & UTILITIES
+   NEUMORPHISM & SURFACE TOKENS
    ========================================================================== */
 .shadow-neu {
   box-shadow: var(--shadow-raised);
@@ -64,26 +65,26 @@
 }
 
 /* ==========================================================================
-   4-TIER STRICT SURFACE HIERARCHY (ANTI-DOUBLE RULE)
+   GENEX SURFACE HIERARCHY
    ========================================================================== */
 .surface-raised {
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  box-shadow: 4px 4px 14px rgba(160, 175, 200, 0.16), -4px -4px 14px rgba(255, 255, 255, 0.9);
+  background: #ffffff;
+  border: 1px solid #e2ebf6;
+  box-shadow: 0 4px 20px -2px rgba(12, 27, 58, 0.04), 0 2px 6px -1px rgba(12, 27, 58, 0.02);
 }
 
 .surface-glass {
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.75);
-  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(226, 235, 246, 0.8);
+  box-shadow: 0 4px 20px -2px rgba(12, 27, 58, 0.04);
 }
 
 .surface-inset {
-  background: rgba(241, 245, 249, 0.7);
-  box-shadow: inset 1.5px 1.5px 4px rgba(160, 175, 200, 0.25), inset -1.5px -1.5px 4px rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(226, 232, 240, 0.7);
+  background: #f0f5fa;
+  box-shadow: inset 1px 1px 3px rgba(148, 163, 184, 0.15);
+  border: 1px solid #e2ebf6;
 }
 
 .surface-flat {

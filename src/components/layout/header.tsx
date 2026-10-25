@@ -27,18 +27,18 @@ const PERAN_BADGE_STYLE: Record<
 > = {
   penjualan: {
     label: "Staf Penjualan",
-    bg: "bg-blue-50 border-blue-200/80",
-    text: "text-blue-800",
+    bg: "bg-[#e5f0fd] border-[#bfdbfe]",
+    text: "text-[#1e40af]",
   },
   gudang: {
     label: "Staf Gudang",
-    bg: "bg-amber-50 border-amber-200/80",
-    text: "text-amber-800",
+    bg: "bg-[#fef7e6] border-[#fde68a]",
+    text: "text-[#92400e]",
   },
   manajer: {
     label: "Manajer",
-    bg: "bg-indigo-50 border-indigo-200/80",
-    text: "text-indigo-800",
+    bg: "bg-[#eaf1f9] border-[#cbdff2]",
+    text: "text-[#0c1b3a]",
   },
 };
 
@@ -53,8 +53,8 @@ export function Header({
 
   const peranInfo = PERAN_BADGE_STYLE[user.peran] || {
     label: user.peran,
-    bg: "bg-slate-50 border-slate-200",
-    text: "text-slate-800",
+    bg: "bg-[#f0f5fa] border-[#e2ebf6]",
+    text: "text-[#0c1a30]",
   };
 
   const handleLogout = () => {
@@ -78,12 +78,12 @@ export function Header({
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 w-full items-center justify-between border-b border-slate-200/70 surface-glass px-4 sm:px-6">
+    <header className="sticky top-0 z-30 flex h-14 w-full items-center justify-between border-b border-[#e2ebf6] bg-white/90 backdrop-blur-md px-4 sm:px-6 shadow-[0_1px_3px_0_rgba(12,27,58,0.03)]">
       {/* Sisi Kiri: Mobile Hamburger & Brand/Breadcrumb */}
       <div className="flex items-center gap-3">
         <button
           onClick={onOpenMobileSidebar}
-          className="rounded-lg p-1.5 text-slate-600 hover:bg-slate-100 active:scale-95 transition-all md:hidden cursor-pointer"
+          className="rounded-lg p-1.5 text-slate-600 hover:bg-[#f0f5fa] active:scale-95 transition-all md:hidden cursor-pointer"
           aria-label="Buka navigasi"
         >
           <Menu className="h-5 w-5" />
@@ -99,14 +99,14 @@ export function Header({
         <button
           type="button"
           onClick={onOpenSearch}
-          className="flex items-center gap-2 px-3 py-1.5 text-xs text-slate-500 surface-inset rounded-lg hover:text-slate-800 hover:border-slate-300 transition-all cursor-pointer group max-w-xs sm:w-64 justify-between"
+          className="flex items-center gap-2 px-3 py-1.5 text-xs text-slate-500 bg-[#f0f5fa] border border-[#e2ebf6] rounded-full hover:text-slate-800 hover:border-blue-300 transition-all cursor-pointer group max-w-xs sm:w-64 justify-between"
           title="Cari Cepat Menu (Ctrl+K)"
         >
           <div className="flex items-center gap-2">
-            <Search className="h-3.5 w-3.5 text-slate-400 group-hover:text-indigo-600 transition-colors" />
+            <Search className="h-3.5 w-3.5 text-slate-400 group-hover:text-[#2563eb] transition-colors" />
             <span className="text-xs truncate">Cari menu & pintasan...</span>
           </div>
-          <kbd className="hidden sm:inline-block text-[10px] font-mono px-1.5 py-0.2 bg-white border border-slate-200 rounded text-slate-500 shadow-2xs">
+          <kbd className="hidden sm:inline-block text-[10px] font-mono px-1.5 py-0.2 bg-white border border-[#e2ebf6] rounded text-slate-500 shadow-2xs">
             Ctrl+K
           </kbd>
         </button>
@@ -117,16 +117,16 @@ export function Header({
         <button
           type="button"
           onClick={() => setIsProfileOpen((prev) => !prev)}
-          className="flex items-center gap-2 p-1 pl-1.5 pr-2 rounded-lg hover:bg-slate-100/80 transition-colors cursor-pointer select-none"
+          className="flex items-center gap-2 p-1 pl-1.5 pr-2 rounded-full hover:bg-[#f0f5fa] transition-colors cursor-pointer select-none"
         >
-          <div className="h-7 w-7 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs">
+          <div className="h-7 w-7 rounded-full bg-[#0c1b3a] text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs">
             {user.nama_lengkap
               ? user.nama_lengkap.charAt(0).toUpperCase()
               : <User className="h-3.5 w-3.5" />}
           </div>
 
           <div className="hidden sm:flex flex-col text-left">
-            <span className="text-xs font-semibold text-slate-800 leading-tight">
+            <span className="text-xs font-semibold text-[#0c1a30] leading-tight">
               {user.nama_lengkap}
             </span>
             <span className="text-[10px] text-slate-500 leading-tight">

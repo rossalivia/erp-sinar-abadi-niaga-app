@@ -83,19 +83,19 @@ export function DashboardDateFilter({
   };
 
   return (
-    <div className="surface-raised rounded-xl p-3 sm:p-4 border border-slate-200/90 shadow-2xs space-y-3">
+    <div className="surface-raised rounded-2xl p-3.5 sm:p-4 border border-[#e2ebf6] shadow-sm space-y-3">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         {/* Label & Status Periode Aktif */}
         <div className="flex items-center gap-2.5">
-          <div className="h-7 w-7 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center shrink-0 border border-indigo-100">
+          <div className="h-7 w-7 rounded-xl bg-[#e5f0fd] text-[#1e40af] flex items-center justify-center shrink-0 border border-[#bfdbfe]">
             <Calendar className="h-4 w-4" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-slate-900 tracking-tight">
+              <span className="text-xs font-bold text-[#0c1a30] tracking-tight">
                 Filter Jangka Waktu Dashboard
               </span>
-              <span className="text-[10px] font-mono px-2 py-0.2 rounded bg-indigo-50 text-indigo-700 font-semibold border border-indigo-200/60">
+              <span className="text-[10px] font-mono px-2 py-0.2 rounded-full bg-[#e5f0fd] text-[#1e40af] font-semibold border border-[#bfdbfe]">
                 {periodeLabel}
               </span>
             </div>
@@ -118,10 +118,10 @@ export function DashboardDateFilter({
                 disabled={isPending}
                 onClick={() => handleApplyPreset(opt.id)}
                 className={cn(
-                  'h-7 text-xs px-2.5 rounded-lg transition-all',
+                  'h-7 text-xs px-2.5 rounded-xl transition-all',
                   isActive
-                    ? 'bg-slate-900 text-white hover:bg-slate-800'
-                    : 'border-slate-200 text-slate-700 hover:bg-slate-50'
+                    ? 'bg-[#0c1b3a] text-white hover:bg-[#162d5c]'
+                    : 'border-[#e2ebf6] bg-white text-[#0c1a30] hover:bg-[#f0f5fa]'
                 )}
               >
                 {opt.label}
@@ -135,7 +135,7 @@ export function DashboardDateFilter({
             variant={showCustomRange ? 'secondary' : 'outline'}
             disabled={isPending}
             onClick={() => setShowCustomRange((prev) => !prev)}
-            className="h-7 text-xs px-2.5 rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50 gap-1.5"
+            className="h-7 text-xs px-2.5 rounded-xl border-[#e2ebf6] text-[#0c1a30] hover:bg-[#f0f5fa] gap-1.5"
           >
             <Filter className="h-3 w-3" />
             Pilih Tanggal...
@@ -148,7 +148,7 @@ export function DashboardDateFilter({
               variant="ghost"
               disabled={isPending}
               onClick={handleResetToDefault}
-              className="h-7 text-xs px-2 text-slate-500 hover:text-slate-800"
+              className="h-7 text-xs px-2 text-slate-500 hover:text-[#0c1a30] rounded-lg"
               title="Reset ke Minggu Ini"
             >
               <RotateCcw className="h-3 w-3" />

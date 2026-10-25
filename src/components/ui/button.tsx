@@ -4,21 +4,21 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center whitespace-nowrap rounded-xl text-xs font-semibold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50 select-none btn-neu',
+  'inline-flex items-center justify-center whitespace-nowrap rounded-xl text-xs font-semibold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50 select-none btn-neu',
   {
     variants: {
       variant: {
         default:
-          'bg-indigo-600 text-white shadow-neu-sm hover:bg-indigo-700 active:bg-indigo-800 active:shadow-neu-inset',
+          'bg-[#0c1b3a] text-white shadow-neu-sm hover:bg-[#162d5c] active:bg-[#071024] active:shadow-neu-inset',
         destructive:
           'bg-red-600 text-white shadow-neu-sm hover:bg-red-700 active:bg-red-800 active:shadow-neu-inset',
         outline:
-          'bg-[#f4f7fb] border border-white/80 text-slate-700 shadow-neu-sm hover:bg-white hover:text-indigo-600 active:shadow-neu-inset',
+          'bg-white border border-[#e2ebf6] text-[#0c1a30] shadow-neu-sm hover:bg-[#f0f5fa] hover:text-[#2563eb] hover:border-blue-300 active:shadow-neu-inset',
         secondary:
-          'bg-slate-100/90 text-slate-800 border border-slate-200/60 shadow-xs hover:bg-slate-200/80 active:shadow-neu-inset',
+          'bg-[#eaf1f9] text-[#0c1a30] border border-[#d6e3f2] shadow-xs hover:bg-[#dee9f5] active:shadow-neu-inset',
         ghost:
-          'text-slate-600 hover:bg-slate-200/50 hover:text-slate-900 active:bg-slate-200/80',
-        link: 'text-indigo-600 underline-offset-4 hover:underline p-0 h-auto font-medium',
+          'text-slate-600 hover:bg-[#f0f5fa] hover:text-[#0c1a30] active:bg-[#e4edf7]',
+        link: 'text-[#2563eb] underline-offset-4 hover:underline p-0 h-auto font-medium',
       },
       size: {
         default: 'h-8 px-3.5 py-1.5',

@@ -213,20 +213,20 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-4 sm:p-6 lg:p-8 bg-slate-100/80">
-      {/* Container utama Solid Enterprise */}
-      <div className="w-full max-w-4xl min-h-[580px] bg-white border border-slate-200/90 shadow-md flex flex-col lg:flex-row overflow-hidden rounded-2xl">
+    <div className="min-h-screen w-full flex items-center justify-center p-4 sm:p-6 lg:p-8 bg-[#f0f5fa]">
+      {/* Container utama Solid Enterprise GeneX */}
+      <div className="w-full max-w-4xl min-h-[580px] bg-white border border-[#e2ebf6] shadow-[0_10px_40px_-10px_rgba(12,27,58,0.08)] flex flex-col lg:flex-row overflow-hidden rounded-3xl">
         {/* SISI KIRI: Form Login Enterprise */}
         <div className="w-full lg:w-[48%] p-8 sm:p-10 flex flex-col justify-between bg-white">
           {/* Brand Header Resmi */}
-          <div className="pb-5 border-b border-slate-100">
+          <div className="pb-5 border-b border-[#eef4fb]">
             <Logo size="sm" showSubdeskripsi={true} />
           </div>
 
           {/* Form Content */}
           <div className="my-auto py-6">
             <div className="mb-6 space-y-1">
-              <h1 className="text-lg font-bold text-slate-900 tracking-tight">
+              <h1 className="text-lg font-bold text-[#0c1a30] tracking-tight">
                 Masuk ke Akun Anda
               </h1>
               <p className="text-xs text-slate-500">
@@ -246,17 +246,17 @@ export default function LoginPage() {
           </div>
 
           {/* Footer Info */}
-          <div className="text-[11px] text-slate-400 pt-4 border-t border-slate-100 flex items-center justify-between">
+          <div className="text-[11px] text-slate-400 pt-4 border-t border-[#eef4fb] flex items-center justify-between">
             <span>CV Sinar Abadi Niaga © 2026</span>
             <span className="font-mono text-slate-400">Node Internal</span>
           </div>
         </div>
 
-        {/* SISI KANAN: Panel Identitas Korporat Enterprise (Tanpa Foto AI 3D & Tanpa Ornamen Berlebihan) */}
-        <div className="hidden lg:flex lg:w-[52%] bg-slate-900 text-slate-100 flex-col justify-between p-10 border-l border-slate-800">
+        {/* SISI KANAN: Panel Identitas Korporat Enterprise GeneX Midnight Navy */}
+        <div className="hidden lg:flex lg:w-[52%] bg-[#0c1b3a] text-slate-100 flex-col justify-between p-10 border-l border-[#152a54]">
           {/* Bagian Atas: Lingkup Usaha */}
           <div className="space-y-4">
-            <div className="inline-block px-2.5 py-1 bg-slate-800 border border-slate-700 text-slate-300 text-[11px] font-mono rounded">
+            <div className="inline-block px-3 py-1 bg-[#183162] border border-[#2b4e91]/60 text-blue-200 text-[11px] font-mono rounded-full font-semibold">
               SISTEM DISTRIBUSI PUSAT
             </div>
 
@@ -264,27 +264,27 @@ export default function LoginPage() {
               <h2 className="text-xl font-bold tracking-tight text-white leading-snug">
                 Perdagangan Grosir Sembako &amp; Kebutuhan Toko Kelontong
               </h2>
-              <p className="text-xs text-slate-400 leading-relaxed">
+              <p className="text-xs text-[#8ea2c2] leading-relaxed">
                 Platform operasional internal CV Sinar Abadi Niaga untuk pencatatan persediaan barang, otomatisasi pesanan penjualan, penerbitan surat jalan logistik, serta pemantauan limit kredit toko rekanan.
               </p>
             </div>
           </div>
 
           {/* Bagian Tengah: Tampilan Logo Resmi Bersih */}
-          <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800">
+          <div className="p-4 rounded-2xl bg-[#08132b]/90 border border-[#152a54]">
             <Logo size="md" inverted={true} showSubdeskripsi={true} />
           </div>
 
           {/* Bagian Bawah: Informasi Entitas & Gudang */}
-          <div className="space-y-3 pt-4 border-t border-slate-800 text-xs">
+          <div className="space-y-3 pt-4 border-t border-[#152a54] text-xs">
             <div className="grid grid-cols-2 gap-3 text-[11px]">
               <div>
-                <span className="text-slate-500 block">Kategori Usaha</span>
-                <span className="font-medium text-slate-300">Wholesale Trade of Groceries &amp; FMCG</span>
+                <span className="text-[#566e94] block">Kategori Usaha</span>
+                <span className="font-medium text-slate-200">Wholesale Trade of Groceries &amp; FMCG</span>
               </div>
               <div>
-                <span className="text-slate-500 block">Wilayah Distribusi</span>
-                <span className="font-medium text-slate-300">Jawa Timur &amp; Sekitarnya</span>
+                <span className="text-[#566e94] block">Wilayah Distribusi</span>
+                <span className="font-medium text-slate-200">Jawa Timur &amp; Sekitarnya</span>
               </div>
             </div>
 

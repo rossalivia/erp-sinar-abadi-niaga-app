@@ -273,23 +273,23 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
   return (
     <div className="space-y-5">
-      {/* 1. Hero Strip Ringkas (1 Baris Ramping Anti-Double) */}
-      <div className="surface-raised rounded-xl px-4 py-2.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 text-xs">
-        <div className="flex items-center gap-2.5">
-          <span className="font-semibold text-slate-900">
-            Halo, {user?.nama_lengkap}
-          </span>
+      {/* 1. Hero Strip Ringkas (GeneX Soft Ice Gradient & Deep Midnight Navy) */}
+      <div className="surface-raised rounded-2xl p-4 sm:p-5 border border-[#e2ebf6] bg-gradient-to-r from-white via-[#f0f5fa] to-[#e8f2fc] shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-bold text-[#0c1a30]">
+              Halo, {user?.nama_lengkap}!
+            </span>
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#e5f0fd] text-[#1e40af] border border-[#bfdbfe] uppercase font-mono">
+              {user?.peran}
+            </span>
+          </div>
           <span className="text-slate-300 hidden sm:inline">&bull;</span>
-          <span className="inline-flex items-center px-2 py-0.2 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-800 border border-indigo-200/60 uppercase font-mono">
-            {user?.peran}
-          </span>
-          <span className="text-slate-400 hidden md:inline text-[11px]">
-            CV Sinar Abadi Niaga
-          </span>
-          <span className="text-slate-300 hidden lg:inline">&bull;</span>
-          <span className="text-indigo-600 font-medium hidden lg:inline text-[11px]">
-            Wholesale Groceries &amp; FMCG
-          </span>
+          <div className="flex items-center gap-2 text-slate-500 text-[11px]">
+            <span className="font-medium text-slate-600">CV Sinar Abadi Niaga</span>
+            <span className="text-slate-300">&bull;</span>
+            <span className="text-[#2563eb] font-semibold">Wholesale Groceries &amp; FMCG</span>
+          </div>
         </div>
 
         <div className="flex items-center gap-3 text-slate-500 text-[11px]">
@@ -300,9 +300,9 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             </span>
           </div>
           <span className="text-slate-300">&bull;</span>
-          <div className="flex items-center gap-1 text-emerald-700 font-medium">
-            <Shield className="h-3.5 w-3.5 text-emerald-600" />
-            <span>Sesi Terenkripsi</span>
+          <div className="flex items-center gap-1 text-[#065f46] font-medium bg-[#e6f8f0] px-2 py-0.5 rounded-full border border-[#a7f3d0]">
+            <Shield className="h-3 w-3 text-[#065f46]" />
+            <span className="text-[10px]">Sesi Terenkripsi</span>
           </div>
         </div>
       </div>
@@ -310,16 +310,16 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       {/* 2. Banner Peringatan Penagihan Piutang (Full-Width Tanpa Kotak Ganda) */}
       {(user?.peran === "manajer" || user?.peran === "penjualan") &&
         (tagihanHariIni > 0 || tagihanOverdueCount > 0) && (
-          <div className="surface-raised rounded-xl p-3.5 border-amber-300/80 bg-linear-to-r from-amber-50/50 via-white to-amber-50/30 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs">
+          <div className="surface-raised rounded-2xl p-4 border border-[#fde68a] bg-gradient-to-r from-[#fef7e6]/70 via-white to-[#fef7e6]/40 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs shadow-sm">
             <div className="flex items-center gap-2.5">
-              <div className="h-7 w-7 rounded-lg bg-amber-100 flex items-center justify-center text-amber-800 shrink-0">
+              <div className="h-8 w-8 rounded-xl bg-[#fef7e6] border border-[#fde68a] flex items-center justify-center text-[#92400e] shrink-0">
                 <ReceiptText className="h-4 w-4" />
               </div>
               <div>
-                <p className="font-bold text-amber-950">
+                <p className="font-bold text-[#92400e]">
                   Monitoring Penagihan Piutang
                 </p>
-                <p className="text-amber-800 text-[11px] mt-0.5">
+                <p className="text-slate-600 text-[11px] mt-0.5">
                   {tagihanHariIni > 0 && (
                     <span className="font-medium mr-2">
                       &bull; {tagihanHariIni} faktur jatuh tempo hari ini
@@ -339,7 +339,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
               asChild
               size="sm"
               variant="outline"
-              className="h-7 text-xs border-amber-300 text-amber-900 hover:bg-amber-100/70"
+              className="h-7 text-xs border-[#fde68a] text-[#92400e] hover:bg-[#fef7e6]"
             >
               <Link href="/penagihan">
                 Buka Penagihan &rarr;
@@ -366,14 +366,14 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="h-5 w-1 bg-indigo-600 rounded-full" />
-              <h2 className="text-xs font-bold text-slate-800 uppercase tracking-wider font-mono">
+              <div className="h-5 w-1 bg-[#2563eb] rounded-full" />
+              <h2 className="text-xs font-bold text-[#0c1a30] uppercase tracking-wider font-mono">
                 Ringkasan Finansial — {periodeJudul}
               </h2>
             </div>
             <Link
               href="/laporan"
-              className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition-colors"
+              className="text-xs font-semibold text-[#2563eb] hover:text-[#1d4ed8] flex items-center gap-1 transition-colors"
             >
               Lihat Laporan Lengkap
               <ArrowRight className="h-3 w-3" />
@@ -382,14 +382,14 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3.5">
             {/* Bento Card 1: Hero Omzet & Margin (Lebar 2 Kolom di Desktop) */}
-            <div className="md:col-span-2 surface-raised rounded-xl p-5 flex flex-col justify-between border-slate-200">
+            <div className="md:col-span-2 surface-raised rounded-2xl p-5 flex flex-col justify-between border border-[#e2ebf6] shadow-sm">
               <div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="h-7 w-7 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
+                    <div className="h-7 w-7 rounded-xl bg-[#e5f0fd] text-[#1e40af] border border-[#bfdbfe] flex items-center justify-center">
                       <DollarSign className="w-4 h-4" />
                     </div>
-                    <span className="text-xs font-semibold text-slate-600">
+                    <span className="text-xs font-semibold text-[#0c1a30]">
                       Omzet &amp; Margin Kotor
                     </span>
                   </div>
@@ -401,17 +401,17 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                 <div className="mt-4 flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-6">
                   <div>
                     <span className="text-xs text-slate-500 font-medium">Total Omzet</span>
-                    <div className="text-2xl font-extrabold text-slate-900 tabular-nums">
+                    <div className="text-2xl font-extrabold text-[#0c1a30] tabular-nums">
                       {formatRupiah(kpiFinansial?.total_omzet || 0)}
                     </div>
                   </div>
 
-                  <div className="sm:border-l sm:border-slate-200 sm:pl-6">
-                    <span className="text-xs text-emerald-700 font-semibold flex items-center gap-1">
+                  <div className="sm:border-l sm:border-[#eef4fb] sm:pl-6">
+                    <span className="text-xs text-[#1e40af] font-semibold flex items-center gap-1">
                       <TrendingUp className="w-3.5 h-3.5" />
                       Margin Kotor ({kpiFinansial?.margin_persen || 0}%)
                     </span>
-                    <div className="text-2xl font-extrabold text-emerald-700 tabular-nums">
+                    <div className="text-2xl font-extrabold text-[#1e40af] tabular-nums">
                       {formatRupiah(kpiFinansial?.total_margin || 0)}
                     </div>
                   </div>
@@ -425,9 +425,9 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                       Rasio Margin: {kpiFinansial?.margin_persen || 0}%
                     </span>
                   </div>
-                  <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-2 w-full bg-[#f0f5fa] rounded-full overflow-hidden border border-[#e2ebf6]">
                     <div
-                      className="h-full bg-emerald-600 rounded-full transition-all duration-500"
+                      className="h-full bg-gradient-to-r from-[#2563eb] to-[#0284c7] rounded-full transition-all duration-500"
                       style={{
                         width: `${Math.min(Math.max(kpiFinansial?.margin_persen || 0, 0), 100)}%`,
                       }}
@@ -438,13 +438,13 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             </div>
 
             {/* Bento Card 2: Total Piutang Berjalan */}
-            <div className="surface-raised rounded-xl p-4 flex flex-col justify-between border-slate-200">
+            <div className="surface-raised rounded-2xl p-5 flex flex-col justify-between border border-[#e2ebf6] shadow-sm">
               <div>
                 <div className="flex items-center justify-between text-xs font-semibold text-slate-600">
-                  <span>Piutang Aktif</span>
+                  <span className="text-[#0c1a30]">Piutang Aktif</span>
                   <ReceiptText className="h-4 w-4 text-slate-400" />
                 </div>
-                <div className="mt-2 text-xl font-extrabold text-slate-900 tabular-nums">
+                <div className="mt-2 text-xl font-extrabold text-[#0c1a30] tabular-nums">
                   {formatRupiah(agingPiutang?.total_piutang_dikirim || 0)}
                 </div>
                 <p className="mt-1 text-[11px] text-slate-500">
@@ -454,17 +454,17 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
               <Link
                 href="/laporan/piutang"
-                className="mt-3 text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
+                className="mt-3 text-xs font-semibold text-[#2563eb] hover:text-[#1d4ed8] flex items-center gap-1"
               >
                 Lihat aging piutang &rarr;
               </Link>
             </div>
 
             {/* Bento Card 3: Tagihan Lewat Tempo & Persetujuan Menunggu */}
-            <div className="surface-raised rounded-xl p-4 flex flex-col justify-between border-slate-200">
+            <div className="surface-raised rounded-2xl p-5 flex flex-col justify-between border border-[#e2ebf6] shadow-sm">
               <div>
                 <div className="flex items-center justify-between text-xs font-semibold text-slate-600">
-                  <span>Tagihan Lewat Tempo</span>
+                  <span className="text-[#0c1a30]">Tagihan Lewat Tempo</span>
                   <AlertTriangle
                     className={`h-4 w-4 ${
                       (agingPiutang?.jumlah_pesanan_lewat_tempo || 0) > 0
@@ -477,7 +477,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                   className={`mt-2 text-xl font-extrabold tabular-nums ${
                     (agingPiutang?.jumlah_pesanan_lewat_tempo || 0) > 0
                       ? "text-red-600"
-                      : "text-slate-900"
+                      : "text-[#0c1a30]"
                   }`}
                 >
                   {agingPiutang?.jumlah_pesanan_lewat_tempo || 0}{" "}
@@ -490,7 +490,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
               <Link
                 href="/persetujuan"
-                className="mt-3 text-xs font-semibold text-amber-800 hover:text-amber-900 flex items-center gap-1"
+                className="mt-3 text-xs font-semibold text-[#92400e] hover:text-amber-900 flex items-center gap-1"
               >
                 Tinjau pengajuan &rarr;
               </Link>
@@ -506,15 +506,15 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         </section>
       )}
 
-      {/* 5. Tabel Peringatan Stok Menipis (Single Surface Datar) */}
-      <section className="surface-raised rounded-xl p-5 border-slate-200" aria-label="Stok Menipis">
+      {/* 5. Tabel Peringatan Stok Menipis (GeneX Card Surface) */}
+      <section className="surface-raised rounded-2xl p-5 border border-[#e2ebf6] shadow-sm" aria-label="Stok Menipis">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-red-50 text-red-700">
+            <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-[#feecec] text-[#991b1b] border border-[#fecaca]">
               <AlertTriangle className="h-4 w-4" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-slate-900">
+              <h2 className="text-sm font-bold text-[#0c1a30]">
                 Peringatan Stok Menipis
               </h2>
               <p className="text-xs text-slate-500">

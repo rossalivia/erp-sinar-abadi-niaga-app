@@ -63,13 +63,13 @@ export function DashboardFinanceChart({
   const marginPersen = ringkasan?.margin_persen || 0;
 
   return (
-    <div className="surface-raised rounded-xl p-5 border border-slate-200/90 shadow-2xs space-y-4">
+    <div className="surface-raised rounded-2xl p-5 border border-[#e2ebf6] shadow-sm space-y-4">
       {/* Header Grafik & Kontrol Tipe */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#eef4fb]">
         <div>
           <div className="flex items-center gap-2">
-            <div className="h-5 w-1 bg-emerald-600 rounded-full" />
-            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider font-mono">
+            <div className="h-5 w-1 bg-[#2563eb] rounded-full" />
+            <h3 className="text-xs font-bold text-[#0c1a30] uppercase tracking-wider font-mono">
               Grafik Performa Finansial &amp; Margin
             </h3>
             <span className="text-[10px] text-slate-400">({periodeLabel})</span>
@@ -80,12 +80,12 @@ export function DashboardFinanceChart({
         </div>
 
         <div className="flex items-center gap-1.5 self-start sm:self-auto">
-          <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200/60">
+          <div className="flex items-center gap-1 bg-[#f0f5fa] p-0.5 rounded-xl border border-[#e2ebf6]">
             <Button
               type="button"
               size="sm"
               variant={chartType === 'bar' ? 'default' : 'ghost'}
-              className="h-6 text-[11px] px-2 rounded-md"
+              className="h-6 text-[11px] px-2.5 rounded-lg"
               onClick={() => setChartType('bar')}
             >
               <BarChart2 className="h-3 w-3 mr-1" />
@@ -95,7 +95,7 @@ export function DashboardFinanceChart({
               type="button"
               size="sm"
               variant={chartType === 'line' ? 'default' : 'ghost'}
-              className="h-6 text-[11px] px-2 rounded-md"
+              className="h-6 text-[11px] px-2.5 rounded-lg"
               onClick={() => setChartType('line')}
             >
               <LineIcon className="h-3 w-3 mr-1" />
@@ -106,25 +106,25 @@ export function DashboardFinanceChart({
       </div>
 
       {/* Komparasi Nilai Utama (Quick Metrics Strip) */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs bg-slate-50/70 p-3 rounded-lg border border-slate-100">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs bg-[#f0f5fa] p-3.5 rounded-xl border border-[#e2ebf6]">
         <div>
           <span className="text-slate-400 text-[10px] block uppercase font-mono">Omzet Periode Ini</span>
-          <span className="font-extrabold text-slate-900 text-sm tabular-nums">
+          <span className="font-extrabold text-[#0c1a30] text-sm tabular-nums">
             {formatRupiah(totalOmzet)}
           </span>
         </div>
         <div>
           <span className="text-slate-400 text-[10px] block uppercase font-mono">Beban Pokok (HPP)</span>
-          <span className="font-semibold text-slate-700 text-sm tabular-nums">
+          <span className="font-semibold text-slate-600 text-sm tabular-nums">
             {formatRupiah(totalHpp)}
           </span>
         </div>
         <div>
-          <span className="text-emerald-700 text-[10px] font-semibold block uppercase font-mono flex items-center gap-1">
+          <span className="text-[#1e40af] text-[10px] font-semibold block uppercase font-mono flex items-center gap-1">
             <TrendingUp className="h-3 w-3" />
             Margin Kotor ({marginPersen}%)
           </span>
-          <span className="font-extrabold text-emerald-700 text-sm tabular-nums">
+          <span className="font-extrabold text-[#1e40af] text-sm tabular-nums">
             {formatRupiah(totalMargin)}
           </span>
         </div>
@@ -144,28 +144,28 @@ export function DashboardFinanceChart({
           <ResponsiveContainer width="100%" height="100%">
             {chartType === 'bar' ? (
               <BarChart data={formattedData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eaf1f9" />
                 <XAxis
                   dataKey="labelMinggu"
-                  stroke="#94a3b8"
+                  stroke="#8ea2c2"
                   fontSize={11}
                   tickLine={false}
-                  axisLine={{ stroke: '#e2e8f0' }}
+                  axisLine={{ stroke: '#e2ebf6' }}
                 />
                 <YAxis
-                  stroke="#94a3b8"
+                  stroke="#8ea2c2"
                   fontSize={11}
                   tickLine={false}
-                  axisLine={{ stroke: '#e2e8f0' }}
+                  axisLine={{ stroke: '#e2ebf6' }}
                   tickFormatter={formatYAxis}
                 />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: '#ffffff',
-                    borderColor: '#e2e8f0',
-                    borderRadius: '8px',
+                    borderColor: '#e2ebf6',
+                    borderRadius: '12px',
                     fontSize: '12px',
-                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                    boxShadow: '0 4px 20px -2px rgba(12, 27, 58, 0.08)',
                   }}
                   formatter={(value: unknown, name: unknown) => {
                     const num = typeof value === 'number' ? value : Number(value) || 0;
@@ -180,33 +180,33 @@ export function DashboardFinanceChart({
                   wrapperStyle={{ paddingBottom: '10px', fontSize: '11px' }}
                   formatter={(value) => (value === 'omzet' ? 'Total Omzet' : 'Margin Kotor')}
                 />
-                <Bar dataKey="omzet" fill="#0f172a" radius={[3, 3, 0, 0]} maxBarSize={36} />
-                <Bar dataKey="margin" fill="#059669" radius={[3, 3, 0, 0]} maxBarSize={36} />
+                <Bar dataKey="omzet" fill="#0c1b3a" radius={[4, 4, 0, 0]} maxBarSize={36} />
+                <Bar dataKey="margin" fill="#0284c7" radius={[4, 4, 0, 0]} maxBarSize={36} />
               </BarChart>
             ) : (
               <LineChart data={formattedData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eaf1f9" />
                 <XAxis
                   dataKey="labelMinggu"
-                  stroke="#94a3b8"
+                  stroke="#8ea2c2"
                   fontSize={11}
                   tickLine={false}
-                  axisLine={{ stroke: '#e2e8f0' }}
+                  axisLine={{ stroke: '#e2ebf6' }}
                 />
                 <YAxis
-                  stroke="#94a3b8"
+                  stroke="#8ea2c2"
                   fontSize={11}
                   tickLine={false}
-                  axisLine={{ stroke: '#e2e8f0' }}
+                  axisLine={{ stroke: '#e2ebf6' }}
                   tickFormatter={formatYAxis}
                 />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: '#ffffff',
-                    borderColor: '#e2e8f0',
-                    borderRadius: '8px',
+                    borderColor: '#e2ebf6',
+                    borderRadius: '12px',
                     fontSize: '12px',
-                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                    boxShadow: '0 4px 20px -2px rgba(12, 27, 58, 0.08)',
                   }}
                   formatter={(value: unknown, name: unknown) => {
                     const num = typeof value === 'number' ? value : Number(value) || 0;
@@ -224,17 +224,17 @@ export function DashboardFinanceChart({
                 <Line
                   type="monotone"
                   dataKey="omzet"
-                  stroke="#0f172a"
+                  stroke="#0c1b3a"
                   strokeWidth={2.5}
-                  dot={{ r: 3, fill: '#0f172a' }}
+                  dot={{ r: 3, fill: '#0c1b3a' }}
                   activeDot={{ r: 5 }}
                 />
                 <Line
                   type="monotone"
                   dataKey="margin"
-                  stroke="#059669"
+                  stroke="#0284c7"
                   strokeWidth={2.5}
-                  dot={{ r: 3, fill: '#059669' }}
+                  dot={{ r: 3, fill: '#0284c7' }}
                   activeDot={{ r: 5 }}
                 />
               </LineChart>

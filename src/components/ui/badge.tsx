@@ -3,29 +3,29 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const badgeVariants = cva(
-  'inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500 tracking-tight',
+  'inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-600 tracking-tight',
   {
     variants: {
       variant: {
         default:
-          'border-indigo-600/30 bg-indigo-600 text-white',
+          'border-[#0c1b3a]/20 bg-[#0c1b3a] text-white',
         secondary:
-          'border-slate-200 bg-slate-100 text-slate-700',
+          'border-[#e2ebf6] bg-[#f0f5fa] text-[#0c1a30]',
         destructive:
-          'border-red-500/30 bg-red-500/10 text-red-700',
+          'border-[#fecaca] bg-[#feecec] text-[#991b1b]',
         outline:
-          'border-slate-300/80 bg-transparent text-slate-700',
-        // Varian status ERP fungsional (Apple-style frosted pill)
+          'border-[#e2ebf6] bg-white text-[#0c1a30]',
+        // Varian status ERP fungsional (GeneX soft frosted pills)
         success:
-          'border-emerald-500/30 bg-emerald-500/15 text-emerald-800',
+          'border-[#a7f3d0] bg-[#e6f8f0] text-[#065f46]',
         warning:
-          'border-amber-500/35 bg-amber-500/15 text-amber-900',
+          'border-[#fde68a] bg-[#fef7e6] text-[#92400e]',
         danger:
-          'border-red-500/30 bg-red-500/15 text-red-800',
+          'border-[#fecaca] bg-[#feecec] text-[#991b1b]',
         neutral:
-          'border-slate-400/30 bg-slate-500/10 text-slate-700',
+          'border-[#e2ebf6] bg-[#f8fafc] text-slate-600',
         info:
-          'border-blue-500/30 bg-blue-500/15 text-blue-800',
+          'border-[#bfdbfe] bg-[#e5f0fd] text-[#1e40af]',
       },
     },
     defaultVariants: {
