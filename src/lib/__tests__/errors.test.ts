@@ -8,6 +8,7 @@ describe('Error Mapping & Katalog Pesan', () => {
     expect(getErrorMessage({ code: 'E0013' })).toBe('Pelanggan memiliki faktur lewat jatuh tempo, transaksi diblokir');
     expect(getErrorMessage({ code: 'E0037' })).toBe('Item dengan selisih stok wajib memiliki keterangan minimal 10 karakter');
     expect(getErrorMessage({ code: 'E0038' })).toBe('Stok sistem telah berubah sejak sesi dibuat. Batalkan sesi lalu hitung ulang.');
+    expect(getErrorMessage({ code: 'E0078' })).toBe('Hanya Manajer yang berwenang mencatat pelunasan');
   });
 
   it('mempertahankan pesan BR-04 secara PERSIS', () => {

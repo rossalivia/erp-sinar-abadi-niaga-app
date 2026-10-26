@@ -108,7 +108,7 @@ Kolom rahasia: `barang.harga_pokok`, `pembelian.harga_beli_satuan`, `item_pesana
 | Batalkan pesanan dikonfirmasi | ❌ | ❌ | ✅ | Alasan ≥ 10 karakter, stok kembali, diaudit | RPC, audit |
 | Batalkan pesanan dikirim/lunas | ❌ | ❌ | ❌ | — | RPC (validasi transisi) |
 | Kirim pesanan (dikonfirmasi → dikirim) | ❌ | ✅ | ✅ | Jatuh tempo otomatis | RPC `kirim_pesanan` |
-| Catat pelunasan (dikirim → lunas) | ❌ | ❌ | ✅ | Diaudit | RPC `lunasi_pesanan`, audit |
+| Catat pelunasan (dikirim → lunas) | ❌ | ❌ | ✅ | HANYA Manajer (PRD BR-07, BR-12). Status wajib `dikirim`, mengisi `dilunasi_pada`, auto-close tagihan Mayar jika ada, diaudit aksi `'pelunasan'`. Non-Manajer ditolak `E0078`. Tanpa denda/bunga | RPC `rpc_catat_pelunasan`, audit |
 | Ajukan PO | ❌ | ✅ | ✅ | Jumlah 1–10.000, pemasok & barang aktif | RPC `ajukan_pembelian`, CK |
 | Batalkan PO (diajukan) | ❌ | ⚠️ pengaju | ⚠️ pengaju | Hanya oleh pengaju (`diajukan_oleh = auth.uid()`), diaudit | RPC `rpc_batalkan_pembelian`, audit |
 | Setujui PO | ❌ | ❌ | ✅ | `harga_beli_satuan > 0`, diaudit | RPC `putuskan_pembelian`, audit |
@@ -141,7 +141,7 @@ Kolom rahasia: `barang.harga_pokok`, `pembelian.harga_beli_satuan`, `item_pesana
 | `/pesanan` | Daftar Pesanan Jual | ✅ (miliknya) | ✅ (non-draf) | ✅ (semua) | Filter status, pelanggan, tanggal | RLS |
 | `/pesanan/[id]` | Detail Pesanan | ✅ | ✅ | ✅ | Tombol sesuai peran & status; panel HPP/margin hanya M | RLS, RPC, VW |
 | `/pesanan/[id]/surat-jalan` | Cetak Surat Jalan | ⚠️ (miliknya) | ✅ (dikirim) | ✅ (dikirim) | Khusus status dikirim, bebas kolom uang/finansial, format cetak A4 3 TTD | MW, RLS, VW `v_surat_jalan` |
-| `/penagihan` | Penagihan & Monitoring Tagihan | ⚠️ (miliknya) | ❌ | ✅ (semua) | 4 KPI cards, filter tab klasifikasi umur, tombol WA, catat penagihan, pelunasan (M) | MW, RLS, VW |
+| `/penagihan` | Penagihan & Monitoring Tagihan | ⚠️ (miliknya) | ❌ | ✅ (semua) | 4 KPI cards, filter tab klasifikasi umur, tombol WA (Penjualan & Manajer), catat penagihan, pelunasan (HANYA Manajer; Staf Penjualan tidak melihat tombol pelunasan), bebas denda/bunga | MW, RLS, VW |
 | `/pembelian` | Pembelian & Pemasok | ❌ | ✅ | ✅ | Kolom harga beli hanya M; tab Pemasok | MW, RLS, CG, VW |
 | `/laporan` | Laporan | ❌ | ❌ | ✅ | Grafik mingguan, margin per barang, umur piutang, CSV | MW, VW/RPC filter peran |
 | `/analitik` | Analitik Pelanggan & Sales | ❌ | ❌ | ✅ | Performa sales, top pelanggan, akun dormant, dead stock, dan ekspor CSV aman | MW, Server Component, RPC |

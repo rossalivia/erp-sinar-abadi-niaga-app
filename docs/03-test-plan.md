@@ -422,6 +422,19 @@ Urutan validasi `konfirmasi_pesanan`: (1) akses/kepemilikan → E01/E02, (2) sta
 | **TC-227** | Penolakan eksekusi RPC pembatalan oleh Staf Penjualan | P | SQL | **Lulus** | 2026-10-24 | `supabase/tests/15_pembatalan_pembelian.sql` | Pemanggilan fungsi langsung oleh peran Penjualan ditolak dengan `E0001: Akses ditolak`. |
 | **TC-228** | Uji Konkurensi Multi-Proses: Penerimaan vs Pembatalan Bersamaan | G, M | PowerShell | **Lulus** | 2026-10-24 | `supabase/tests/15_konkurensi_pembatalan.ps1` | 10 dari 10 iterasi paralel berhasil dengan tepat satu pemenang konsisten tanpa deadlock basis data. |
 
+---
+
+## 20. Test Case Tambahan: Koreksi Pelunasan Khusus Manajer Sesuai PRD BR-07 & BR-12 (TC-229 s.d. TC-233)
+
+| ID | Fokus Uji | Aktor | Media | Status | Tanggal Uji | Bukti Uji | Ringkasan Verifikasi & Hasil |
+|---|---|---|---|---|---|---|---|
+| **TC-229** | Penolakan eksekusi pelunasan langsung oleh Staf Penjualan (Rina) | P | SQL | **Lulus** | 2026-10-26 | `supabase/tests/16_koreksi_pelunasan.sql` | Pemanggilan `rpc_catat_pelunasan` langsung oleh Staf Penjualan ditolak tegas dengan kode error `E0078: Hanya Manajer yang berwenang mencatat pelunasan`. |
+| **TC-230** | Manajer (Hendra) mencatat pelunasan pesanan berstatus `dikirim` | M | SQL | **Lulus** | 2026-10-26 | `supabase/tests/16_koreksi_pelunasan.sql` | Status berhasil berubah ke `lunas`, kolom `dilunasi_pada` terisi timestamp valid, dan tercatat di `audit_log` dengan aksi `'pelunasan'` (nilai_lama: `{"status":"dikirim"}`, nilai_baru: `{"status":"lunas","dilunasi_pada":...}`). |
+| **TC-231** | Penolakan pelunasan pesanan berstatus `draf` (`draf -> lunas`) | M | SQL | **Lulus** | 2026-10-26 | `supabase/tests/16_koreksi_pelunasan.sql` | Ditolak dengan kode error `E0015: Perpindahan status atau tindakan tidak diizinkan`. Status `draf` tidak boleh langsung dilunasi tanpa konfirmasi dan pengiriman. |
+| **TC-232** | Penolakan pelunasan ulang pesanan yang sudah berstatus `lunas` | M | SQL | **Lulus** | 2026-10-26 | `supabase/tests/16_koreksi_pelunasan.sql` | Ditolak dengan `E0015`. Pesanan yang sudah `lunas` bersifat final dan tidak dapat dimutasi statusnya kembali. |
+| **TC-233** | Verifikasi kepatuhan tombol UI & penegasan sistem bebas dari fitur estimasi denda | P, M | Vitest + SQL | **Lulus** | 2026-10-26 | `src/features/pesanan/__tests__/pelunasan-ui.test.ts`<br>`supabase/tests/16_koreksi_pelunasan.sql` | Staf Penjualan tidak melihat tombol "Catat Lunas" di `/penagihan`, detail pesanan, dan detail pelanggan, namun tombol pengingat WhatsApp tetap tersedia. Sistem bebas 100% dari kolom/fitur estimasi denda/bunga. |
+
+
 
 
 

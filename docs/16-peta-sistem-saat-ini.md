@@ -436,7 +436,7 @@ Terdapat 14 tabel di dalam skema public (9 tabel inti + 2 modul stock opname + 1
 | rpc_batalkan_draf | p_pesanan_id uuid | Penjualan, Manajer | pesanan_jual, persetujuan_harga | Ya (pesanan_jual) | Tidak | Ya (batalkan_draf_pesanan & batalkan_persetujuan) |
 | rpc_konfirmasi_pesanan | p_pesanan_id uuid | Penjualan, Manajer | pesanan_jual, barang, mutasi_stok, item_pesanan_jual, persetujuan_harga, audit_log | Ya (pesanan_jual -> persetujuan_harga -> pelanggan -> barang ORDER BY id) | Ya (jenis 'keluar') | Ya (konfirmasi_pesanan & pakai_persetujuan_harga) |
 | rpc_kirim_pesanan | p_pesanan_id uuid | Gudang, Manajer | pesanan_jual | Ya (pesanan_jual, pelanggan) | Tidak | Ya (kirim_pesanan) |
-| rpc_catat_pelunasan (alias rpc_lunasi_pesanan) | p_pesanan_id uuid | Manajer Saja | pesanan_jual, audit_log | Ya (pesanan_jual) | Tidak | Ya (lunasi_pesanan) |
+| rpc_catat_pelunasan (alias rpc_lunasi_pesanan) | p_pesanan_id uuid | Manajer Saja (Non-M ditolak E0078) | pesanan_jual, tagihan_mayar, audit_log | Ya (pesanan_jual) | Tidak | Ya (pelunasan) |
 | rpc_batalkan_pesanan_terkonfirmasi (alias rpc_batalkan_pesanan) | p_pesanan_id uuid, p_alasan text | Manajer Saja | pesanan_jual, barang, mutasi_stok, audit_log | Ya (pesanan_jual, barang ORDER BY id) | Ya (jenis 'batal') | Ya (batalkan_pesanan_terkonfirmasi) |
 | rpc_ajukan_persetujuan_harga | p_pesanan_id uuid, p_catatan text | Penjualan Saja | persetujuan_harga, audit_log | Ya (pesanan_jual) | Tidak | Ya (ajukan_persetujuan_harga) |
 | rpc_putuskan_persetujuan_harga | p_id uuid, p_setuju boolean, p_catatan text, p_alasan_tolak text | Manajer Saja | persetujuan_harga, audit_log | Ya (persetujuan_harga) | Tidak | Ya (setujui/tolak_persetujuan_harga) |
@@ -599,6 +599,7 @@ Terdapat 14 tabel di dalam skema public (9 tabel inti + 2 modul stock opname + 1
 | E0075 | Hanya Manajer yang berwenang membatalkan pembelian yang disetujui | rpc_batalkan_pembelian | Aktif Digunakan (Fitur Pembatalan PO, PRD Bab 6.2). |
 | E0076 | Pembelian dengan status ini tidak dapat dibatalkan | rpc_batalkan_pembelian | Aktif Digunakan (Fitur Pembatalan PO, PRD Bab 6.2). |
 | E0077 | Pembelian yang sudah diterima barangnya tidak dapat dibatalkan | rpc_batalkan_pembelian | Aktif Digunakan (Fitur Pembatalan PO, PRD Bab 6.2). |
+| E0078 | Hanya Manajer yang berwenang mencatat pelunasan | rpc_catat_pelunasan, catatPelunasanAction | Aktif Digunakan (Koreksi Pelunasan Manajer, PRD BR-07, BR-12). |
 
 ---
 
@@ -834,6 +835,11 @@ Terdapat 14 tabel di dalam skema public (9 tabel inti + 2 modul stock opname + 1
 | TC-226 | supabase/tests/15_pembatalan_pembelian.sql | SQL | Otomatis | Pemanggilan rpc_batalkan_pembelian langsung oleh Penjualan ditolak (E0001) |
 | TC-227 | src/features/pembelian/__tests__/schemas.test.ts | Vitest | Otomatis | Validasi schema batalkanPembelianSchema (alasan opsional) |
 | TC-228 | supabase/tests/15_konkurensi_pembatalan.ps1 | PowerShell Konkurensi | Otomatis | Konkurensi penerimaan vs pembatalan PO bersamaan: 1 pemenang, 0 deadlock |
+| TC-229 | supabase/tests/16_koreksi_pelunasan.sql | SQL | Otomatis | Staf Penjualan (Rina) memanggil rpc_catat_pelunasan langsung ditolak (E0078) |
+| TC-230 | supabase/tests/16_koreksi_pelunasan.sql | SQL | Otomatis | Manajer (Hendra) mencatat pelunasan pesanan dikirim berhasil, isi dilunasi_pada, audit_log pelunasan |
+| TC-231 | supabase/tests/16_koreksi_pelunasan.sql | SQL | Otomatis | Manajer melunasi pesanan draf ditolak (E0015) |
+| TC-232 | supabase/tests/16_koreksi_pelunasan.sql | SQL | Otomatis | Pelunasan ulang pesanan yang sudah berstatus lunas ditolak (E0015) |
+| TC-233 | src/features/pesanan/__tests__/pelunasan-ui.test.ts | Vitest + SQL | Otomatis | Tombol Catat Lunas tersembunyi bagi Penjualan di UI, tombol WA tetap aktif, sistem bebas denda |
 
 ---
 
@@ -845,7 +851,7 @@ Terdapat 14 tabel di dalam skema public (9 tabel inti + 2 modul stock opname + 1
 | 2 | Tabel Modul Stock Opname | Belum ada (hanya penyesuaian manual di BR-11) | Ditambahkan tabel opname_stok dan item_opname_stok | Belum tercatat di docs/04 (Tercatat di docs/fitur-stock-opname.md) | Penambahan modul sesi audit fisik terstruktur dengan alur persetujuan Manajer. |
 | 3 | Batas Kredit Pelanggan Baru | Batas kredit awal Rp0 | batas_kredit = 0 dipaksa oleh trigger saat dibuat non-Manajer | Ya (A10) | Mencegah Staf Penjualan memberikan kredit tanpa otorisasi Manajer. |
 | 4 | Status Purchase Order (PO) | 4 status: diajukan, disetujui, ditolak, diterima | 5 status: diajukan, disetujui, ditolak, diterima, dibatalkan | Ya (A4, B1) | Ditambahkan status `dibatalkan` sesuai mandat PRD BR-09 & Bab 6.2 (pengaju batalkan diajukan, Manajer batalkan disetujui). |
-| 5 | Pelunasan Piutang | Pelunasan pesanan (BR-07) | rpc_catat_pelunasan melunasi penuh 100% per faktur; tidak ada tabel pembayaran_piutang terpisah | Ya (B25) | Pelunasan sebagian dinyatakan di luar lingkup sistem (PRD §14). |
+| 5 | Pelunasan Piutang | Pelunasan pesanan (BR-07) | rpc_catat_pelunasan melunasi penuh 100% per faktur; HANYA peran Manajer yang berwenang mencatat pelunasan (PRD BR-07, BR-12). Tidak ada denda/bunga/biaya keterlambatan; tidak ada tabel pembayaran_piutang terpisah | Ya (B25, K5) | Pelunasan sebagian dan penagihan denda dinyatakan di luar lingkup sistem (PRD §14, BR-07, BR-12). |
 | 6 | Bypass Kredit Manajer | Spesifikasi mengecualikan Manajer pada BR-04 | Manajer TIDAK BISA membypass limit kredit atau overdue di konfirmasi pesanan | Ya (B30, D5) | Untuk tata kelola risiko kredit, Manajer wajib menaikkan limit atau melunasi faktur terlebih dahulu (tercatat di audit log). |
 | 7 | Koreksi harga_pokok Manual | Spesifikasi menyatakan HPP diupdate via PO (BR-10) | Manajer diizinkan memanggil rpc_ubah_harga_pokok | Ya (B31) | Diperlukan untuk mengisi HPP saldo awal sebelum PO pertama diterbitkan. |
 | 8 | Struktur PO Multi-Barang | PO memiliki kolom barang_id dan jumlah_dipesan per baris PO | PO adalah single-item per dokumen (1 PO = 1 barang) | Ya | Mengikuti persis skema pembelian pada 00-spesifikasi.md poin III.5. Tidak ada tabel item_pembelian. |

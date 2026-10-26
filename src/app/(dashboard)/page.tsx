@@ -219,7 +219,17 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     const [siapKirimRes, poMenungguRes, opnameRes] = await Promise.all([
       supabase.from("pesanan_jual").select("id", { count: "exact", head: true }).eq("status", "dikonfirmasi"),
       supabase.from("pembelian").select("id", { count: "exact", head: true }).eq("status", "disetujui"),
-      supabase.from("opname_stok").select("id", { count: "exact", head: true }).eq("status", "draf"),
+      // Menggunakan casting ke interface dinamis karena tabel opname_stok belum ada di tipe database statis
+      ((supabase as unknown) as {
+        from: (table: string) => {
+          select: (cols: string, opts?: { count?: string; head?: boolean }) => {
+            eq: (col: string, val: string) => Promise<{ count: number | null; error: unknown }>;
+          };
+        };
+      })
+        .from("opname_stok")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "draf"),
     ]);
     pesananSiapKirimCount = siapKirimRes.count ?? 0;
     poMenungguPenerimaanCount = poMenungguRes.count ?? 0;

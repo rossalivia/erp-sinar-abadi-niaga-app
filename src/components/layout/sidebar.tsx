@@ -193,7 +193,7 @@ export function Sidebar({
             title="CV Sinar Abadi Niaga — Distributor Kebutuhan Toko Kelontong"
           >
             {isCollapsed ? (
-              <Logo size="xs" variant="icon" />
+              <Logo size="xs" variant="icon" inverted={true} />
             ) : (
               <Logo size="xs" inverted={true} showSubdeskripsi={false} />
             )}

@@ -13,29 +13,54 @@ interface AppShellProps {
   children: React.ReactNode;
 }
 
+const SIDEBAR_STORAGE_KEY = "erp_sidebar_collapsed";
+const sidebarListeners = new Set<() => void>();
+
+function emitSidebarChange() {
+  for (const listener of sidebarListeners) {
+    listener();
+  }
+}
+
+function subscribeSidebar(listener: () => void) {
+  sidebarListeners.add(listener);
+  window.addEventListener("storage", listener);
+  return () => {
+    sidebarListeners.delete(listener);
+    window.removeEventListener("storage", listener);
+  };
+}
+
+function getSidebarSnapshot() {
+  try {
+    return localStorage.getItem(SIDEBAR_STORAGE_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+function getSidebarServerSnapshot() {
+  return false;
+}
+
 export function AppShell({ user, children }: AppShellProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const [isSearchOpen, setIsSearchOpen] = React.useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(() => {
-    if (typeof window === "undefined") return false;
-    try {
-      return localStorage.getItem("erp_sidebar_collapsed") === "true";
-    } catch {
-      return false;
-    }
-  });
+  const isSidebarCollapsed = React.useSyncExternalStore(
+    subscribeSidebar,
+    getSidebarSnapshot,
+    getSidebarServerSnapshot
+  );
 
-  const toggleSidebarCollapse = () => {
-    setIsSidebarCollapsed((prev) => {
-      const next = !prev;
-      try {
-        localStorage.setItem("erp_sidebar_collapsed", String(next));
-      } catch {
-        // Ignore
-      }
-      return next;
-    });
-  };
+  const toggleSidebarCollapse = React.useCallback(() => {
+    try {
+      const next = !getSidebarSnapshot();
+      localStorage.setItem(SIDEBAR_STORAGE_KEY, String(next));
+      emitSidebarChange();
+    } catch {
+      // Abaikan jika localStorage tidak dapat diakses
+    }
+  }, []);
 
   // Global shortcut handler untuk Ctrl+K / Cmd+K
   React.useEffect(() => {

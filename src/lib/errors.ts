@@ -78,6 +78,7 @@ export const ERROR_MESSAGES: Record<string, string> = {
   E0075: 'Hanya Manajer yang berwenang membatalkan pembelian yang disetujui',
   E0076: 'Pembelian dengan status ini tidak dapat dibatalkan',
   E0077: 'Pembelian yang sudah diterima barangnya tidak dapat dibatalkan',
+  E0078: 'Hanya Manajer yang berwenang mencatat pelunasan',
 };
 
 interface SupabasePostgresError {

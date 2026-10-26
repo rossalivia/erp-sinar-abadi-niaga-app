@@ -4310,3 +4310,87 @@ GRANT EXECUTE ON FUNCTION public.fn_simulasi_limit_kredit(uuid, numeric) TO auth
 REVOKE ALL ON FUNCTION public.fn_peringatan_editor_pesanan(uuid, numeric) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.fn_peringatan_editor_pesanan(uuid, numeric) TO authenticated;
 
+-- ============================================================
+-- 16. Koreksi Pelunasan Khusus Manajer (PRD BR-07, BR-12)
+-- ============================================================
+CREATE OR REPLACE FUNCTION public.rpc_catat_pelunasan(p_pesanan_id uuid)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+  v_pesanan record;
+  v_dilunasi_pada timestamptz;
+BEGIN
+  IF NOT public.fn_is_manajer() THEN
+    RAISE EXCEPTION 'Hanya Manajer yang berwenang mencatat pelunasan' USING ERRCODE = 'E0078';
+  END IF;
+
+  SELECT * INTO v_pesanan
+  FROM public.pesanan_jual
+  WHERE id = p_pesanan_id
+  FOR UPDATE;
+
+  IF v_pesanan.id IS NULL THEN
+    RAISE EXCEPTION 'Data tidak ditemukan' USING ERRCODE = 'E0002';
+  END IF;
+
+  IF v_pesanan.status <> 'dikirim' THEN
+    RAISE EXCEPTION 'Perpindahan status atau tindakan tidak diizinkan' USING ERRCODE = 'E0015';
+  END IF;
+
+  v_dilunasi_pada := clock_timestamp();
+
+  UPDATE public.pesanan_jual
+  SET status = 'lunas',
+      dilunasi_pada = v_dilunasi_pada
+  WHERE id = p_pesanan_id;
+
+  UPDATE public.tagihan_mayar
+  SET status = 'ditutup',
+      catatan_tinjau = 'Ditutup otomatis karena pesanan telah dilunasi manual oleh Manajer',
+      diperbarui_pada = now()
+  WHERE pesanan_jual_id = p_pesanan_id
+    AND status = 'dibuat';
+
+  INSERT INTO public.audit_log (
+    pelaku_id,
+    aksi,
+    nama_tabel,
+    data_id,
+    nilai_lama,
+    nilai_baru
+  )
+  VALUES (
+    auth.uid(),
+    'pelunasan',
+    'pesanan_jual',
+    p_pesanan_id,
+    jsonb_build_object('status', 'dikirim'),
+    jsonb_build_object('status', 'lunas', 'dilunasi_pada', v_dilunasi_pada)
+  );
+
+  RETURN jsonb_build_object(
+    'id', p_pesanan_id,
+    'status', 'lunas',
+    'dilunasi_pada', v_dilunasi_pada
+  );
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.rpc_lunasi_pesanan(p_pesanan_id uuid)
+RETURNS jsonb
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+  SELECT public.rpc_catat_pelunasan(p_pesanan_id);
+$$;
+
+REVOKE ALL ON FUNCTION public.rpc_catat_pelunasan(uuid) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.rpc_catat_pelunasan(uuid) TO authenticated;
+
+REVOKE ALL ON FUNCTION public.rpc_lunasi_pesanan(uuid) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.rpc_lunasi_pesanan(uuid) TO authenticated;
+

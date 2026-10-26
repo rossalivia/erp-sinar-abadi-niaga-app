@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { createServerClient } from '@/lib/supabase/server';
+import { getProfil } from '@/lib/profil';
 import { getErrorMessage } from '@/lib/errors';
 import {
   pesananDrafSchema,
@@ -181,6 +182,14 @@ export async function catatPelunasanAction(
     return { success: false, message: 'ID pesanan tidak valid' };
   }
 
+  const profil = await getProfil();
+  if (!profil || profil.peran !== 'manajer') {
+    return {
+      success: false,
+      message: 'Hanya Manajer yang berwenang mencatat pelunasan',
+    };
+  }
+
   const supabase = await createServerClient();
   const { data, error } = await supabase.rpc('rpc_catat_pelunasan', {
     p_pesanan_id: pesananId,
@@ -196,6 +205,7 @@ export async function catatPelunasanAction(
   revalidatePath('/pesanan');
   revalidatePath(`/pesanan/${pesananId}`);
   revalidatePath('/pelanggan');
+  revalidatePath('/penagihan');
 
   const res = data as { id: string; status: string };
   return {
