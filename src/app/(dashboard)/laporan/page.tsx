@@ -9,8 +9,10 @@ import { PeriodePicker } from '@/features/laporan/components/periode-picker';
 import { KpiCards } from '@/features/laporan/components/kpi-cards';
 import { GrafikMingguan } from '@/features/laporan/components/grafik-mingguan';
 import { TopBarangTable } from '@/features/laporan/components/top-barang-table';
+import { BottomBarangTable } from '@/features/laporan/components/bottom-barang-table';
 import { TopPelangganTable } from '@/features/laporan/components/top-pelanggan-table';
 import type {
+  BottomBarangItem,
   LaporanMarginMingguanItem,
   LaporanRingkasan,
   TopBarangItem,
@@ -55,10 +57,11 @@ export default async function LaporanOmzetMarginPage({ searchParams }: PageProps
   const supabase = await createServerClient();
 
   // Ambil data laporan secara paralel via RPC
-  const [marginRes, ringkasanRes, topBarangRes, topPelangganRes] = await Promise.all([
+  const [marginRes, ringkasanRes, topBarangRes, bottomBarangRes, topPelangganRes] = await Promise.all([
     supabase.rpc('rpc_laporan_margin_mingguan', { p_dari: dari, p_sampai: sampai }),
     supabase.rpc('rpc_laporan_ringkasan', { p_dari: dari, p_sampai: sampai }),
     supabase.rpc('rpc_laporan_top_barang', { p_dari: dari, p_sampai: sampai, p_limit: 10 }),
+    supabase.rpc('rpc_laporan_bottom_barang', { p_dari: dari, p_sampai: sampai, p_limit: 5 }),
     supabase.rpc('rpc_laporan_top_pelanggan', { p_dari: dari, p_sampai: sampai, p_limit: 10 }),
   ]);
 
@@ -85,6 +88,18 @@ export default async function LaporanOmzetMarginPage({ searchParams }: PageProps
     total_margin: Number(b.total_margin) || 0,
     margin_persen: Number(b.margin_persen) || 0,
   })) as TopBarangItem[];
+
+  const bottomBarang = ((bottomBarangRes.data || []) as Record<string, unknown>[]).map((b) => ({
+    barang_id: String(b.barang_id || ''),
+    kode: String(b.kode || ''),
+    nama: String(b.nama || ''),
+    satuan: String(b.satuan || ''),
+    jumlah_terjual: Number(b.jumlah_terjual) || 0,
+    total_omzet: Number(b.total_omzet) || 0,
+    total_hpp: Number(b.total_hpp) || 0,
+    total_margin: Number(b.total_margin) || 0,
+    margin_persen: Number(b.margin_persen) || 0,
+  })) as BottomBarangItem[];
 
   const topPelanggan = ((topPelangganRes.data || []) as Record<string, unknown>[]).map((p) => ({
     pelanggan_id: String(p.pelanggan_id || ''),
@@ -129,11 +144,14 @@ export default async function LaporanOmzetMarginPage({ searchParams }: PageProps
       {/* Grafik Mingguan */}
       <GrafikMingguan data={marginData} />
 
-      {/* Top 10 Barang & Top 10 Pelanggan */}
+      {/* Tabel 10 Barang Margin Terbesar & 5 Barang Margin Terkecil Berdampingan (PRD Bab 9 §3) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <TopBarangTable items={topBarang} />
-        <TopPelangganTable items={topPelanggan} />
+        <BottomBarangTable items={bottomBarang} />
       </div>
+
+      {/* Tabel 10 Pelanggan dengan Omzet Terbesar */}
+      <TopPelangganTable items={topPelanggan} />
     </div>
   );
 }

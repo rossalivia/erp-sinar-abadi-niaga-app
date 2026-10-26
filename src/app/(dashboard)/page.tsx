@@ -25,6 +25,7 @@ import { DashboardMidRow } from "@/features/dashboard/components/dashboard-mid-r
 import { DashboardAnalyticsRow } from "@/features/dashboard/components/dashboard-analytics-row";
 import { DashboardHeroBanner } from "@/features/dashboard/components/dashboard-hero-banner";
 import { DashboardCalendarCard } from "@/features/dashboard/components/dashboard-calendar-card";
+import { DashboardPoMenunggu, type PoMenungguItem } from "@/features/dashboard/components/dashboard-po-menunggu";
 
 interface BarangMenipis {
   id: string;
@@ -60,11 +61,21 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     day: "2-digit",
   }).format(now);
 
-  // Default preset jika tidak ada query param adalah 'minggu_ini'
-  const preset = params.preset || (params.dari ? "custom" : "minggu_ini");
+  // Default preset jika tidak ada query param adalah 'bulan_ini' (PRD Bab 9)
+  const preset = params.preset || (params.dari ? "custom" : "bulan_ini");
 
   let dari = params.dari || "";
   let sampai = params.sampai || todayStr;
+
+  // Hitung rentang 8 minggu terakhir untuk grafik mingguan (PRD Bab 9)
+  const d8m = new Date(now);
+  d8m.setDate(d8m.getDate() - 56);
+  const dari8Minggu = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jakarta",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(d8m);
 
   if (preset === "hari_ini") {
     dari = todayStr;
@@ -110,8 +121,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     dari = todayStr;
   }
 
-  // Label dinamis periode aktif
-  let periodeJudul = "Minggu Berjalan";
+  // Label dinamis periode aktif (default: Bulan Berjalan)
+  let periodeJudul = "Bulan Berjalan";
   if (preset === "hari_ini") {
     periodeJudul = `Hari Ini (${formatTanggal(todayStr)})`;
   } else if (preset === "7h") {
@@ -119,17 +130,18 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   } else if (preset === "minggu_ini") {
     periodeJudul = `Minggu Berjalan (${formatTanggal(dari)} s.d. ${formatTanggal(sampai)})`;
   } else if (preset === "bulan_ini") {
-    periodeJudul = `Bulan Ini (${formatTanggal(dari)} s.d. ${formatTanggal(sampai)})`;
+    periodeJudul = `Bulan Berjalan (${formatTanggal(dari)} s.d. ${formatTanggal(sampai)})`;
   } else if (preset === "30h") {
     periodeJudul = `30 Hari Terakhir (${formatTanggal(dari)} s.d. ${formatTanggal(sampai)})`;
   } else {
     periodeJudul = `Periode Terpilih (${formatTanggal(dari)} s.d. ${formatTanggal(sampai)})`;
   }
 
-  // Ambil data stok menipis (untuk semua peran)
+  // Ambil data stok menipis (hanya barang aktif dengan stok <= stok_minimum sesuai PRD Bab 9)
   const { data: barangMenipisData, error: stokError } = await supabase
     .from("v_barang")
     .select("id, kode, nama, satuan, stok, stok_minimum, stok_menipis")
+    .eq("aktif", true)
     .eq("stok_menipis", true)
     .order("stok", { ascending: true });
 
@@ -143,21 +155,44 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     stok_menipis: item.stok_menipis ?? true,
   }));
 
-  // Jika Manajer, ambil data finansial, grafik margin mingguan, dan aging piutang sesuai rentang tanggal
+  // Jika Manajer, ambil data finansial, grafik margin 8 minggu, aging piutang, dan PO menunggu persetujuan
   let kpiFinansial: LaporanRingkasan | null = null;
   let marginData: LaporanMarginMingguanItem[] = [];
   let agingPiutang: LaporanAgingPiutang | null = null;
   let jumlahPersetujuanMenunggu = 0;
+  let poMenungguList: PoMenungguItem[] = [];
+  let poMenungguTotal = 0;
 
   if (isManajer) {
-    const [ringkasanRes, marginRes, agingRes, persetujuanRes] = await Promise.all([
+    const [ringkasanRes, marginRes, agingRes, persetujuanRes, poMenungguRes] = await Promise.all([
       supabase.rpc("rpc_laporan_ringkasan", { p_dari: dari, p_sampai: sampai }),
-      supabase.rpc("rpc_laporan_margin_mingguan", { p_dari: dari, p_sampai: sampai }),
+      // Grafik batang omzet dan margin 8 minggu terakhir sesuai PRD Bab 9
+      supabase.rpc("rpc_laporan_margin_mingguan", { p_dari: dari8Minggu, p_sampai: todayStr }),
       supabase.rpc("rpc_laporan_aging_piutang"),
       supabase.from("v_persetujuan_harga").select("id", { count: "exact", head: true }).eq("status", "menunggu"),
+      // Pengajuan pembelian yang menunggu persetujuan Manajer
+      supabase
+        .from("v_pembelian_manajer")
+        .select("id, nomor, status, jumlah_dipesan, diajukan_pada, pemasok:pemasok_id(id, nama, kode), barang:barang_id(id, nama, kode, satuan)", { count: "exact" })
+        .eq("status", "diajukan")
+        .order("diajukan_pada", { ascending: false }),
     ]);
     jumlahPersetujuanMenunggu = persetujuanRes.count ?? 0;
     marginData = (marginRes.data || []) as LaporanMarginMingguanItem[];
+    poMenungguTotal = poMenungguRes.count ?? 0;
+
+    poMenungguList = ((poMenungguRes.data || []) as Record<string, unknown>[]).map((row) => {
+      const pemasok = (Array.isArray(row.pemasok) ? row.pemasok[0] : row.pemasok) as { id?: string; kode?: string; nama?: string } | null;
+      const barang = (Array.isArray(row.barang) ? row.barang[0] : row.barang) as { id?: string; kode?: string; nama?: string; satuan?: string } | null;
+      return {
+        id: String(row.id || ""),
+        nomor: String(row.nomor || ""),
+        diajukan_pada: String(row.diajukan_pada || ""),
+        jumlah_dipesan: Number(row.jumlah_dipesan) || 0,
+        pemasok: pemasok ? { id: pemasok.id, kode: pemasok.kode, nama: pemasok.nama } : null,
+        barang: barang ? { id: barang.id, kode: barang.kode, nama: barang.nama, satuan: barang.satuan } : null,
+      };
+    });
 
     const ringkasanRaw = Array.isArray(ringkasanRes.data) ? ringkasanRes.data[0] : ringkasanRes.data;
     if (ringkasanRaw) {
@@ -172,16 +207,18 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       };
     }
 
-    const agingRaw = Array.isArray(agingRes.data) ? agingRes.data[0] : agingRes.data;
+    const agingRaw = (Array.isArray(agingRes.data) ? agingRes.data[0] : agingRes.data) as Record<string, unknown> | null;
     if (agingRaw) {
       agingPiutang = {
+        total_piutang_berjalan: Number(agingRaw.total_piutang_berjalan ?? agingRaw.total_piutang_dikirim) || 0,
         total_piutang_dikirim: Number(agingRaw.total_piutang_dikirim) || 0,
         belum_jatuh_tempo: Number(agingRaw.belum_jatuh_tempo) || 0,
-        lewat_1_7_hari: Number(agingRaw.lewat_1_7_hari) || 0,
-        lewat_8_30_hari: Number(agingRaw.lewat_8_30_hari) || 0,
+        lewat_1_30_hari: Number(agingRaw.lewat_1_30_hari) || 0,
         lewat_gt_30_hari: Number(agingRaw.lewat_gt_30_hari) || 0,
         jumlah_pesanan_lewat_tempo: Number(agingRaw.jumlah_pesanan_lewat_tempo) || 0,
+        total_pesanan: Number(agingRaw.total_pesanan ?? agingRaw.total_pesanan_dikirim) || 0,
         total_pesanan_dikirim: Number(agingRaw.total_pesanan_dikirim) || 0,
+        total_pesanan_berjalan: Number(agingRaw.total_pesanan_berjalan ?? agingRaw.total_pesanan ?? agingRaw.total_pesanan_dikirim) || 0,
       };
     }
   }
@@ -500,18 +537,18 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
               </div>
             </div>
 
-            {/* Bento Card 2: Total Piutang Berjalan */}
+            {/* Bento Card 2: Total Piutang Berjalan (Pesanan Dikonfirmasi + Dikirim) */}
             <div className="surface-raised rounded-2xl p-5 flex flex-col justify-between border border-[#e2ebf6] shadow-sm">
               <div>
                 <div className="flex items-center justify-between text-xs font-semibold text-slate-600">
-                  <span className="text-[#0c1a30]">Piutang Aktif</span>
+                  <span className="text-[#0c1a30]">Piutang Berjalan</span>
                   <ReceiptText className="h-4 w-4 text-slate-400" />
                 </div>
                 <div className="mt-2 text-xl font-extrabold text-[#0c1a30] tabular-nums">
-                  {formatRupiah(agingPiutang?.total_piutang_dikirim || 0)}
+                  {formatRupiah(agingPiutang?.total_piutang_berjalan ?? agingPiutang?.total_piutang_dikirim ?? 0)}
                 </div>
                 <p className="mt-1 text-[11px] text-slate-500">
-                  {agingPiutang?.total_pesanan_dikirim || 0} faktur belum lunas
+                  {(agingPiutang?.total_pesanan_berjalan ?? agingPiutang?.total_pesanan_dikirim) || 0} pesanan berjalan (dikonfirmasi &amp; dikirim)
                 </p>
               </div>
 
@@ -560,12 +597,15 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             </div>
           </div>
 
-          {/* Grafik Visual Tren Omzet & Margin Finansial Dashboard */}
+          {/* Grafik Visual Tren Omzet & Margin Finansial Dashboard (8 Minggu Terakhir - PRD Bab 9) */}
           <DashboardFinanceChart
             data={marginData}
             ringkasan={kpiFinansial}
-            periodeLabel={periodeJudul}
+            periodeLabel="8 Minggu Terakhir"
           />
+
+          {/* Daftar Pengajuan Pembelian yang Menunggu Persetujuan Manajer (PRD Bab 9) */}
+          <DashboardPoMenunggu items={poMenungguList} totalMenunggu={poMenungguTotal} />
         </section>
       )}
 

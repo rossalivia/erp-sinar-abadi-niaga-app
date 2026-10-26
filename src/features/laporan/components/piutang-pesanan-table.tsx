@@ -53,15 +53,11 @@ export function PiutangPesananTable({ items }: PiutangPesananTableProps) {
             Belum tempo
           </Badge>
         );
+      case '1-30_hari':
       case '1-7_hari':
-        return (
-          <Badge variant="warning" className="text-[11px] font-medium bg-amber-50 text-amber-800 border-amber-200">
-            Lewat {hariLewat} hr
-          </Badge>
-        );
       case '8-30_hari':
         return (
-          <Badge variant="warning" className="text-[11px] font-medium bg-orange-50 text-orange-800 border-orange-200">
+          <Badge variant="warning" className="text-[11px] font-medium bg-amber-50 text-amber-800 border-amber-200">
             Lewat {hariLewat} hr
           </Badge>
         );
@@ -82,10 +78,10 @@ export function PiutangPesananTable({ items }: PiutangPesananTableProps) {
         <CardHeader className="py-3 px-5 border-b border-slate-100 flex flex-row items-center justify-between">
           <div>
             <CardTitle className="text-sm font-semibold text-slate-900 tracking-tight">
-              Daftar Pesanan Belum Lunas (Status: Dikirim)
+              Daftar Pesanan Belum Lunas (Piutang Berjalan)
             </CardTitle>
             <p className="text-xs text-slate-500 mt-0.5">
-              Tagihan aktif pelanggan yang siap diproses pelunasan
+              Tagihan aktif pelanggan (pesanan dikonfirmasi &amp; dikirim) yang siap diproses pelunasan
             </p>
           </div>
           <span className="text-xs font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-700">

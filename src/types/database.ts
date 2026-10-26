@@ -2066,11 +2066,28 @@ export type Database = {
         Returns: {
           belum_jatuh_tempo: number
           jumlah_pesanan_lewat_tempo: number
-          lewat_1_7_hari: number
-          lewat_8_30_hari: number
+          lewat_1_7_hari?: number
+          lewat_8_30_hari?: number
+          lewat_1_30_hari: number
           lewat_gt_30_hari: number
+          total_pesanan?: number
           total_pesanan_dikirim: number
+          total_piutang_berjalan: number
           total_piutang_dikirim: number
+        }[]
+      }
+      rpc_laporan_bottom_barang: {
+        Args: { p_dari?: string; p_limit?: number; p_sampai?: string }
+        Returns: {
+          barang_id: string
+          jumlah_terjual: number
+          kode: string
+          margin_persen: number
+          nama: string
+          satuan: string
+          total_hpp: number
+          total_margin: number
+          total_omzet: number
         }[]
       }
       rpc_laporan_margin_mingguan: {
@@ -2102,6 +2119,8 @@ export type Database = {
           nama_toko: string
           pelanggan_id: string
           piutang_belum_jatuh_tempo: number
+          piutang_lewat_1_30?: number
+          piutang_lewat_gt_30?: number
           piutang_lewat_jatuh_tempo: number
           termin_hari: number
           total_piutang: number

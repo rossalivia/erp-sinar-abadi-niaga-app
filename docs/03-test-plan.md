@@ -432,7 +432,19 @@ Urutan validasi `konfirmasi_pesanan`: (1) akses/kepemilikan → E01/E02, (2) sta
 | **TC-230** | Manajer (Hendra) mencatat pelunasan pesanan berstatus `dikirim` | M | SQL | **Lulus** | 2026-10-26 | `supabase/tests/16_koreksi_pelunasan.sql` | Status berhasil berubah ke `lunas`, kolom `dilunasi_pada` terisi timestamp valid, dan tercatat di `audit_log` dengan aksi `'pelunasan'` (nilai_lama: `{"status":"dikirim"}`, nilai_baru: `{"status":"lunas","dilunasi_pada":...}`). |
 | **TC-231** | Penolakan pelunasan pesanan berstatus `draf` (`draf -> lunas`) | M | SQL | **Lulus** | 2026-10-26 | `supabase/tests/16_koreksi_pelunasan.sql` | Ditolak dengan kode error `E0015: Perpindahan status atau tindakan tidak diizinkan`. Status `draf` tidak boleh langsung dilunasi tanpa konfirmasi dan pengiriman. |
 | **TC-232** | Penolakan pelunasan ulang pesanan yang sudah berstatus `lunas` | M | SQL | **Lulus** | 2026-10-26 | `supabase/tests/16_koreksi_pelunasan.sql` | Ditolak dengan `E0015`. Pesanan yang sudah `lunas` bersifat final dan tidak dapat dimutasi statusnya kembali. |
-| **TC-233** | Verifikasi kepatuhan tombol UI & penegasan sistem bebas dari fitur estimasi denda | P, M | Vitest + SQL | **Lulus** | 2026-10-26 | `src/features/pesanan/__tests__/pelunasan-ui.test.ts`<br>`supabase/tests/16_koreksi_pelunasan.sql` | Staf Penjualan tidak melihat tombol "Catat Lunas" di `/penagihan`, detail pesanan, dan detail pelanggan, namun tombol pengingat WhatsApp tetap tersedia. Sistem bebas 100% dari kolom/fitur estimasi denda/bunga. |
+
+---
+
+## 21. Test Case Tambahan: Dashboard & Laporan Manajer Sesuai PRD Bab 9 (TC-234 s.d. TC-238)
+
+| ID | Fokus Uji | Aktor | Media | Status | Tanggal Uji | Bukti Uji | Ringkasan Verifikasi & Hasil |
+|---|---|---|---|---|---|---|---|
+| **TC-234** | RPC `rpc_laporan_bottom_barang`: 5 barang dengan akumulasi margin terendah | M | SQL + Vitest | **Lulus** | 2026-10-26 | `supabase/tests/17_laporan_prd_bab_9.sql`<br>`src/features/laporan/__tests__/laporan.test.ts` | Mengembalikan 5 barang margin terendah terurut menaik (`ORDER BY total_margin ASC`), hanya barang pada pesanan `dikirim` dan `lunas`, formula margin presisi. |
+| **TC-235** | RPC `rpc_laporan_aging_piutang`: Tepat 3 kelompok aging | M | SQL + Vitest | **Lulus** | 2026-10-26 | `supabase/tests/17_laporan_prd_bab_9.sql`<br>`src/features/laporan/__tests__/laporan.test.ts` | Tepat mengembalikan 3 kelompok aging: `belum_jatuh_tempo` (termasuk pesanan dikonfirmasi & pesanan dikirim dengan jatuh tempo $\ge$ hari ini WIB), `lewat_1_30_hari`, dan `lewat_gt_30_hari`. |
+| **TC-236** | Invarian Total Aging == Piutang Berjalan | M | SQL + Vitest | **Lulus** | 2026-10-26 | `supabase/tests/17_laporan_prd_bab_9.sql`<br>`src/features/laporan/__tests__/laporan.test.ts` | Terbukti secara matematis bahwa `belum_jatuh_tempo + lewat_1_30_hari + lewat_gt_30_hari = total_piutang_berjalan` (total piutang pesanan dikonfirmasi + dikirim). |
+| **TC-237** | Omzet & Margin Bulan Berjalan Dashboard Manajer | M | SQL + Vitest | **Lulus** | 2026-10-26 | `supabase/tests/17_laporan_prd_bab_9.sql`<br>`src/features/laporan/__tests__/laporan.test.ts` | Dashboard default ke bulan berjalan (Asia/Jakarta), menghitung omzet pesanan dikirim & lunas berdasarkan `dikirim_pada`, margin rupiah dan persentase terhitung akurat. |
+| **TC-238** | Zero-Leakage Data Rahasia Finansial pada Dashboard & Laporan Non-Manajer | P, G | SQL + Vitest | **Lulus** | 2026-10-26 | `supabase/tests/17_laporan_prd_bab_9.sql`<br>`src/features/laporan/__tests__/laporan.test.ts` | Staf Penjualan dan Gudang diblokir database saat memanggil RPC finansial (`E0002`), dan dashboard Penjualan/Gudang tidak menerima atau memproses nilai `harga_pokok`, `hpp_satuan`, atau `margin`. |
+
 
 
 

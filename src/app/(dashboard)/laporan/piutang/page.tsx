@@ -34,13 +34,16 @@ export default async function LaporanPiutangPage() {
 
   const agingRaw = Array.isArray(agingRes.data) ? agingRes.data[0] : agingRes.data;
   const aging: LaporanAgingPiutang = {
-    total_piutang_dikirim: Number(agingRaw?.total_piutang_dikirim) || 0,
+    total_piutang_berjalan: Number(agingRaw?.total_piutang_berjalan ?? agingRaw?.total_piutang_dikirim) || 0,
+    total_piutang_dikirim: Number(agingRaw?.total_piutang_dikirim ?? agingRaw?.total_piutang_berjalan) || 0,
     belum_jatuh_tempo: Number(agingRaw?.belum_jatuh_tempo) || 0,
-    lewat_1_7_hari: Number(agingRaw?.lewat_1_7_hari) || 0,
-    lewat_8_30_hari: Number(agingRaw?.lewat_8_30_hari) || 0,
+    lewat_1_30_hari: Number(agingRaw?.lewat_1_30_hari ?? (Number(agingRaw?.lewat_1_7_hari || 0) + Number(agingRaw?.lewat_8_30_hari || 0))) || 0,
     lewat_gt_30_hari: Number(agingRaw?.lewat_gt_30_hari) || 0,
     jumlah_pesanan_lewat_tempo: Number(agingRaw?.jumlah_pesanan_lewat_tempo) || 0,
-    total_pesanan_dikirim: Number(agingRaw?.total_pesanan_dikirim) || 0,
+    total_pesanan: Number(agingRaw?.total_pesanan ?? agingRaw?.total_pesanan_dikirim) || 0,
+    total_pesanan_dikirim: Number(agingRaw?.total_pesanan_dikirim ?? agingRaw?.total_pesanan) || 0,
+    lewat_1_7_hari: Number(agingRaw?.lewat_1_7_hari) || 0,
+    lewat_8_30_hari: Number(agingRaw?.lewat_8_30_hari) || 0,
   };
 
   const pelangganList = ((piutangRes.data || []) as Record<string, unknown>[]).map((p) => {
@@ -54,6 +57,8 @@ export default async function LaporanPiutangPage() {
       termin_hari: Number(p.termin_hari) || 0,
       total_piutang: totalPiutang,
       piutang_belum_jatuh_tempo: Number(p.piutang_belum_jatuh_tempo) || 0,
+      piutang_lewat_1_30: Number(p.piutang_lewat_1_30) || 0,
+      piutang_lewat_gt_30: Number(p.piutang_lewat_gt_30) || 0,
       piutang_lewat_jatuh_tempo: Number(p.piutang_lewat_jatuh_tempo) || 0,
       ada_lewat_jatuh_tempo: Boolean(p.ada_lewat_jatuh_tempo),
       sisa_kredit: batasKredit - totalPiutang,

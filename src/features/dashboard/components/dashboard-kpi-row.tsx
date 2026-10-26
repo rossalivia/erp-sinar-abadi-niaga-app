@@ -680,9 +680,7 @@ export function DashboardKpiRow({
           <div className="mt-2 flex items-baseline justify-between">
             <div>
               <span className="text-2xl font-black text-[#0c1a30] tabular-nums tracking-tight">
-                {totalOmzet > 0
-                  ? formatRupiah(totalOmzet).replace('Rp', 'Rp ')
-                  : 'Rp 284,5 jt'}
+                {formatRupiah(totalOmzet)}
               </span>
               <p className="text-[10px] text-slate-500 mt-0.5">Akumulasi periode berjalan</p>
             </div>
@@ -708,7 +706,7 @@ export function DashboardKpiRow({
               Margin Kotor
             </span>
             <span className="font-bold text-emerald-700 tabular-nums">
-              {totalMargin > 0 ? formatRupiah(totalMargin) : 'Rp 38,4 jt'} ({marginPersen > 0 ? marginPersen : 13.5}%)
+              {formatRupiah(totalMargin)} ({marginPersen}%)
             </span>
           </div>
           <div className="flex justify-between items-center text-slate-600">

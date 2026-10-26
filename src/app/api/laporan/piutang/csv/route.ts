@@ -27,6 +27,8 @@ export async function GET() {
     termin_hari: number;
     total_piutang: number;
     piutang_belum_jatuh_tempo: number;
+    piutang_lewat_1_30?: number;
+    piutang_lewat_gt_30?: number;
     piutang_lewat_jatuh_tempo: number;
     ada_lewat_jatuh_tempo: boolean;
   }[];
@@ -39,7 +41,9 @@ export async function GET() {
     'Batas Kredit (Rp)',
     'Sisa Kredit (Rp)',
     'Belum Jatuh Tempo (Rp)',
-    'Lewat Jatuh Tempo (Rp)',
+    'Lewat 1-30 Hari (Rp)',
+    'Lewat >30 Hari (Rp)',
+    'Total Lewat Jatuh Tempo (Rp)',
     'Status Keterlambatan',
   ];
 
@@ -57,6 +61,8 @@ export async function GET() {
       r.batas_kredit ?? 0,
       sisaKredit,
       r.piutang_belum_jatuh_tempo ?? 0,
+      r.piutang_lewat_1_30 ?? 0,
+      r.piutang_lewat_gt_30 ?? 0,
       r.piutang_lewat_jatuh_tempo ?? 0,
       `"${status}"`,
     ].join(','));

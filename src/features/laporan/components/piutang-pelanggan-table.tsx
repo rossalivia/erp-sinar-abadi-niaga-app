@@ -13,14 +13,19 @@ interface PiutangPelangganTableProps {
 
 export function PiutangPelangganTable({ items }: PiutangPelangganTableProps) {
   return (
-    <Card>
-      <CardHeader className="py-3 px-5 border-b border-slate-100">
-        <CardTitle className="text-sm font-semibold text-slate-900 tracking-tight">
-          Status Piutang Berjalan per Pelanggan (BR-05)
-        </CardTitle>
-        <p className="text-xs text-slate-500 mt-0.5">
-          Piutang berjalan mencakup pesanan berstatus dikonfirmasi &amp; dikirim terhadap batas kredit
-        </p>
+    <Card className="border-slate-200 shadow-sm">
+      <CardHeader className="py-3 px-5 border-b border-slate-100 flex flex-row items-center justify-between">
+        <div>
+          <CardTitle className="text-sm font-semibold text-slate-900 tracking-tight">
+            Status Piutang &amp; Aging per Pelanggan (PRD Bab 9 §4)
+          </CardTitle>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Piutang berjalan dikelompokkan tepat 3 umur tagihan: belum tempo, lewat 1–30 hari, dan lewat &gt;30 hari
+          </p>
+        </div>
+        <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium">
+          {items.length} Pelanggan
+        </span>
       </CardHeader>
       <CardContent className="p-0">
         {items.length === 0 ? (
@@ -35,9 +40,11 @@ export function PiutangPelangganTable({ items }: PiutangPelangganTableProps) {
                   <TableHead className="text-xs font-semibold text-slate-700">Pelanggan</TableHead>
                   <TableHead className="text-center text-xs font-semibold text-slate-700">Termin</TableHead>
                   <TableHead className="text-right text-xs font-semibold text-slate-700">Piutang Berjalan</TableHead>
+                  <TableHead className="text-right text-xs font-semibold text-slate-700">Belum Tempo</TableHead>
+                  <TableHead className="text-right text-xs font-semibold text-slate-700">Lewat 1–30 Hr</TableHead>
+                  <TableHead className="text-right text-xs font-semibold text-slate-700">Lewat &gt;30 Hr</TableHead>
                   <TableHead className="text-right text-xs font-semibold text-slate-700">Batas Kredit</TableHead>
                   <TableHead className="text-right text-xs font-semibold text-slate-700">Sisa Kredit</TableHead>
-                  <TableHead className="text-right text-xs font-semibold text-slate-700">Lewat Jatuh Tempo</TableHead>
                   <TableHead className="text-center text-xs font-semibold text-slate-700">Status Risiko</TableHead>
                 </TableRow>
               </TableHeader>
@@ -45,6 +52,8 @@ export function PiutangPelangganTable({ items }: PiutangPelangganTableProps) {
                 {items.map((p) => {
                   const isKreditHabis = p.sisa_kredit <= 0 && p.batas_kredit > 0;
                   const isKreditNol = p.batas_kredit === 0;
+                  const lewat1Sampai30 = p.piutang_lewat_1_30 ?? 0;
+                  const lewatGt30 = p.piutang_lewat_gt_30 ?? 0;
 
                   return (
                     <TableRow key={p.pelanggan_id} className="border-b border-slate-100 hover:bg-slate-50/50">
@@ -60,8 +69,17 @@ export function PiutangPelangganTable({ items }: PiutangPelangganTableProps) {
                       <TableCell className="text-center text-xs text-slate-600">
                         {p.termin_hari} hari
                       </TableCell>
-                      <TableCell className="text-right text-xs tabular-nums text-slate-900 font-medium">
+                      <TableCell className="text-right text-xs tabular-nums text-slate-900 font-semibold">
                         {formatRupiah(p.total_piutang)}
+                      </TableCell>
+                      <TableCell className="text-right text-xs tabular-nums text-emerald-700 font-medium">
+                        {formatRupiah(p.piutang_belum_jatuh_tempo)}
+                      </TableCell>
+                      <TableCell className="text-right text-xs tabular-nums font-medium text-amber-700">
+                        {lewat1Sampai30 > 0 ? formatRupiah(lewat1Sampai30) : <span className="text-slate-400 font-normal">Rp0</span>}
+                      </TableCell>
+                      <TableCell className="text-right text-xs tabular-nums font-semibold text-red-700">
+                        {lewatGt30 > 0 ? formatRupiah(lewatGt30) : <span className="text-slate-400 font-normal">Rp0</span>}
                       </TableCell>
                       <TableCell className="text-right text-xs tabular-nums text-slate-700">
                         {formatRupiah(p.batas_kredit)}
@@ -77,20 +95,11 @@ export function PiutangPelangganTable({ items }: PiutangPelangganTableProps) {
                       >
                         {formatRupiah(p.sisa_kredit)}
                       </TableCell>
-                      <TableCell className="text-right text-xs tabular-nums font-semibold">
-                        {p.piutang_lewat_jatuh_tempo > 0 ? (
-                          <span className="text-red-600">
-                            {formatRupiah(p.piutang_lewat_jatuh_tempo)}
-                          </span>
-                        ) : (
-                          <span className="text-slate-400 font-normal">Rp0</span>
-                        )}
-                      </TableCell>
                       <TableCell className="text-center text-xs">
                         {p.ada_lewat_jatuh_tempo ? (
                           <Badge variant="destructive" className="text-[11px] font-medium gap-1 bg-red-100 text-red-800 hover:bg-red-100 border-red-200">
                             <AlertCircle className="h-3 w-3" />
-                            Macet
+                            Overdue
                           </Badge>
                         ) : isKreditHabis ? (
                           <Badge variant="warning" className="text-[11px] font-medium bg-amber-100 text-amber-800 hover:bg-amber-100 border-amber-200">
@@ -98,10 +107,10 @@ export function PiutangPelangganTable({ items }: PiutangPelangganTableProps) {
                           </Badge>
                         ) : isKreditNol ? (
                           <Badge variant="secondary" className="text-[11px] font-medium bg-slate-100 text-slate-600">
-                            Kredit Rp0
+                            Limit Rp0
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="text-[11px] font-medium gap-1 bg-emerald-50 text-emerald-800 border-emerald-200">
+                          <Badge variant="outline" className="text-[11px] font-medium bg-emerald-50 text-emerald-800 border-emerald-200 gap-1">
                             <CheckCircle2 className="h-3 w-3" />
                             Lancar
                           </Badge>

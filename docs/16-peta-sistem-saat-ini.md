@@ -840,6 +840,11 @@ Terdapat 14 tabel di dalam skema public (9 tabel inti + 2 modul stock opname + 1
 | TC-231 | supabase/tests/16_koreksi_pelunasan.sql | SQL | Otomatis | Manajer melunasi pesanan draf ditolak (E0015) |
 | TC-232 | supabase/tests/16_koreksi_pelunasan.sql | SQL | Otomatis | Pelunasan ulang pesanan yang sudah berstatus lunas ditolak (E0015) |
 | TC-233 | src/features/pesanan/__tests__/pelunasan-ui.test.ts | Vitest + SQL | Otomatis | Tombol Catat Lunas tersembunyi bagi Penjualan di UI, tombol WA tetap aktif, sistem bebas denda |
+| TC-234 | supabase/tests/17_laporan_prd_bab_9.sql | SQL + Vitest | Otomatis | RPC rpc_laporan_bottom_barang mengembalikan 5 barang margin terendah pada pesanan dikirim/lunas |
+| TC-235 | supabase/tests/17_laporan_prd_bab_9.sql | SQL + Vitest | Otomatis | RPC rpc_laporan_aging_piutang mengembalikan tepat 3 kelompok: belum tempo, lewat 1-30, lewat >30 |
+| TC-236 | supabase/tests/17_laporan_prd_bab_9.sql | SQL + Vitest | Otomatis | Invarian total aging == piutang berjalan (pesanan dikonfirmasi + dikirim) terbukti konsisten |
+| TC-237 | supabase/tests/17_laporan_prd_bab_9.sql | SQL + Vitest | Otomatis | Dashboard Manajer default ke Bulan Berjalan (WIB), omzet pesanan dikirim & lunas menurut dikirim_pada |
+| TC-238 | supabase/tests/17_laporan_prd_bab_9.sql | SQL + Vitest | Otomatis | Zero-leakage data finansial rahasia (HPP/margin) di dashboard dan laporan non-Manajer |
 
 ---
 
@@ -855,3 +860,5 @@ Terdapat 14 tabel di dalam skema public (9 tabel inti + 2 modul stock opname + 1
 | 6 | Bypass Kredit Manajer | Spesifikasi mengecualikan Manajer pada BR-04 | Manajer TIDAK BISA membypass limit kredit atau overdue di konfirmasi pesanan | Ya (B30, D5) | Untuk tata kelola risiko kredit, Manajer wajib menaikkan limit atau melunasi faktur terlebih dahulu (tercatat di audit log). |
 | 7 | Koreksi harga_pokok Manual | Spesifikasi menyatakan HPP diupdate via PO (BR-10) | Manajer diizinkan memanggil rpc_ubah_harga_pokok | Ya (B31) | Diperlukan untuk mengisi HPP saldo awal sebelum PO pertama diterbitkan. |
 | 8 | Struktur PO Multi-Barang | PO memiliki kolom barang_id dan jumlah_dipesan per baris PO | PO adalah single-item per dokumen (1 PO = 1 barang) | Ya | Mengikuti persis skema pembelian pada 00-spesifikasi.md poin III.5. Tidak ada tabel item_pembelian. |
+| 9 | Dashboard & Laporan Manajer PRD Bab 9 | Metrik default mingguan di dokumen awal | Dashboard Manajer default ke Bulan Berjalan (WIB), grafik omzet & margin 8 minggu, aging piutang 3 bucket (total = piutang berjalan), bottom 5 margin produk, daftar PO diajukan di dashboard | Ya (PRD Bab 9) | Penyesuaian metrik manajerial strategis sesuai mandat PRD Bab 9. |
+
