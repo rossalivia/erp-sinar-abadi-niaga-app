@@ -31,6 +31,7 @@ interface MayarPaymentPanelProps {
   namaToko: string;
   teleponToko?: string | null;
   tagihanList: TagihanMayarRow[];
+  isMayarActive?: boolean;
 }
 
 export function MayarPaymentPanel({
@@ -41,6 +42,7 @@ export function MayarPaymentPanel({
   namaToko,
   teleponToko,
   tagihanList,
+  isMayarActive = true,
 }: MayarPaymentPanelProps) {
   const [isCreateOpen, setIsCreateOpen] = React.useState(false);
   const [isCloseConfirmOpen, setIsCloseConfirmOpen] = React.useState(false);
@@ -114,15 +116,22 @@ export function MayarPaymentPanel({
             <p className="text-slate-500 text-xs">
               Belum ada tautan bayar online aktif untuk pesanan ini. Anda dapat menerbitkan tautan pembayaran Mayar sandbox untuk dibagikan ke toko pelanggan.
             </p>
-            <Button
-              type="button"
-              size="sm"
-              onClick={() => setIsCreateOpen(true)}
-              className="text-xs bg-slate-900 text-white hover:bg-slate-800 gap-1.5"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              Buat Tagihan Mayar
-            </Button>
+            {isMayarActive ? (
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => setIsCreateOpen(true)}
+                className="text-xs bg-slate-900 text-white hover:bg-slate-800 gap-1.5"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Buat Tagihan Mayar
+              </Button>
+            ) : (
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded">
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+                Mayar belum dikonfigurasi
+              </div>
+            )}
           </div>
         )}
 

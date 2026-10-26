@@ -63,7 +63,7 @@ export function AuditDiffDialog({ item, onClose }: AuditDiffDialogProps) {
           </div>
           <DialogDescription className="text-xs text-slate-500 mt-1">
             Dicatat pada {formatTanggalWaktu(item.dibuat_pada)} oleh{' '}
-            <strong className="text-slate-700">{item.pelaku_nama || 'Sistem'}</strong> ({item.pelaku_peran || '-'})
+            <strong className="text-slate-700">{item.pelaku_nama || (!item.pelaku_id ? 'Sistem (Mayar)' : 'Sistem')}</strong> ({item.pelaku_peran || '-'})
           </DialogDescription>
         </DialogHeader>
 

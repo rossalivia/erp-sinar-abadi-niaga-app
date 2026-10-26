@@ -89,6 +89,22 @@ export default async function PembayaranMayarPage() {
       className: 'w-36',
     },
     {
+      header: 'Catatan / Anomali',
+      accessorKey: 'catatan_tinjau',
+      cell: (row) =>
+        row.catatan_tinjau ? (
+          <span
+            className="text-[11px] text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 inline-block font-mono"
+            title={row.catatan_tinjau}
+          >
+            {row.catatan_tinjau}
+          </span>
+        ) : (
+          <span className="text-slate-400">-</span>
+        ),
+      className: 'min-w-[200px]',
+    },
+    {
       header: 'Tautan / Bukti',
       cell: (row) => (
         <div className="flex items-center gap-2">
@@ -106,19 +122,15 @@ export default async function PembayaranMayarPage() {
           ) : (
             <span className="text-slate-400">-</span>
           )}
-          {row.catatan_tinjau && (
-            <span
-              className="text-[10px] text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 truncate max-w-[120px]"
-              title={row.catatan_tinjau}
-            >
-              {row.catatan_tinjau}
-            </span>
-          )}
         </div>
       ),
-      className: 'w-32',
+      className: 'w-24',
     },
   ];
+
+  const perluTinjauCount = tagihanList.filter(
+    (t) => t.status === 'perlu_tinjau' || t.status_efektif === 'perlu_tinjau'
+  ).length;
 
   return (
     <div className="space-y-4 max-w-7xl mx-auto">
@@ -126,6 +138,15 @@ export default async function PembayaranMayarPage() {
         title="Monitoring Pembayaran Digital Mayar"
         description="Riwayat penerbitan tautan bayar online Mayar sandbox, status pelunasan otomatis, dan rekonsiliasi transaksi."
       />
+
+      {perluTinjauCount > 0 && (
+        <div className="p-3 bg-amber-50 border border-amber-200 rounded-md text-xs text-amber-900 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold">Perhatian:</span>
+            <span>Terdapat <strong>{perluTinjauCount}</strong> transaksi pembayaran yang memerlukan peninjauan Manajer (anomali nominal, status pesanan tidak sesuai, atau indikasi pembayaran ganda). Pesanan terkait belum dilunasi.</span>
+          </div>
+        </div>
+      )}
 
       {/* Kartu Status Konfigurasi Gateway */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

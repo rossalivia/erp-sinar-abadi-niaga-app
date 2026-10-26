@@ -70,8 +70,8 @@ export default async function AuditLogPage({ searchParams }: PageProps) {
 
     return {
       id: Number(r.id),
-      pelaku_id: String(r.pelaku_id || ''),
-      pelaku_nama: pelaku?.nama_lengkap || 'Sistem',
+      pelaku_id: r.pelaku_id ? String(r.pelaku_id) : '',
+      pelaku_nama: pelaku?.nama_lengkap || (!r.pelaku_id ? 'Sistem (Mayar)' : 'Sistem'),
       pelaku_email: '',
       pelaku_peran: pelaku?.peran || '',
       aksi: String(r.aksi || ''),

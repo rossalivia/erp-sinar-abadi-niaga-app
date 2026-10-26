@@ -188,13 +188,46 @@ export class MockMayarClient implements MayarClient {
   }
 }
 
+/**
+ * Client Mayar nonaktif untuk implementasi fail-closed di lingkungan produksi
+ * atau lingkungan tanpa konfigurasi kredensial resmi.
+ */
+export class DisabledMayarClient implements MayarClient {
+  async createInvoice(): Promise<CreateInvoiceResponse> {
+    throw new Error('Integrasi pembayaran Mayar belum dikonfigurasi (MAYAR_API_KEY tidak ditemukan)');
+  }
+
+  async getInvoice(): Promise<GetInvoiceResponse> {
+    throw new Error('Integrasi pembayaran Mayar belum dikonfigurasi (MAYAR_API_KEY tidak ditemukan)');
+  }
+
+  async closeInvoice(): Promise<boolean> {
+    return false;
+  }
+}
+
 // Instance singleton mock global untuk lingkungan simulasi lokal
-const globalMockMayarClient = new MockMayarClient();
+export const globalMockMayarClient = new MockMayarClient();
+
+/**
+ * Helper untuk memeriksa apakah integrasi Mayar aktif dan terkonfigurasi.
+ */
+export function isMayarConfigured(): boolean {
+  const apiKey = process.env.MAYAR_API_KEY;
+  const hasApiKey = Boolean(apiKey && apiKey.trim() !== '' && !apiKey.includes('placeholder'));
+  if (hasApiKey) return true;
+
+  // Mock hanya boleh aktif jika BUKAN produksi DAN MAYAR_MOCK === 'true'
+  const isMockActive = process.env.NODE_ENV !== 'production' && process.env.MAYAR_MOCK === 'true';
+  return isMockActive;
+}
 
 /**
  * Factory pengambil instance MayarClient.
- * Jika MAYAR_API_KEY tersedia, gunakan HttpMayarClient.
- * Jika tidak, gunakan MockMayarClient agar aplikasi tetap berfungsi dalam mode simulasi.
+ * 1. Jika customClient diberikan (misal saat testing), gunakan customClient.
+ * 2. Jika MAYAR_API_KEY tersedia, gunakan HttpMayarClient.
+ * 3. MockMayarClient HANYA aktif jika NODE_ENV != 'production' DAN MAYAR_MOCK === 'true'.
+ * 4. Selain itu (termasuk di production tanpa API key): gagal tertutup (DisabledMayarClient).
  */
 export function getMayarClient(customClient?: MayarClient): MayarClient {
   if (customClient) {
@@ -206,5 +239,9 @@ export function getMayarClient(customClient?: MayarClient): MayarClient {
     return new HttpMayarClient(apiKey);
   }
 
-  return globalMockMayarClient;
+  if (process.env.NODE_ENV !== 'production' && process.env.MAYAR_MOCK === 'true') {
+    return globalMockMayarClient;
+  }
+
+  return new DisabledMayarClient();
 }

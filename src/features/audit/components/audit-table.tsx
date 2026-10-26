@@ -224,7 +224,7 @@ export function AuditTable({
                         {formatTanggalWaktu(log.dibuat_pada)}
                       </TableCell>
                       <TableCell className="text-xs">
-                        <span className="font-medium text-slate-900 block">{log.pelaku_nama || 'Sistem'}</span>
+                        <span className="font-medium text-slate-900 block">{log.pelaku_nama || (!log.pelaku_id ? 'Sistem (Mayar)' : 'Sistem')}</span>
                         <span className="text-[11px] text-slate-400 font-mono">
                           {log.pelaku_peran ? `[${log.pelaku_peran}]` : ''} {log.pelaku_email || ''}
                         </span>

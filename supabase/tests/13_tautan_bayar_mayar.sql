@@ -238,13 +238,14 @@ BEGIN
   WHERE id = v_tagihan_id AND status = 'dibayar' AND dibayar_pada IS NOT NULL;
   ASSERT FOUND, 'FAIL: Tagihan 1 harus berstatus dibayar';
 
-  -- Verifikasi audit_log tercatat dengan pelaku_id NULL (aksi sistem)
+  -- Verifikasi audit_log tercatat dengan pelaku_id NULL (aksi sistem 'pelunasan')
   PERFORM 1 FROM public.audit_log
   WHERE nama_tabel = 'pesanan_jual'
     AND data_id = v_pesanan_id
-    AND aksi = 'lunasi_pesanan_mayar'
-    AND pelaku_id IS NULL;
-  ASSERT FOUND, 'FAIL: Audit log sistem dengan pelaku NULL wajib tercatat';
+    AND aksi = 'pelunasan'
+    AND pelaku_id IS NULL
+    AND nilai_baru->>'keterangan' = 'Pelunasan via Mayar';
+  ASSERT FOUND, 'FAIL: Audit log sistem dengan pelaku NULL dan aksi pelunasan wajib tercatat';
   RAISE NOTICE 'PASS: Pelunasan Mayar sukses, pesanan lunas, audit tercatat';
 
   -- ============================================================
@@ -296,6 +297,26 @@ BEGIN
   WHERE id = v_tagihan_id AND status = 'ditutup';
   ASSERT FOUND, 'FAIL: Tagihan Mayar aktif harus ditutup otomatis saat pelunasan manual';
   RAISE NOTICE 'PASS: Tagihan Mayar aktif sukses tertutup otomatis saat pelunasan manual';
+
+  -- ============================================================
+  -- TC-193: Hak Akses RPC Sistem (HANYA service_role)
+  -- ============================================================
+  RAISE NOTICE '--- TC-193: Penolakan peran authenticated memanggil RPC sistem ---';
+  BEGIN
+    SET LOCAL ROLE authenticated;
+    PERFORM public.rpc_sistem_lunaskan_dari_mayar(v_tagihan_id, 'trx_forbidden', 500000);
+    RAISE EXCEPTION 'FAIL: Role authenticated seharusnya ditolak memanggil rpc_sistem_lunaskan_dari_mayar';
+  EXCEPTION WHEN insufficient_privilege THEN
+    RAISE NOTICE 'PASS: Role authenticated ditolak memanggil rpc_sistem_lunaskan_dari_mayar (insufficient_privilege)';
+  END;
+
+  BEGIN
+    SET LOCAL ROLE authenticated;
+    PERFORM public.rpc_sistem_cek_webhook_event_selesai('dummy_key');
+    RAISE EXCEPTION 'FAIL: Role authenticated seharusnya ditolak memanggil rpc_sistem_cek_webhook_event_selesai';
+  EXCEPTION WHEN insufficient_privilege THEN
+    RAISE NOTICE 'PASS: Role authenticated ditolak memanggil rpc_sistem_cek_webhook_event_selesai (insufficient_privilege)';
+  END;
 
   RAISE NOTICE '=== SEMUA UJI SQL SUITE 13 BERHASIL DILALUI ===';
 END $$;

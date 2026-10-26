@@ -178,7 +178,7 @@ export async function periksaStatusMayarService(
         {
           p_tagihan_id: tagihan.id,
           p_referensi_transaksi: invoice.transactionId || invoice.id,
-          p_jumlah_terverifikasi: invoice.amount,
+          p_jumlah_terverifikasi: Math.round(invoice.amount),
         }
       );
 
@@ -281,18 +281,21 @@ export async function prosesWebhookMayarService(
   const expectedToken = process.env.MAYAR_WEBHOOK_TOKEN;
 
   // 1. Constant-Time Token Verification (M7.1)
-  if (!expectedToken || !tokenParam) {
-    return { status: 404, message: 'Endpoint webhook tidak valid atau token salah' };
-  }
-
-  const tokenBuffer = Buffer.from(tokenParam);
-  const expectedBuffer = Buffer.from(expectedToken);
+  // Gunakan digest SHA-256 untuk menjamin perbandingan waktu konstan meskipun panjang token berbeda
+  const tokenParamHash = crypto.createHash('sha256').update(tokenParam || '').digest();
+  const expectedTokenHash = crypto.createHash('sha256').update(expectedToken || '').digest();
 
   if (
-    tokenBuffer.length !== expectedBuffer.length ||
-    !crypto.timingSafeEqual(tokenBuffer, expectedBuffer)
+    !expectedToken ||
+    !tokenParam ||
+    !crypto.timingSafeEqual(tokenParamHash, expectedTokenHash)
   ) {
-    return { status: 404, message: 'Endpoint webhook tidak valid atau token salah' };
+    return { status: 401, message: 'Unauthorized: Token webhook tidak valid' };
+  }
+
+  // 1b. Perilaku Fail-Closed di Lingkungan Produksi Tanpa API Key
+  if (process.env.NODE_ENV === 'production' && !process.env.MAYAR_API_KEY) {
+    return { status: 503, message: 'Layanan Mayar belum dikonfigurasi di lingkungan produksi' };
   }
 
   // 2. Batas Ukuran Body 100 KB (M7.2)
@@ -359,27 +362,22 @@ export async function prosesWebhookMayarService(
       p_referensi_id: candidateIds[0],
       p_hasil: 'tidak_dikenal',
       p_status_mayar: payload.data?.status || null,
-      p_jumlah_tercatat: Number(payload.data?.amount) || null,
+      p_jumlah_tercatat: Math.round(Number(payload.data?.amount) || 0),
     });
 
     return { status: 200, message: 'Tagihan Not Found' };
   }
 
   const tagihan = matchingRows[0];
-  const uniqueKey = `${eventName}_${candidateIds.join('_')}`;
+  const uniqueKey = `${eventName}_${tagihan.mayar_invoice_id}_${candidateIds.join('_')}`;
 
-  // 4c. Idempotensi Webhook (M7.4b)
-  const { data: isNewEvent } = await adminCaller.rpc('rpc_sistem_rekam_webhook_event', {
+  // 4c. Idempotensi Webhook (Kunci event selesai HANYA setelah pelunasan sukses di database)
+  const { data: isAlreadyCompleted } = await adminCaller.rpc('rpc_sistem_cek_webhook_event_selesai', {
     p_kunci_unik: uniqueKey,
-    p_jenis_event: eventName,
-    p_referensi_id: tagihan.mayar_invoice_id,
-    p_hasil: 'diproses',
-    p_status_mayar: payload.data?.status || null,
-    p_jumlah_tercatat: Number(payload.data?.amount) || null,
   });
 
-  if (!isNewEvent) {
-    // Event duplikat / replay: balas 200 tanpa memproses ulang
+  if (isAlreadyCompleted) {
+    // Event sudah selesai diproses sebelumnya: balas 200 tanpa memproses ulang
     return { status: 200, message: 'Duplicate Event Already Processed' };
   }
 
@@ -390,7 +388,7 @@ export async function prosesWebhookMayarService(
   try {
     verifiedInvoice = await client.getInvoice(tagihan.mayar_invoice_id);
   } catch {
-    // Bila server Mayar tidak terjangkau (timeout/5xx), balas 500 agar Mayar mencoba ulang (M7.6)
+    // Bila server Mayar tidak terjangkau (timeout/network error), balas 500 dan JANGAN tandai selesai agar Mayar mencoba ulang
     return { status: 500, message: 'Gateway Verification Timeout' };
   }
 
@@ -398,18 +396,23 @@ export async function prosesWebhookMayarService(
     return { status: 200, message: 'Invoice Not Paid on Gateway' };
   }
 
-  // 6. Eksekusi Pelunasan Otomatis via rpc_sistem_lunaskan_dari_mayar (M8)
-  const { data: lunasRes } = await adminCaller.rpc('rpc_sistem_lunaskan_dari_mayar', {
+  // 6. Eksekusi Pelunasan Otomatis dan Tandai Event Selesai secara Atomik (M8)
+  const { data: lunasRes, error: lunasError } = await adminCaller.rpc('rpc_sistem_lunaskan_dari_mayar', {
     p_tagihan_id: tagihan.id,
     p_referensi_transaksi: verifiedInvoice.transactionId || payload.data?.transactionId || verifiedInvoice.id,
-    p_jumlah_terverifikasi: verifiedInvoice.amount,
+    p_jumlah_terverifikasi: Math.round(verifiedInvoice.amount),
+    p_kunci_unik: uniqueKey,
   });
 
-  const resObj = lunasRes as { success: boolean; status: string; message: string } | null;
+  if (lunasError || !lunasRes) {
+    return { status: 500, message: lunasError?.message || 'Database Settlement Error' };
+  }
+
+  const resObj = lunasRes as { success: boolean; status: string; message: string };
 
   return {
     status: 200,
-    message: resObj?.message || 'Webhook Processed',
+    message: resObj.message || 'Webhook Processed',
   };
 }
 

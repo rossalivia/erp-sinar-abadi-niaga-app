@@ -10,6 +10,7 @@ import { PesananTimeline } from '@/features/pesanan/components/pesanan-timeline'
 import { PesananItemsTable } from '@/features/pesanan/components/pesanan-items-table';
 import { PersetujuanPanel } from '@/features/pesanan/components/persetujuan-panel';
 import { MayarPaymentPanel } from '@/features/pembayaran/components/MayarPaymentPanel';
+import { isMayarConfigured } from '@/features/pembayaran/mayar-client';
 import { ambilRiwayatTagihanMayarService } from '@/features/pembayaran/service';
 import type { TagihanMayarRow } from '@/features/pembayaran/types';
 import { createServerClient } from '@/lib/supabase/server';
@@ -294,6 +295,7 @@ export default async function DetailPesananPage({ params }: PageProps) {
           namaToko={pesanan.pelanggan?.nama_toko || 'Pelanggan'}
           teleponToko={pesanan.pelanggan?.telepon}
           tagihanList={tagihanMayarList}
+          isMayarActive={isMayarConfigured()}
         />
       )}
 
