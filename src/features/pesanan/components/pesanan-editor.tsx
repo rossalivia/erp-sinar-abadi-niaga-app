@@ -182,13 +182,12 @@ export function PesananEditor({
         const val = Number(value);
         target.jumlah = isNaN(val) || val < 1 ? 1 : Math.floor(val);
       } else if (field === 'diskon_persen') {
-        const val = Number(value);
+        const rawStr = String(value ?? '').trim().replace(',', '.');
+        const val = Number(rawStr);
         if (isNaN(val) || val < 0) {
           target.diskon_persen = 0;
-        } else if (val > maxDiskon) {
-          target.diskon_persen = maxDiskon;
-          toast.warning(`Diskon untuk peran Anda dibatasi maksimal ${maxDiskon}%`);
         } else {
+          // Tidak ada clamp diam-diam, simpan angka persis (termasuk desimal misal 2.5)
           target.diskon_persen = Number(val.toFixed(2));
         }
       } else if (field === 'barang_id') {
@@ -229,8 +228,12 @@ export function PesananEditor({
         setErrorMessage(`Baris #${i + 1}: Jumlah minimal 1`);
         return;
       }
-      if (it.diskon_persen < 0 || it.diskon_persen > maxDiskon) {
-        setErrorMessage(`Baris #${i + 1}: Diskon maksimal ${maxDiskon}%`);
+      if (it.diskon_persen < 0 || it.diskon_persen > 25) {
+        setErrorMessage(`Baris #${i + 1}: Diskon harus 0% sampai 25%`);
+        return;
+      }
+      if (peran === 'penjualan' && it.diskon_persen > 10) {
+        setErrorMessage(`Baris #${i + 1}: Diskon harus 0% sampai 10%`);
         return;
       }
     }
@@ -546,9 +549,8 @@ export function PesananEditor({
                     <td className="py-2 px-3 text-right">
                       <Input
                         type="number"
-                        step="0.1"
+                        step="any"
                         min="0"
-                        max={maxDiskon}
                         value={row.diskon_persen}
                         onChange={(e) =>
                           handleUpdateItem(idx, 'diskon_persen', e.target.value)

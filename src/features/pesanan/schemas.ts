@@ -3,11 +3,17 @@ import { z } from 'zod';
 export const pesananItemInputSchema = z.object({
   barang_id: z.string().uuid('ID barang tidak valid'),
   jumlah: z.coerce.number().int('Jumlah harus berupa bilangan bulat').min(1, 'Jumlah minimal 1'),
-  diskon_persen: z.coerce
+  diskon_persen: z.preprocess((val) => {
+    if (typeof val === 'string') {
+      const sanitized = val.trim().replace(',', '.');
+      return sanitized === '' ? 0 : Number(sanitized);
+    }
+    return val;
+  }, z.coerce
     .number()
     .min(0, 'Diskon minimal 0%')
-    .max(25, 'Diskon maksimal 25%')
-    .default(0),
+    .max(25, 'Diskon harus 0% sampai 25%')
+    .default(0)),
 });
 
 export const pesananDrafSchema = z.object({

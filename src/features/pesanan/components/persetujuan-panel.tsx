@@ -31,6 +31,7 @@ import {
   ajukanPersetujuanHargaAction,
   putuskanPersetujuanHargaAction,
   batalkanPengajuanHargaAction,
+  konfirmasiPesananAction,
 } from '../actions';
 import { formatTanggalWaktu } from '@/lib/format';
 import type { PersetujuanHargaRow, StatusPesanan } from '../types';
@@ -145,6 +146,39 @@ export function PersetujuanPanel({
       }
 
       toast.success(res.message || 'Persetujuan harga berhasil disetujui');
+      setIsSetujuiOpen(false);
+      setCatatanKeputusan('');
+      router.refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan sistem');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // 3b. Manajer: Setujui & Konfirmasi Sekaligus
+  async function handleSetujuiDanKonfirmasi() {
+    if (!persetujuan) return;
+    setLoading(true);
+    try {
+      const res = await putuskanPersetujuanHargaAction({
+        persetujuan_id: persetujuan.id,
+        setuju: true,
+        catatan_keputusan: catatanKeputusan.trim() || undefined,
+      });
+
+      if (!res.success) {
+        toast.error(res.message || 'Gagal menyetujui pengajuan');
+        return;
+      }
+
+      const konf = await konfirmasiPesananAction(pesananId);
+      if (!konf.success) {
+        toast.error(konf.message || 'Gagal mengonfirmasi pesanan');
+        return;
+      }
+
+      toast.success('Persetujuan disetujui & pesanan berhasil dikonfirmasi');
       setIsSetujuiOpen(false);
       setCatatanKeputusan('');
       router.refresh();
@@ -297,9 +331,42 @@ export function PersetujuanPanel({
               </p>
             )}
             {statusPesanan === 'draf' && (
-              <p className="text-emerald-700 font-medium pt-1">
-                Silakan lakukan konfirmasi pesanan sebelum masa berlaku persetujuan berakhir.
-              </p>
+              <div className="pt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-t border-emerald-200/60 mt-1">
+                {isManajer ? (
+                  <>
+                    <p className="text-emerald-800 font-medium">
+                      Persetujuan aktif. Anda dapat langsung mengonfirmasi pesanan ini sebagai Manajer:
+                    </p>
+                    <Button
+                      size="sm"
+                      onClick={async () => {
+                        setLoading(true);
+                        try {
+                          const res = await konfirmasiPesananAction(pesananId);
+                          if (!res.success) {
+                            toast.error(res.message || 'Gagal mengonfirmasi pesanan');
+                            return;
+                          }
+                          toast.success('Pesanan berhasil dikonfirmasi');
+                          router.refresh();
+                        } catch (err) {
+                          toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan');
+                        } finally {
+                          setLoading(false);
+                        }
+                      }}
+                      disabled={loading}
+                      className="text-xs h-7 bg-emerald-800 hover:bg-emerald-900 text-white shrink-0"
+                    >
+                      Konfirmasi Pesanan (Manajer)
+                    </Button>
+                  </>
+                ) : (
+                  <p className="text-amber-800 font-medium">
+                    Sesuai aturan BR-04, pesanan dengan harga khusus di bawah HPP yang telah disetujui wajib dikonfirmasi oleh Manajer.
+                  </p>
+                )}
+              </div>
             )}
           </div>
         ) : statusPersetujuan === 'ditolak' ? (
@@ -413,7 +480,7 @@ export function PersetujuanPanel({
               Setujui Persetujuan Harga?
             </DialogTitle>
             <DialogDescription className="text-xs text-slate-500">
-              Dengan menyetujui, Staf Penjualan dapat mengonfirmasi pesanan ini dalam waktu 24 jam ke depan meskipun terdapat harga di bawah HPP.
+              Dengan menyetujui dispensasi harga di bawah HPP, pesanan ini dapat dikonfirmasi oleh Manajer.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2 py-2">
@@ -442,12 +509,22 @@ export function PersetujuanPanel({
             </Button>
             <Button
               type="button"
+              variant="secondary"
               size="sm"
               disabled={loading}
               onClick={handleSetujui}
+              className="text-xs"
+            >
+              {loading ? 'Memproses...' : 'Setujui Saja'}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              disabled={loading}
+              onClick={handleSetujuiDanKonfirmasi}
               className="text-xs bg-emerald-700 hover:bg-emerald-800 text-white"
             >
-              {loading ? 'Memproses...' : 'Setujui Pengajuan'}
+              {loading ? 'Memproses...' : 'Setujui & Konfirmasi'}
             </Button>
           </DialogFooter>
         </DialogContent>
