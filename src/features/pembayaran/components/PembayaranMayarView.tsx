@@ -85,6 +85,17 @@ export function PembayaranMayarView({
   defaultCustomerEmail,
 }: PembayaranMayarViewProps) {
   const router = useRouter();
+  const [localTagihanList, setLocalTagihanList] = React.useState<TagihanMayarRow[]>(tagihanList);
+  const [localPesananDikirimList, setLocalPesananDikirimList] = React.useState<PesananDikirimItem[]>(pesananDikirimList);
+
+  React.useEffect(() => {
+    setLocalTagihanList(tagihanList);
+  }, [tagihanList]);
+
+  React.useEffect(() => {
+    setLocalPesananDikirimList(pesananDikirimList);
+  }, [pesananDikirimList]);
+
   const [urlWebhook, setUrlWebhook] = React.useState(webhookUrl);
   const [isCustomUrl, setIsCustomUrl] = React.useState(false);
   const [copiedWebhook, setCopiedWebhook] = React.useState(false);
@@ -191,13 +202,16 @@ export function PembayaranMayarView({
     const processedPesananIds = new Set<string>();
 
     // 1. Proses semua pesanan yang berstatus 'dikirim'
-    for (const p of pesananDikirimList) {
+    for (const p of localPesananDikirimList) {
       processedPesananIds.add(p.id);
 
-      // Cari tagihan aktif atau tagihan terakhir untuk pesanan ini
+      // Cari tagihan untuk pesanan ini: prioritaskan 'dibayar' / 'lunas' terlebih dahulu
       const matchingTagihan =
-        tagihanList.find((t) => t.pesanan_jual_id === p.id && (t.status === 'dibuat' || t.status_efektif === 'dibuat')) ||
-        tagihanList.find((t) => t.pesanan_jual_id === p.id);
+        localTagihanList.find((t) => t.pesanan_jual_id === p.id && (t.status === 'dibayar' || t.status_efektif === 'dibayar')) ||
+        localTagihanList.find((t) => t.pesanan_jual_id === p.id && (t.status === 'dibuat' || t.status_efektif === 'dibuat')) ||
+        localTagihanList.find((t) => t.pesanan_jual_id === p.id);
+
+      const isLunas = p.status === 'lunas' || matchingTagihan?.status === 'dibayar' || matchingTagihan?.status_efektif === 'dibayar';
 
       items.push({
         id: matchingTagihan ? matchingTagihan.id : `pesanan-${p.id}`,
@@ -207,11 +221,11 @@ export function PembayaranMayarView({
         nama_toko: p.pelanggan?.nama_toko || 'Pelanggan',
         telepon_toko: p.pelanggan?.telepon || null,
         total_pesanan: Number(p.total),
-        status_pesanan: p.status,
+        status_pesanan: isLunas ? 'lunas' : p.status,
         tagihan_id: matchingTagihan?.id,
         mayar_invoice_id: matchingTagihan?.mayar_invoice_id,
         tautan: matchingTagihan?.tautan || null,
-        status_tagihan: matchingTagihan?.status_efektif || matchingTagihan?.status || 'belum_diterbitkan',
+        status_tagihan: isLunas ? 'dibayar' : (matchingTagihan?.status_efektif || matchingTagihan?.status || 'belum_diterbitkan'),
         berlaku_sampai: matchingTagihan?.berlaku_sampai || null,
         dibuat_pada: matchingTagihan?.dibuat_pada || p.dikirim_pada || p.dibuat_pada,
         catatan_tinjau: matchingTagihan?.catatan_tinjau || null,
@@ -219,7 +233,7 @@ export function PembayaranMayarView({
     }
 
     // 2. Tambahkan tagihan Mayar lainnya yang pesanannya sudah lunas atau di luar status dikirim
-    for (const t of tagihanList) {
+    for (const t of localTagihanList) {
       if (!processedPesananIds.has(t.pesanan_jual_id)) {
         items.push({
           id: t.id,
@@ -243,7 +257,7 @@ export function PembayaranMayarView({
 
     // Urutkan berdasarkan waktu terbaru
     return items.sort((a, b) => new Date(b.dibuat_pada).getTime() - new Date(a.dibuat_pada).getTime());
-  }, [pesananDikirimList, tagihanList]);
+  }, [localPesananDikirimList, localTagihanList]);
 
   // Filter & Search
   const filteredItems = React.useMemo(() => {
@@ -322,6 +336,21 @@ export function PembayaranMayarView({
       const res = await periksaStatusMayarAction(tagihanId, pesananId);
       if (res.success) {
         toast.success(res.message);
+        if (res.data?.status === 'lunas' || res.data?.status === 'paid' || res.data?.status === 'dibayar') {
+          setLocalTagihanList((prev) =>
+            prev.map((t) =>
+              t.id === tagihanId || t.pesanan_jual_id === pesananId
+                ? { ...t, status: 'dibayar', status_efektif: 'dibayar', dibayar_pada: new Date().toISOString() }
+                : t
+            )
+          );
+          setLocalPesananDikirimList((prev) =>
+            prev.map((p) =>
+              p.id === pesananId ? { ...p, status: 'lunas' } : p
+            )
+          );
+        }
+        router.refresh();
       } else {
         toast.error(res.message);
       }
@@ -347,8 +376,20 @@ export function PembayaranMayarView({
         if (!item.tagihan_id) continue;
         try {
           const res = await periksaStatusMayarAction(item.tagihan_id, item.pesanan_jual_id);
-          if (res.success && (res.data?.status === 'lunas' || res.data?.status === 'paid')) {
+          if (res.success && (res.data?.status === 'lunas' || res.data?.status === 'paid' || res.data?.status === 'dibayar')) {
             toast.success(`Pesanan ${item.nomor_pesanan} berhasil terverifikasi lunas dari Mayar! 🎉`);
+            setLocalTagihanList((prev) =>
+              prev.map((t) =>
+                t.id === item.tagihan_id || t.pesanan_jual_id === item.pesanan_jual_id
+                  ? { ...t, status: 'dibayar', status_efektif: 'dibayar', dibayar_pada: new Date().toISOString() }
+                  : t
+              )
+            );
+            setLocalPesananDikirimList((prev) =>
+              prev.map((p) =>
+                p.id === item.pesanan_jual_id ? { ...p, status: 'lunas' } : p
+              )
+            );
             router.refresh();
           }
         } catch {
