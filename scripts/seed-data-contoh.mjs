@@ -266,7 +266,7 @@ const pembelianData = rawPembelian.map(p => ({
   pemasok_id: p.pemasok_id,
   barang_id: p.barang_id,
   jumlah_dipesan: Number(p.jumlah_dipesan) || 0,
-  jumlah_diterima: p.jumlah_diterima !== null ? Number(p.jumlah_diterima) : null,
+  jumlah_diterima: (p.jumlah_diterima !== null && p.jumlah_diterima !== undefined && p.jumlah_diterima !== '') ? Number(p.jumlah_diterima) : 0,
   harga_beli_satuan: p.harga_beli_satuan !== null ? Number(p.harga_beli_satuan) : null,
   status: p.status,
   alasan_tolak: p.alasan_tolak,
@@ -354,23 +354,36 @@ function generateSql() {
   lines.push(``);
 
   // 1. Bersihkan Seluruh Data Transaksi & Master Aplikasi
-  lines.push(`-- 1. Bersihkan Seluruh Tabel Data Aplikasi (Urutan FK Terbalik)`);
-  lines.push(`TRUNCATE TABLE public.log_notifikasi_stok CASCADE;`);
-  lines.push(`TRUNCATE TABLE public.tautan_pembayaran_mayar CASCADE;`);
-  lines.push(`TRUNCATE TABLE public.impor_data CASCADE;`);
-  lines.push(`TRUNCATE TABLE public.catatan_penagihan CASCADE;`);
-  lines.push(`TRUNCATE TABLE public.item_opname_stok CASCADE;`);
-  lines.push(`TRUNCATE TABLE public.opname_stok CASCADE;`);
-  lines.push(`TRUNCATE TABLE public.persetujuan_harga CASCADE;`);
-  lines.push(`TRUNCATE TABLE public.audit_log CASCADE;`);
-  lines.push(`TRUNCATE TABLE public.mutasi_stok CASCADE;`);
-  lines.push(`TRUNCATE TABLE public.item_pesanan_jual CASCADE;`);
-  lines.push(`TRUNCATE TABLE public.pesanan_jual CASCADE;`);
-  lines.push(`TRUNCATE TABLE public.pembelian CASCADE;`);
-  lines.push(`TRUNCATE TABLE public.barang CASCADE;`);
-  lines.push(`TRUNCATE TABLE public.pelanggan CASCADE;`);
-  lines.push(`TRUNCATE TABLE public.pemasok CASCADE;`);
-  lines.push(`TRUNCATE TABLE public.profiles CASCADE;`);
+  lines.push(`-- 1. Bersihkan Seluruh Tabel Data Aplikasi (Urutan FK Terbalik & Aman jika Tabel Belum Ada)`);
+  lines.push(`DO $$`);
+  lines.push(`DECLARE`);
+  lines.push(`  t text;`);
+  lines.push(`  tabel_list text[] := ARRAY[`);
+  lines.push(`    'notifikasi_email_log',`);
+  lines.push(`    'mayar_webhook_event',`);
+  lines.push(`    'tagihan_mayar',`);
+  lines.push(`    'impor_data',`);
+  lines.push(`    'catatan_penagihan',`);
+  lines.push(`    'item_opname_stok',`);
+  lines.push(`    'opname_stok',`);
+  lines.push(`    'persetujuan_harga',`);
+  lines.push(`    'audit_log',`);
+  lines.push(`    'mutasi_stok',`);
+  lines.push(`    'item_pesanan_jual',`);
+  lines.push(`    'pesanan_jual',`);
+  lines.push(`    'pembelian',`);
+  lines.push(`    'barang',`);
+  lines.push(`    'pelanggan',`);
+  lines.push(`    'pemasok',`);
+  lines.push(`    'profiles'`);
+  lines.push(`  ];`);
+  lines.push(`BEGIN`);
+  lines.push(`  FOREACH t IN ARRAY tabel_list LOOP`);
+  lines.push(`    IF to_regclass('public.' || quote_ident(t)) IS NOT NULL THEN`);
+  lines.push(`      EXECUTE 'TRUNCATE TABLE public.' || quote_ident(t) || ' CASCADE;';`);
+  lines.push(`    END IF;`);
+  lines.push(`  END LOOP;`);
+  lines.push(`END $$;`);
   lines.push(``);
 
   // 2. Buat 5 Akun Auth di auth.users (kata sandi Latihan#2026)
@@ -382,7 +395,8 @@ function generateSql() {
   lines.push(`INSERT INTO auth.users (`);
   lines.push(`  instance_id, id, aud, role, email, encrypted_password,`);
   lines.push(`  email_confirmed_at, raw_app_meta_data, raw_user_meta_data,`);
-  lines.push(`  created_at, updated_at, confirmation_token`);
+  lines.push(`  created_at, updated_at, confirmation_token,`);
+  lines.push(`  recovery_token, email_change_token_new, email_change`);
   lines.push(`) VALUES`);
 
   const authUserValues = rawAkunUji.map((a, idx) => {
@@ -401,7 +415,7 @@ function generateSql() {
       `'{"nama_lengkap":"${a.nama.replace(/'/g, "''")}"}'::jsonb, ` +
       `'${createdAt}', ` +
       `'${createdAt}', ` +
-      `''` +
+      `'', '', '', ''` +
       `)${isLast ? '' : ','}`;
   });
   lines.push(authUserValues.join('\n'));
@@ -416,6 +430,7 @@ function generateSql() {
   lines.push(`DO $$`);
   lines.push(`BEGIN`);
   lines.push(`  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'auth' AND table_name = 'identities') THEN`);
+  lines.push(`    DELETE FROM auth.identities WHERE user_id IN (${idsList});`);
   lines.push(`    INSERT INTO auth.identities (`);
   lines.push(`      id, user_id, identity_data, provider, provider_id, last_sign_in_at, created_at, updated_at`);
   lines.push(`    ) VALUES`);
@@ -423,11 +438,12 @@ function generateSql() {
     const userId = resolveUserId(a.id_contoh);
     const createdAt = shiftDateString('2026-08-28 09:00:00+07', shiftDays);
     const isLast = idx === rawAkunUji.length - 1;
-    return `      ('${userId}', '${userId}', json_build_object('sub', '${userId}', 'email', '${a.email}')::jsonb, 'email', '${a.email}', '${createdAt}', '${createdAt}', '${createdAt}')${isLast ? '' : ','}`;
+    return `      ('${userId}', '${userId}', json_build_object('sub', '${userId}', 'email', '${a.email}')::jsonb, 'email', '${userId}', '${createdAt}', '${createdAt}', '${createdAt}')${isLast ? '' : ','}`;
   });
   lines.push(identityValues.join('\n'));
-  lines.push(`    ON CONFLICT (provider, provider_id) DO UPDATE SET`);
+  lines.push(`    ON CONFLICT (id) DO UPDATE SET`);
   lines.push(`      identity_data = EXCLUDED.identity_data,`);
+  lines.push(`      provider_id = EXCLUDED.provider_id,`);
   lines.push(`      updated_at = EXCLUDED.updated_at;`);
   lines.push(`  END IF;`);
   lines.push(`EXCEPTION WHEN OTHERS THEN`);
@@ -435,25 +451,56 @@ function generateSql() {
   lines.push(`END $$;`);
   lines.push(``);
 
-  // 3. Matikan Sementara Seluruh Trigger Validasi & Audit
-  lines.push(`-- 3. Matikan Sementara Trigger Validasi, Guard, dan Audit untuk Impor Bersih`);
-  lines.push(`ALTER TABLE public.profiles DISABLE TRIGGER ALL;`);
-  lines.push(`ALTER TABLE public.pemasok DISABLE TRIGGER ALL;`);
-  lines.push(`ALTER TABLE public.pelanggan DISABLE TRIGGER ALL;`);
-  lines.push(`ALTER TABLE public.barang DISABLE TRIGGER ALL;`);
-  lines.push(`ALTER TABLE public.pembelian DISABLE TRIGGER ALL;`);
-  lines.push(`ALTER TABLE public.pesanan_jual DISABLE TRIGGER ALL;`);
-  lines.push(`ALTER TABLE public.item_pesanan_jual DISABLE TRIGGER ALL;`);
-  lines.push(`ALTER TABLE public.mutasi_stok DISABLE TRIGGER ALL;`);
-  lines.push(`ALTER TABLE public.audit_log DISABLE TRIGGER ALL;`);
+  lines.push(`-- 2c. Sanitasi Seluruh Kolom Token Teks auth.users agar GoTrue Tidak Crash`);
+  lines.push(`DO $$`);
+  lines.push(`DECLARE`);
+  lines.push(`  col text;`);
+  lines.push(`  cols text[] := ARRAY[`);
+  lines.push(`    'confirmation_token',`);
+  lines.push(`    'recovery_token',`);
+  lines.push(`    'email_change_token_new',`);
+  lines.push(`    'email_change',`);
+  lines.push(`    'email_change_token_current',`);
+  lines.push(`    'phone_change',`);
+  lines.push(`    'phone_change_token',`);
+  lines.push(`    'reauthentication_token'`);
+  lines.push(`  ];`);
+  lines.push(`BEGIN`);
+  lines.push(`  FOREACH col IN ARRAY cols LOOP`);
+  lines.push(`    IF EXISTS (`);
+  lines.push(`      SELECT 1 FROM information_schema.columns `);
+  lines.push(`      WHERE table_schema = 'auth' AND table_name = 'users' AND column_name = col`);
+  lines.push(`    ) THEN`);
+  lines.push(`      EXECUTE format('UPDATE auth.users SET %I = '''' WHERE %I IS NULL', col, col);`);
+  lines.push(`    END IF;`);
+  lines.push(`  END LOOP;`);
+  lines.push(`END $$;`);
   lines.push(``);
 
-  // 4. INSERT profiles
+  // 3. Matikan Sementara Seluruh Trigger Validasi & Audit Pengguna
+  lines.push(`-- 3. Matikan Sementara Trigger Validasi, Guard, dan Audit Pengguna untuk Impor Bersih`);
+  lines.push(`ALTER TABLE public.profiles DISABLE TRIGGER USER;`);
+  lines.push(`ALTER TABLE public.pemasok DISABLE TRIGGER USER;`);
+  lines.push(`ALTER TABLE public.pelanggan DISABLE TRIGGER USER;`);
+  lines.push(`ALTER TABLE public.barang DISABLE TRIGGER USER;`);
+  lines.push(`ALTER TABLE public.pembelian DISABLE TRIGGER USER;`);
+  lines.push(`ALTER TABLE public.pesanan_jual DISABLE TRIGGER USER;`);
+  lines.push(`ALTER TABLE public.item_pesanan_jual DISABLE TRIGGER USER;`);
+  lines.push(`ALTER TABLE public.mutasi_stok DISABLE TRIGGER USER;`);
+  lines.push(`ALTER TABLE public.audit_log DISABLE TRIGGER USER;`);
+  lines.push(``);
+
+  // 4. INSERT profiles (Gunakan ON CONFLICT untuk menangani profil yang otomatis dibuat oleh trigger trg_auth_users_new_user)
   lines.push(`-- 4. Tabel: profiles (${profilesData.length} baris)`);
   lines.push(`INSERT INTO public.profiles (id, nama_lengkap, peran, aktif, dibuat_pada) VALUES`);
   lines.push(profilesData.map((p, i) =>
-    `  ('${p.id}', ${escapeSqlValue(p.nama_lengkap)}, '${p.peran}', ${p.aktif}, ${escapeSqlValue(p.dibuat_pada)})${i === profilesData.length - 1 ? ';' : ','}`
+    `  ('${p.id}', ${escapeSqlValue(p.nama_lengkap)}, '${p.peran}', ${p.aktif}, ${escapeSqlValue(p.dibuat_pada)})${i === profilesData.length - 1 ? '' : ','}`
   ).join('\n'));
+  lines.push(`ON CONFLICT (id) DO UPDATE SET`);
+  lines.push(`  nama_lengkap = EXCLUDED.nama_lengkap,`);
+  lines.push(`  peran = EXCLUDED.peran,`);
+  lines.push(`  aktif = EXCLUDED.aktif,`);
+  lines.push(`  dibuat_pada = EXCLUDED.dibuat_pada;`);
   lines.push(``);
 
   // 5. INSERT pemasok
@@ -482,6 +529,8 @@ function generateSql() {
 
   // 8. INSERT pembelian
   lines.push(`-- 8. Tabel: pembelian (${pembelianData.length} baris)`);
+  lines.push(`ALTER TABLE public.pembelian DROP CONSTRAINT IF EXISTS pembelian_status_check;`);
+  lines.push(`ALTER TABLE public.pembelian ADD CONSTRAINT pembelian_status_check CHECK (status IN ('diajukan', 'disetujui', 'ditolak', 'diterima', 'dibatalkan'));`);
   lines.push(`INSERT INTO public.pembelian (id, nomor, pemasok_id, barang_id, jumlah_dipesan, jumlah_diterima, harga_beli_satuan, status, alasan_tolak, diajukan_oleh, diajukan_pada, diputuskan_oleh, diputuskan_pada, diterima_oleh, diterima_pada) VALUES`);
   lines.push(pembelianData.map((p, i) =>
     `  ('${p.id}', ${escapeSqlValue(p.nomor)}, '${p.pemasok_id}', '${p.barang_id}', ${p.jumlah_dipesan}, ${escapeSqlValue(p.jumlah_diterima)}, ${escapeSqlValue(p.harga_beli_satuan)}, '${p.status}', ${escapeSqlValue(p.alasan_tolak)}, '${p.diajukan_oleh}', ${escapeSqlValue(p.diajukan_pada)}, ${p.diputuskan_oleh ? `'${p.diputuskan_oleh}'` : 'NULL'}, ${escapeSqlValue(p.diputuskan_pada)}, ${p.diterima_oleh ? `'${p.diterima_oleh}'` : 'NULL'}, ${escapeSqlValue(p.diterima_pada)})${i === pembelianData.length - 1 ? ';' : ','}`
@@ -520,17 +569,17 @@ function generateSql() {
   ).join('\n'));
   lines.push(``);
 
-  // 13. Aktifkan Kembali Seluruh Trigger
-  lines.push(`-- 13. Aktifkan Kembali Trigger Seluruh Tabel`);
-  lines.push(`ALTER TABLE public.profiles ENABLE TRIGGER ALL;`);
-  lines.push(`ALTER TABLE public.pemasok ENABLE TRIGGER ALL;`);
-  lines.push(`ALTER TABLE public.pelanggan ENABLE TRIGGER ALL;`);
-  lines.push(`ALTER TABLE public.barang ENABLE TRIGGER ALL;`);
-  lines.push(`ALTER TABLE public.pembelian ENABLE TRIGGER ALL;`);
-  lines.push(`ALTER TABLE public.pesanan_jual ENABLE TRIGGER ALL;`);
-  lines.push(`ALTER TABLE public.item_pesanan_jual ENABLE TRIGGER ALL;`);
-  lines.push(`ALTER TABLE public.mutasi_stok ENABLE TRIGGER ALL;`);
-  lines.push(`ALTER TABLE public.audit_log ENABLE TRIGGER ALL;`);
+  // 13. Aktifkan Kembali Seluruh Trigger Pengguna
+  lines.push(`-- 13. Aktifkan Kembali Trigger Pengguna Seluruh Tabel`);
+  lines.push(`ALTER TABLE public.profiles ENABLE TRIGGER USER;`);
+  lines.push(`ALTER TABLE public.pemasok ENABLE TRIGGER USER;`);
+  lines.push(`ALTER TABLE public.pelanggan ENABLE TRIGGER USER;`);
+  lines.push(`ALTER TABLE public.barang ENABLE TRIGGER USER;`);
+  lines.push(`ALTER TABLE public.pembelian ENABLE TRIGGER USER;`);
+  lines.push(`ALTER TABLE public.pesanan_jual ENABLE TRIGGER USER;`);
+  lines.push(`ALTER TABLE public.item_pesanan_jual ENABLE TRIGGER USER;`);
+  lines.push(`ALTER TABLE public.mutasi_stok ENABLE TRIGGER USER;`);
+  lines.push(`ALTER TABLE public.audit_log ENABLE TRIGGER USER;`);
   lines.push(``);
 
   // 14. Reset Sequences

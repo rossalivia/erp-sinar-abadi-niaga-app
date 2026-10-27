@@ -1,16 +1,10 @@
 import * as React from 'react';
 import { redirect } from 'next/navigation';
-import Link from 'next/link';
-import { CreditCard, ExternalLink, ShieldCheck, Clock } from 'lucide-react';
 import { getProfil } from '@/lib/profil';
+import { createServerClient } from '@/lib/supabase/server';
 import { ambilRiwayatTagihanMayarService } from '@/features/pembayaran/service';
 import { PageHeader } from '@/components/shared/page-header';
-import { DataTable, type Column } from '@/components/shared/data-table';
-import { BadgeStatus } from '@/components/shared/badge-status';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { formatRupiah, formatTanggalWaktu } from '@/lib/format';
-import type { TagihanMayarRow } from '@/features/pembayaran/types';
+import { PembayaranMayarView, type PesananDikirimItem } from '@/features/pembayaran/components/PembayaranMayarView';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,108 +19,75 @@ export default async function PembayaranMayarPage() {
     redirect('/tidak-berwenang');
   }
 
+  // 2. Ambil riwayat tagihan Mayar
   const tagihanList = await ambilRiwayatTagihanMayarService();
+
+  // 3. Ambil pesanan berstatus 'dikirim' yang siap dibuatkan tautan bayar
+  const supabase = await createServerClient();
+  const { data: pesananDikirimRaw } = await supabase
+    .from('pesanan_jual')
+    .select(`
+      id,
+      nomor,
+      total,
+      status,
+      dibuat_pada,
+      dikirim_pada,
+      jatuh_tempo,
+      pelanggan:pelanggan_id (
+        id,
+        kode,
+        nama_toko,
+        telepon
+      )
+    `)
+    .eq('status', 'dikirim')
+    .order('dikirim_pada', { ascending: false });
+
+  // Normalisasi hasil join pelanggan Supabase
+  const pesananDikirimList: PesananDikirimItem[] = ((pesananDikirimRaw || []) as unknown as Array<{
+    id: string;
+    nomor: string;
+    total: number;
+    status: string;
+    dibuat_pada: string;
+    dikirim_pada: string | null;
+    jatuh_tempo: string | null;
+    pelanggan:
+      | { id: string; kode: string; nama_toko: string; telepon: string | null }
+      | Array<{ id: string; kode: string; nama_toko: string; telepon: string | null }>
+      | null;
+  }>).map((p) => {
+    const pel = Array.isArray(p.pelanggan) ? p.pelanggan[0] || null : p.pelanggan;
+    return {
+      id: p.id,
+      nomor: p.nomor,
+      total: Number(p.total),
+      status: p.status,
+      dibuat_pada: p.dibuat_pada,
+      dikirim_pada: p.dikirim_pada,
+      jatuh_tempo: p.jatuh_tempo,
+      pelanggan: pel
+        ? {
+            id: pel.id,
+            kode: pel.kode,
+            nama_toko: pel.nama_toko,
+            telepon: pel.telepon,
+          }
+        : null,
+    };
+  });
+
   const hasRealKey = Boolean(
     process.env.MAYAR_API_KEY &&
     process.env.MAYAR_API_KEY.trim() !== '' &&
     !process.env.MAYAR_API_KEY.includes('placeholder')
   );
 
-  const columns: Column<TagihanMayarRow>[] = [
-    {
-      header: 'Waktu Terbit',
-      accessorKey: 'dibuat_pada',
-      cell: (row) => (
-        <span className="font-mono text-[11px] text-slate-600">
-          {formatTanggalWaktu(row.dibuat_pada)}
-        </span>
-      ),
-      className: 'w-36',
-    },
-    {
-      header: 'No. Pesanan',
-      accessorKey: 'nomor_pesanan',
-      cell: (row) => (
-        <Link
-          href={`/pesanan/${row.pesanan_jual_id}`}
-          className="font-mono font-medium text-slate-900 hover:text-blue-600 hover:underline"
-        >
-          {row.nomor_pesanan}
-        </Link>
-      ),
-      className: 'w-36',
-    },
-    {
-      header: 'Pelanggan / Toko',
-      accessorKey: 'nama_toko',
-      cell: (row) => (
-        <div>
-          <p className="font-medium text-slate-800">{row.nama_toko || 'Pelanggan'}</p>
-          <p className="font-mono text-[10px] text-slate-400">{row.email_penerima}</p>
-        </div>
-      ),
-    },
-    {
-      header: 'Nominal',
-      accessorKey: 'jumlah',
-      cell: (row) => formatRupiah(row.jumlah),
-      className: 'w-32 text-right tabular-nums font-medium',
-    },
-    {
-      header: 'Berlaku Hingga',
-      accessorKey: 'berlaku_sampai',
-      cell: (row) => (
-        <span className="text-[11px] text-slate-600">
-          {formatTanggalWaktu(row.berlaku_sampai)}
-        </span>
-      ),
-      className: 'w-36',
-    },
-    {
-      header: 'Status',
-      accessorKey: 'status',
-      cell: (row) => <BadgeStatus status={row.status_efektif || row.status} />,
-      className: 'w-36',
-    },
-    {
-      header: 'Catatan / Anomali',
-      accessorKey: 'catatan_tinjau',
-      cell: (row) =>
-        row.catatan_tinjau ? (
-          <span
-            className="text-[11px] text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 inline-block font-mono"
-            title={row.catatan_tinjau}
-          >
-            {row.catatan_tinjau}
-          </span>
-        ) : (
-          <span className="text-slate-400">-</span>
-        ),
-      className: 'min-w-[200px]',
-    },
-    {
-      header: 'Tautan / Bukti',
-      cell: (row) => (
-        <div className="flex items-center gap-2">
-          {row.tautan ? (
-            <a
-              href={row.tautan}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1 text-slate-600 hover:text-blue-600 font-medium text-[11px]"
-              title="Buka Tautan Pembayaran"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-              Tautan
-            </a>
-          ) : (
-            <span className="text-slate-400">-</span>
-          )}
-        </div>
-      ),
-      className: 'w-24',
-    },
-  ];
+  const webhookToken = process.env.MAYAR_WEBHOOK_TOKEN || 'sandbox_webhook_token_rahasia';
+  const appUrl = (process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000').replace(/\/+$/, '');
+  const webhookUrl = `${appUrl}/api/webhooks/mayar/${webhookToken}`;
+  const defaultCustomerEmail = process.env.DEFAULT_CUSTOMER_EMAIL || 'toko.pelanggan@sinarabadi.co.id';
 
   const perluTinjauCount = tagihanList.filter(
     (t) => t.status === 'perlu_tinjau' || t.status_efektif === 'perlu_tinjau'
@@ -143,69 +104,22 @@ export default async function PembayaranMayarPage() {
         <div className="p-3 bg-amber-50 border border-amber-200 rounded-md text-xs text-amber-900 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="font-semibold">Perhatian:</span>
-            <span>Terdapat <strong>{perluTinjauCount}</strong> transaksi pembayaran yang memerlukan peninjauan Manajer (anomali nominal, status pesanan tidak sesuai, atau indikasi pembayaran ganda). Pesanan terkait belum dilunasi.</span>
+            <span>
+              Terdapat <strong>{perluTinjauCount}</strong> transaksi pembayaran yang memerlukan
+              peninjauan Manajer (anomali nominal, status pesanan tidak sesuai, atau indikasi
+              pembayaran ganda). Pesanan terkait belum dilunasi.
+            </span>
           </div>
         </div>
       )}
 
-      {/* Kartu Status Konfigurasi Gateway */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <Card className="border-slate-200 bg-white">
-          <CardContent className="p-3.5 flex items-center gap-3">
-            <div className="p-2 rounded bg-slate-100 text-slate-700">
-              <CreditCard className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-[11px] text-slate-500 font-medium">Gateway Provider</p>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="text-xs font-semibold text-slate-800">Mayar Sandbox</span>
-                <Badge variant={hasRealKey ? 'success' : 'neutral'} className="text-[10px] px-1.5 py-0 h-4">
-                  {hasRealKey ? 'API Aktif' : 'Simulasi Mock'}
-                </Badge>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-slate-200 bg-white">
-          <CardContent className="p-3.5 flex items-center gap-3">
-            <div className="p-2 rounded bg-slate-100 text-slate-700">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-[11px] text-slate-500 font-medium">Verifikasi Webhook</p>
-              <p className="text-xs font-semibold text-slate-800 mt-0.5">Two-Way Handshake</p>
-              <p className="text-[11px] text-slate-400">Pemeriksaan ulang aktif ke server</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-slate-200 bg-white">
-          <CardContent className="p-3.5 flex items-center gap-3">
-            <div className="p-2 rounded bg-slate-100 text-slate-700">
-              <Clock className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-[11px] text-slate-500 font-medium">Masa Berlaku Default</p>
-              <p className="text-xs font-semibold text-slate-800 mt-0.5">7 Hari (168 Jam)</p>
-              <p className="text-[11px] text-slate-400">Dapat disesuaikan 1–30 hari</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Tabel Data Tagihan Mayar */}
-      <Card className="border-slate-200 bg-white">
-        <CardContent className="p-0">
-          <DataTable<TagihanMayarRow>
-            data={tagihanList}
-            columns={columns}
-            keyExtractor={(item) => item.id}
-            emptyTitle="Belum ada riwayat tagihan"
-            emptyDescription="Tautan pembayaran online yang Anda buat pada pesanan berstatus dikirim akan dicatat di sini."
-          />
-        </CardContent>
-      </Card>
+      <PembayaranMayarView
+        tagihanList={tagihanList}
+        pesananDikirimList={pesananDikirimList}
+        webhookUrl={webhookUrl}
+        hasRealKey={hasRealKey}
+        defaultCustomerEmail={defaultCustomerEmail}
+      />
     </div>
   );
 }

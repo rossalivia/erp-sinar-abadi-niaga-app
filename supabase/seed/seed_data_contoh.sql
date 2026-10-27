@@ -1,28 +1,41 @@
 -- ==============================================================================
 -- SEED DATA CONTOH CV SINAR ABADI NIAGA
 -- Sumber   : docs/Data_Contoh_ERP.xlsx
--- Shift    : 11 hari (Basis 2026-10-15 -> Hari Ini WIB: 2026-10-26)
--- Tanggal  : 2026-10-26T13:47:30.763Z
+-- Shift    : 12 hari (Basis 2026-10-15 -> Hari Ini WIB: 2026-10-27)
+-- Tanggal  : 2026-10-27T03:46:19.751Z
 -- ==============================================================================
 BEGIN;
 
--- 1. Bersihkan Seluruh Tabel Data Aplikasi (Urutan FK Terbalik)
-TRUNCATE TABLE public.log_notifikasi_stok CASCADE;
-TRUNCATE TABLE public.tautan_pembayaran_mayar CASCADE;
-TRUNCATE TABLE public.impor_data CASCADE;
-TRUNCATE TABLE public.catatan_penagihan CASCADE;
-TRUNCATE TABLE public.item_opname_stok CASCADE;
-TRUNCATE TABLE public.opname_stok CASCADE;
-TRUNCATE TABLE public.persetujuan_harga CASCADE;
-TRUNCATE TABLE public.audit_log CASCADE;
-TRUNCATE TABLE public.mutasi_stok CASCADE;
-TRUNCATE TABLE public.item_pesanan_jual CASCADE;
-TRUNCATE TABLE public.pesanan_jual CASCADE;
-TRUNCATE TABLE public.pembelian CASCADE;
-TRUNCATE TABLE public.barang CASCADE;
-TRUNCATE TABLE public.pelanggan CASCADE;
-TRUNCATE TABLE public.pemasok CASCADE;
-TRUNCATE TABLE public.profiles CASCADE;
+-- 1. Bersihkan Seluruh Tabel Data Aplikasi (Urutan FK Terbalik & Aman jika Tabel Belum Ada)
+DO $$
+DECLARE
+  t text;
+  tabel_list text[] := ARRAY[
+    'notifikasi_email_log',
+    'mayar_webhook_event',
+    'tagihan_mayar',
+    'impor_data',
+    'catatan_penagihan',
+    'item_opname_stok',
+    'opname_stok',
+    'persetujuan_harga',
+    'audit_log',
+    'mutasi_stok',
+    'item_pesanan_jual',
+    'pesanan_jual',
+    'pembelian',
+    'barang',
+    'pelanggan',
+    'pemasok',
+    'profiles'
+  ];
+BEGIN
+  FOREACH t IN ARRAY tabel_list LOOP
+    IF to_regclass('public.' || quote_ident(t)) IS NOT NULL THEN
+      EXECUTE 'TRUNCATE TABLE public.' || quote_ident(t) || ' CASCADE;';
+    END IF;
+  END LOOP;
+END $$;
 
 -- 2. Buat / Perbarui 5 Akun Pengguna di auth.users (Kata Sandi: Latihan#2026)
 DELETE FROM auth.users WHERE lower(email) IN ('hendra@sinarabadi.test', 'rina@sinarabadi.test', 'dimas@sinarabadi.test', 'joko@sinarabadi.test', 'agus@sinarabadi.test') AND id NOT IN ('defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '1eb18f29-66c1-5086-900e-874c2d3208e5', '0c99b1d9-84f8-5784-a479-3df27328aebd', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '58306883-5223-5b88-8691-edb367c35df9');
@@ -30,13 +43,14 @@ DELETE FROM auth.users WHERE lower(email) IN ('hendra@sinarabadi.test', 'rina@si
 INSERT INTO auth.users (
   instance_id, id, aud, role, email, encrypted_password,
   email_confirmed_at, raw_app_meta_data, raw_user_meta_data,
-  created_at, updated_at, confirmation_token
+  created_at, updated_at, confirmation_token,
+  recovery_token, email_change_token_new, email_change
 ) VALUES
-  ('00000000-0000-0000-0000-000000000000', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'authenticated', 'authenticated', 'hendra@sinarabadi.test', extensions.crypt('Latihan#2026', extensions.gen_salt('bf')), '2026-09-08 09:00:00+07', '{"provider":"email","providers":["email"]}'::jsonb, '{"nama_lengkap":"Hendra Wijaya"}'::jsonb, '2026-09-08 09:00:00+07', '2026-09-08 09:00:00+07', ''),
-  ('00000000-0000-0000-0000-000000000000', '1eb18f29-66c1-5086-900e-874c2d3208e5', 'authenticated', 'authenticated', 'rina@sinarabadi.test', extensions.crypt('Latihan#2026', extensions.gen_salt('bf')), '2026-09-08 09:00:00+07', '{"provider":"email","providers":["email"]}'::jsonb, '{"nama_lengkap":"Rina Kartika"}'::jsonb, '2026-09-08 09:00:00+07', '2026-09-08 09:00:00+07', ''),
-  ('00000000-0000-0000-0000-000000000000', '0c99b1d9-84f8-5784-a479-3df27328aebd', 'authenticated', 'authenticated', 'dimas@sinarabadi.test', extensions.crypt('Latihan#2026', extensions.gen_salt('bf')), '2026-09-08 09:00:00+07', '{"provider":"email","providers":["email"]}'::jsonb, '{"nama_lengkap":"Dimas Prasetyo"}'::jsonb, '2026-09-08 09:00:00+07', '2026-09-08 09:00:00+07', ''),
-  ('00000000-0000-0000-0000-000000000000', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'authenticated', 'authenticated', 'joko@sinarabadi.test', extensions.crypt('Latihan#2026', extensions.gen_salt('bf')), '2026-09-08 09:00:00+07', '{"provider":"email","providers":["email"]}'::jsonb, '{"nama_lengkap":"Joko Susanto"}'::jsonb, '2026-09-08 09:00:00+07', '2026-09-08 09:00:00+07', ''),
-  ('00000000-0000-0000-0000-000000000000', '58306883-5223-5b88-8691-edb367c35df9', 'authenticated', 'authenticated', 'agus@sinarabadi.test', extensions.crypt('Latihan#2026', extensions.gen_salt('bf')), '2026-09-08 09:00:00+07', '{"provider":"email","providers":["email"]}'::jsonb, '{"nama_lengkap":"Agus Salim"}'::jsonb, '2026-09-08 09:00:00+07', '2026-09-08 09:00:00+07', '')
+  ('00000000-0000-0000-0000-000000000000', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'authenticated', 'authenticated', 'hendra@sinarabadi.test', extensions.crypt('Latihan#2026', extensions.gen_salt('bf')), '2026-09-09 09:00:00+07', '{"provider":"email","providers":["email"]}'::jsonb, '{"nama_lengkap":"Hendra Wijaya"}'::jsonb, '2026-09-09 09:00:00+07', '2026-09-09 09:00:00+07', '', '', '', ''),
+  ('00000000-0000-0000-0000-000000000000', '1eb18f29-66c1-5086-900e-874c2d3208e5', 'authenticated', 'authenticated', 'rina@sinarabadi.test', extensions.crypt('Latihan#2026', extensions.gen_salt('bf')), '2026-09-09 09:00:00+07', '{"provider":"email","providers":["email"]}'::jsonb, '{"nama_lengkap":"Rina Kartika"}'::jsonb, '2026-09-09 09:00:00+07', '2026-09-09 09:00:00+07', '', '', '', ''),
+  ('00000000-0000-0000-0000-000000000000', '0c99b1d9-84f8-5784-a479-3df27328aebd', 'authenticated', 'authenticated', 'dimas@sinarabadi.test', extensions.crypt('Latihan#2026', extensions.gen_salt('bf')), '2026-09-09 09:00:00+07', '{"provider":"email","providers":["email"]}'::jsonb, '{"nama_lengkap":"Dimas Prasetyo"}'::jsonb, '2026-09-09 09:00:00+07', '2026-09-09 09:00:00+07', '', '', '', ''),
+  ('00000000-0000-0000-0000-000000000000', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'authenticated', 'authenticated', 'joko@sinarabadi.test', extensions.crypt('Latihan#2026', extensions.gen_salt('bf')), '2026-09-09 09:00:00+07', '{"provider":"email","providers":["email"]}'::jsonb, '{"nama_lengkap":"Joko Susanto"}'::jsonb, '2026-09-09 09:00:00+07', '2026-09-09 09:00:00+07', '', '', '', ''),
+  ('00000000-0000-0000-0000-000000000000', '58306883-5223-5b88-8691-edb367c35df9', 'authenticated', 'authenticated', 'agus@sinarabadi.test', extensions.crypt('Latihan#2026', extensions.gen_salt('bf')), '2026-09-09 09:00:00+07', '{"provider":"email","providers":["email"]}'::jsonb, '{"nama_lengkap":"Agus Salim"}'::jsonb, '2026-09-09 09:00:00+07', '2026-09-09 09:00:00+07', '', '', '', '')
 ON CONFLICT (id) DO UPDATE SET
   email = EXCLUDED.email,
   encrypted_password = EXCLUDED.encrypted_password,
@@ -47,149 +61,183 @@ ON CONFLICT (id) DO UPDATE SET
 DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'auth' AND table_name = 'identities') THEN
+    DELETE FROM auth.identities WHERE user_id IN ('defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '1eb18f29-66c1-5086-900e-874c2d3208e5', '0c99b1d9-84f8-5784-a479-3df27328aebd', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '58306883-5223-5b88-8691-edb367c35df9');
     INSERT INTO auth.identities (
       id, user_id, identity_data, provider, provider_id, last_sign_in_at, created_at, updated_at
     ) VALUES
-      ('defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', json_build_object('sub', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'email', 'hendra@sinarabadi.test')::jsonb, 'email', 'hendra@sinarabadi.test', '2026-09-08 09:00:00+07', '2026-09-08 09:00:00+07', '2026-09-08 09:00:00+07'),
-      ('1eb18f29-66c1-5086-900e-874c2d3208e5', '1eb18f29-66c1-5086-900e-874c2d3208e5', json_build_object('sub', '1eb18f29-66c1-5086-900e-874c2d3208e5', 'email', 'rina@sinarabadi.test')::jsonb, 'email', 'rina@sinarabadi.test', '2026-09-08 09:00:00+07', '2026-09-08 09:00:00+07', '2026-09-08 09:00:00+07'),
-      ('0c99b1d9-84f8-5784-a479-3df27328aebd', '0c99b1d9-84f8-5784-a479-3df27328aebd', json_build_object('sub', '0c99b1d9-84f8-5784-a479-3df27328aebd', 'email', 'dimas@sinarabadi.test')::jsonb, 'email', 'dimas@sinarabadi.test', '2026-09-08 09:00:00+07', '2026-09-08 09:00:00+07', '2026-09-08 09:00:00+07'),
-      ('da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', json_build_object('sub', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'email', 'joko@sinarabadi.test')::jsonb, 'email', 'joko@sinarabadi.test', '2026-09-08 09:00:00+07', '2026-09-08 09:00:00+07', '2026-09-08 09:00:00+07'),
-      ('58306883-5223-5b88-8691-edb367c35df9', '58306883-5223-5b88-8691-edb367c35df9', json_build_object('sub', '58306883-5223-5b88-8691-edb367c35df9', 'email', 'agus@sinarabadi.test')::jsonb, 'email', 'agus@sinarabadi.test', '2026-09-08 09:00:00+07', '2026-09-08 09:00:00+07', '2026-09-08 09:00:00+07')
-    ON CONFLICT (provider, provider_id) DO UPDATE SET
+      ('defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', json_build_object('sub', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'email', 'hendra@sinarabadi.test')::jsonb, 'email', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-09-09 09:00:00+07', '2026-09-09 09:00:00+07', '2026-09-09 09:00:00+07'),
+      ('1eb18f29-66c1-5086-900e-874c2d3208e5', '1eb18f29-66c1-5086-900e-874c2d3208e5', json_build_object('sub', '1eb18f29-66c1-5086-900e-874c2d3208e5', 'email', 'rina@sinarabadi.test')::jsonb, 'email', '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-09 09:00:00+07', '2026-09-09 09:00:00+07', '2026-09-09 09:00:00+07'),
+      ('0c99b1d9-84f8-5784-a479-3df27328aebd', '0c99b1d9-84f8-5784-a479-3df27328aebd', json_build_object('sub', '0c99b1d9-84f8-5784-a479-3df27328aebd', 'email', 'dimas@sinarabadi.test')::jsonb, 'email', '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-09 09:00:00+07', '2026-09-09 09:00:00+07', '2026-09-09 09:00:00+07'),
+      ('da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', json_build_object('sub', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'email', 'joko@sinarabadi.test')::jsonb, 'email', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-09 09:00:00+07', '2026-09-09 09:00:00+07', '2026-09-09 09:00:00+07'),
+      ('58306883-5223-5b88-8691-edb367c35df9', '58306883-5223-5b88-8691-edb367c35df9', json_build_object('sub', '58306883-5223-5b88-8691-edb367c35df9', 'email', 'agus@sinarabadi.test')::jsonb, 'email', '58306883-5223-5b88-8691-edb367c35df9', '2026-09-09 09:00:00+07', '2026-09-09 09:00:00+07', '2026-09-09 09:00:00+07')
+    ON CONFLICT (id) DO UPDATE SET
       identity_data = EXCLUDED.identity_data,
+      provider_id = EXCLUDED.provider_id,
       updated_at = EXCLUDED.updated_at;
   END IF;
 EXCEPTION WHEN OTHERS THEN
   NULL;
 END $$;
 
--- 3. Matikan Sementara Trigger Validasi, Guard, dan Audit untuk Impor Bersih
-ALTER TABLE public.profiles DISABLE TRIGGER ALL;
-ALTER TABLE public.pemasok DISABLE TRIGGER ALL;
-ALTER TABLE public.pelanggan DISABLE TRIGGER ALL;
-ALTER TABLE public.barang DISABLE TRIGGER ALL;
-ALTER TABLE public.pembelian DISABLE TRIGGER ALL;
-ALTER TABLE public.pesanan_jual DISABLE TRIGGER ALL;
-ALTER TABLE public.item_pesanan_jual DISABLE TRIGGER ALL;
-ALTER TABLE public.mutasi_stok DISABLE TRIGGER ALL;
-ALTER TABLE public.audit_log DISABLE TRIGGER ALL;
+-- 2c. Sanitasi Seluruh Kolom Token Teks auth.users agar GoTrue Tidak Crash
+DO $$
+DECLARE
+  col text;
+  cols text[] := ARRAY[
+    'confirmation_token',
+    'recovery_token',
+    'email_change_token_new',
+    'email_change',
+    'email_change_token_current',
+    'phone_change',
+    'phone_change_token',
+    'reauthentication_token'
+  ];
+BEGIN
+  FOREACH col IN ARRAY cols LOOP
+    IF EXISTS (
+      SELECT 1 FROM information_schema.columns 
+      WHERE table_schema = 'auth' AND table_name = 'users' AND column_name = col
+    ) THEN
+      EXECUTE format('UPDATE auth.users SET %I = '''' WHERE %I IS NULL', col, col);
+    END IF;
+  END LOOP;
+END $$;
+
+-- 3. Matikan Sementara Trigger Validasi, Guard, dan Audit Pengguna untuk Impor Bersih
+ALTER TABLE public.profiles DISABLE TRIGGER USER;
+ALTER TABLE public.pemasok DISABLE TRIGGER USER;
+ALTER TABLE public.pelanggan DISABLE TRIGGER USER;
+ALTER TABLE public.barang DISABLE TRIGGER USER;
+ALTER TABLE public.pembelian DISABLE TRIGGER USER;
+ALTER TABLE public.pesanan_jual DISABLE TRIGGER USER;
+ALTER TABLE public.item_pesanan_jual DISABLE TRIGGER USER;
+ALTER TABLE public.mutasi_stok DISABLE TRIGGER USER;
+ALTER TABLE public.audit_log DISABLE TRIGGER USER;
 
 -- 4. Tabel: profiles (5 baris)
 INSERT INTO public.profiles (id, nama_lengkap, peran, aktif, dibuat_pada) VALUES
-  ('defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'Hendra Wijaya', 'manajer', true, '2026-09-08 09:00:00+07'),
-  ('1eb18f29-66c1-5086-900e-874c2d3208e5', 'Rina Kartika', 'penjualan', true, '2026-09-08 09:00:00+07'),
-  ('0c99b1d9-84f8-5784-a479-3df27328aebd', 'Dimas Prasetyo', 'penjualan', true, '2026-09-08 09:00:00+07'),
-  ('da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'Joko Susanto', 'gudang', true, '2026-09-08 09:00:00+07'),
-  ('58306883-5223-5b88-8691-edb367c35df9', 'Agus Salim', 'penjualan', false, '2026-09-08 09:00:00+07');
+  ('defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'Hendra Wijaya', 'manajer', true, '2026-09-09 09:00:00+07'),
+  ('1eb18f29-66c1-5086-900e-874c2d3208e5', 'Rina Kartika', 'penjualan', true, '2026-09-09 09:00:00+07'),
+  ('0c99b1d9-84f8-5784-a479-3df27328aebd', 'Dimas Prasetyo', 'penjualan', true, '2026-09-09 09:00:00+07'),
+  ('da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'Joko Susanto', 'gudang', true, '2026-09-09 09:00:00+07'),
+  ('58306883-5223-5b88-8691-edb367c35df9', 'Agus Salim', 'penjualan', false, '2026-09-09 09:00:00+07')
+ON CONFLICT (id) DO UPDATE SET
+  nama_lengkap = EXCLUDED.nama_lengkap,
+  peran = EXCLUDED.peran,
+  aktif = EXCLUDED.aktif,
+  dibuat_pada = EXCLUDED.dibuat_pada;
 
 -- 5. Tabel: pemasok (4 baris)
 INSERT INTO public.pemasok (id, kode, nama, telepon, alamat, aktif, dibuat_pada) VALUES
-  ('9c79f720-1929-5dd4-b15a-7bee0114f1e3', 'SUP-01', 'PT Agro Pangan Mandiri', '021-8840 1122', 'Jl. Raya Narogong Km 6, Bantargebang, Bekasi', true, '2026-09-08 10:00:00+07'),
-  ('5f18d9e0-326a-5538-b4de-56f1547ff7ad', 'SUP-02', 'CV Sumber Mie Lestari', '021-8261 3344', 'Kawasan Industri MM2100 Blok F2, Cikarang Barat', true, '2026-09-08 10:00:00+07'),
-  ('83e53bc5-a470-5069-9b1d-a8b2990fcdb2', 'SUP-03', 'PT Kopi Nusa Prima', '021-4682 5566', 'Jl. Pulogadung Raya No. 18, Jakarta Timur', true, '2026-09-08 10:00:00+07'),
-  ('fd3e13e6-b0ff-5028-baa5-a44998d2cbcd', 'SUP-04', 'UD Bersih Wangi Sentosa', '0812-9033-7788', 'Jl. Sultan Agung No. 45, Medan Satria, Bekasi', true, '2026-09-08 10:00:00+07');
+  ('9c79f720-1929-5dd4-b15a-7bee0114f1e3', 'SUP-01', 'PT Agro Pangan Mandiri', '021-8840 1122', 'Jl. Raya Narogong Km 6, Bantargebang, Bekasi', true, '2026-09-09 10:00:00+07'),
+  ('5f18d9e0-326a-5538-b4de-56f1547ff7ad', 'SUP-02', 'CV Sumber Mie Lestari', '021-8261 3344', 'Kawasan Industri MM2100 Blok F2, Cikarang Barat', true, '2026-09-09 10:00:00+07'),
+  ('83e53bc5-a470-5069-9b1d-a8b2990fcdb2', 'SUP-03', 'PT Kopi Nusa Prima', '021-4682 5566', 'Jl. Pulogadung Raya No. 18, Jakarta Timur', true, '2026-09-09 10:00:00+07'),
+  ('fd3e13e6-b0ff-5028-baa5-a44998d2cbcd', 'SUP-04', 'UD Bersih Wangi Sentosa', '0812-9033-7788', 'Jl. Sultan Agung No. 45, Medan Satria, Bekasi', true, '2026-09-09 10:00:00+07');
 
 -- 6. Tabel: pelanggan (10 baris)
 INSERT INTO public.pelanggan (id, kode, nama_toko, telepon, alamat, batas_kredit, termin_hari, aktif, dibuat_oleh, dibuat_pada) VALUES
-  ('649a6d3a-70b8-57d0-b2c3-15db3597f81c', 'PLG-001', 'Toko Berkah Jaya', '0813-1100-2201', 'Jl. Cut Mutia No. 12, Bekasi Timur', 15000000, 14, true, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-09-08 11:00:00+07'),
-  ('6f20e262-db32-5ce4-9a42-c4282d6e48ee', 'PLG-002', 'Minimarket Sentosa Mart', '0812-8800-1302', 'Jl. Raya Hankam No. 88, Pondok Gede', 25000000, 30, true, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-09-08 11:00:00+07'),
-  ('3396f1af-27e4-568b-87b3-2087fc6af8a2', 'PLG-003', 'Toko Ibu Sari', '0857-1122-3303', 'Jl. Kaliabang Tengah No. 5, Bekasi Utara', 5000000, 7, true, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-09-08 11:00:00+07'),
-  ('3ddee844-7e55-5815-9483-91025a6add48', 'PLG-004', 'Warung Pak Darto', '0819-3344-5504', 'Gg. Masjid No. 3, Jatiasih', 2000000, 0, true, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-09-08 11:00:00+07'),
-  ('aaf9c7d6-09f9-53df-8090-3fc3b7e6e69b', 'PLG-005', 'Toko Maju Bersama', '0813-5566-7705', 'Jl. Pahlawan No. 21, Rawalumbu', 10000000, 14, true, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-09-08 11:00:00+07'),
-  ('66cedff9-bd54-539f-84ad-71c30475dc6c', 'PLG-006', 'Toko Rejeki Lancar', '0821-7788-9906', 'Jl. Raya Pekayon No. 40, Bekasi Selatan', 8000000, 14, true, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-09-08 11:00:00+07'),
-  ('52647cb2-e389-5751-8c75-497e83ae35ff', 'PLG-007', 'Grosir Murah Meriah', '0812-9900-1107', 'Jl. Raya Bekasi Km 18, Cakung, Jakarta Timur', 30000000, 30, true, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-09-08 11:00:00+07'),
-  ('ecb2b2af-b87c-51d7-8050-ca88d487c764', 'PLG-008', 'Toko Amanah', '0856-2233-4408', 'Jl. Mustika Jaya No. 9, Bekasi Timur', 6000000, 7, true, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-09-08 11:00:00+07'),
-  ('32869406-4c79-5a0a-a515-caecdbcbd993', 'PLG-009', 'Toko Sumber Rezeki', '0838-4455-6609', 'Jl. Kranji Raya No. 77, Bekasi Barat', 0, 14, true, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-20 11:00:00+07'),
-  ('de839bb2-0d92-5cbc-a64e-554f1efe1a29', 'PLG-010', 'Toko Lama Abadi (tutup)', '0815-6677-8810', 'Jl. Juanda No. 101, Bekasi Timur', 3000000, 7, false, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-09-08 11:00:00+07');
+  ('649a6d3a-70b8-57d0-b2c3-15db3597f81c', 'PLG-001', 'Toko Berkah Jaya', '0813-1100-2201', 'Jl. Cut Mutia No. 12, Bekasi Timur', 15000000, 14, true, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-09-09 11:00:00+07'),
+  ('6f20e262-db32-5ce4-9a42-c4282d6e48ee', 'PLG-002', 'Minimarket Sentosa Mart', '0812-8800-1302', 'Jl. Raya Hankam No. 88, Pondok Gede', 25000000, 30, true, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-09-09 11:00:00+07'),
+  ('3396f1af-27e4-568b-87b3-2087fc6af8a2', 'PLG-003', 'Toko Ibu Sari', '0857-1122-3303', 'Jl. Kaliabang Tengah No. 5, Bekasi Utara', 5000000, 7, true, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-09-09 11:00:00+07'),
+  ('3ddee844-7e55-5815-9483-91025a6add48', 'PLG-004', 'Warung Pak Darto', '0819-3344-5504', 'Gg. Masjid No. 3, Jatiasih', 2000000, 0, true, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-09-09 11:00:00+07'),
+  ('aaf9c7d6-09f9-53df-8090-3fc3b7e6e69b', 'PLG-005', 'Toko Maju Bersama', '0813-5566-7705', 'Jl. Pahlawan No. 21, Rawalumbu', 10000000, 14, true, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-09-09 11:00:00+07'),
+  ('66cedff9-bd54-539f-84ad-71c30475dc6c', 'PLG-006', 'Toko Rejeki Lancar', '0821-7788-9906', 'Jl. Raya Pekayon No. 40, Bekasi Selatan', 8000000, 14, true, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-09-09 11:00:00+07'),
+  ('52647cb2-e389-5751-8c75-497e83ae35ff', 'PLG-007', 'Grosir Murah Meriah', '0812-9900-1107', 'Jl. Raya Bekasi Km 18, Cakung, Jakarta Timur', 30000000, 30, true, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-09-09 11:00:00+07'),
+  ('ecb2b2af-b87c-51d7-8050-ca88d487c764', 'PLG-008', 'Toko Amanah', '0856-2233-4408', 'Jl. Mustika Jaya No. 9, Bekasi Timur', 6000000, 7, true, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-09-09 11:00:00+07'),
+  ('32869406-4c79-5a0a-a515-caecdbcbd993', 'PLG-009', 'Toko Sumber Rezeki', '0838-4455-6609', 'Jl. Kranji Raya No. 77, Bekasi Barat', 0, 14, true, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-21 11:00:00+07'),
+  ('de839bb2-0d92-5cbc-a64e-554f1efe1a29', 'PLG-010', 'Toko Lama Abadi (tutup)', '0815-6677-8810', 'Jl. Juanda No. 101, Bekasi Timur', 3000000, 7, false, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-09-09 11:00:00+07');
 
 -- 7. Tabel: barang (16 baris)
 INSERT INTO public.barang (id, kode, nama, satuan, harga_jual, harga_pokok, stok, stok_minimum, aktif, diperbarui_pada) VALUES
-  ('ec9ce527-ed5f-5b7e-80eb-939001450513', 'BRG-001', 'Minyak Goreng Pouch 2 L isi 6', 'dus', 226000, 208000, 80, 20, true, '2026-09-08 10:00:00+07'),
-  ('671e7a37-5f79-5adc-a3b9-c9b01ac33e36', 'BRG-002', 'Gula Pasir 1 kg isi 20', 'bal', 362000, 341000, 22, 15, true, '2026-09-08 10:00:00+07'),
-  ('8de3a5b9-010d-5526-bdba-aa0ce0ca897a', 'BRG-003', 'Tepung Terigu 1 kg isi 12', 'dus', 138000, 125000, 43, 15, true, '2026-09-08 10:00:00+07'),
-  ('91f7a9a7-d484-54ea-bb4a-364cb5049c1e', 'BRG-004', 'Beras Premium 5 kg', 'karung', 78000, 71500, 183, 30, true, '2026-09-08 10:00:00+07'),
-  ('8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'BRG-005', 'Mi Instan Goreng isi 40', 'dus', 118000, 108000, 158, 25, true, '2026-09-08 10:00:00+07'),
-  ('becad5d3-b8a2-5221-b5f4-25f84b9b2162', 'BRG-006', 'Mi Instan Kuah isi 40', 'dus', 112000, 101500, 124, 25, true, '2026-09-08 10:00:00+07'),
-  ('75bc9358-ec31-57bc-a48e-112d0290fafa', 'BRG-007', 'Kecap Manis 520 ml isi 12', 'dus', 186000, 166000, 75, 10, true, '2026-09-08 10:00:00+07'),
-  ('ab808a73-0c70-5ac2-ab3b-99c27fd0f2b7', 'BRG-008', 'Saus Sambal 340 ml isi 24', 'dus', 192000, 171000, 8, 8, true, '2026-09-08 10:00:00+07'),
-  ('e0980a04-82e1-5d49-a262-2bfff2d6ca95', 'BRG-009', 'Kopi Sachet 3 in 1 isi 12 renceng', 'bal', 168000, 150000, 0, 12, true, '2026-09-08 10:00:00+07'),
-  ('ec3d6dbd-628a-5412-81d3-54c936a3e82f', 'BRG-010', 'Teh Celup isi 25 (24 kotak)', 'dus', 156000, 139000, 21, 6, true, '2026-09-08 10:00:00+07'),
-  ('e2656c25-d025-5ef6-8445-00e99f71ee26', 'BRG-011', 'Susu Kental Manis 370 g isi 48', 'dus', 552000, 512000, 1, 5, true, '2026-09-08 10:00:00+07'),
-  ('f546ffa5-cfb6-559b-b0f3-c68d26fa2b71', 'BRG-012', 'Sabun Cuci Piring 780 ml isi 12', 'dus', 168000, 148000, 50, 6, true, '2026-09-08 10:00:00+07'),
-  ('e31caa3a-cde5-5372-8a44-7f5b67b41f93', 'BRG-013', 'Deterjen Bubuk 800 g isi 12', 'dus', 204000, 181000, 30, 6, true, '2026-09-08 10:00:00+07'),
-  ('abeb85d1-5170-5581-833b-359c01b563e4', 'BRG-014', 'Air Mineral 600 ml isi 24', 'dus', 48000, 42000, 142, 30, true, '2026-09-08 10:00:00+07'),
-  ('1ecac6f4-140b-58eb-bcf2-e4a6feebf600', 'BRG-015', 'Margarin 200 g isi 48', 'dus', 336000, 305000, 0, 4, true, '2026-09-08 10:00:00+07'),
-  ('de9ae956-f16f-5764-95d3-2ac39c201c12', 'BRG-016', 'Minyak Goreng Botol 1 L isi 12 (dihentikan)', 'dus', 228000, 210000, 0, 0, false, '2026-09-08 10:00:00+07');
+  ('ec9ce527-ed5f-5b7e-80eb-939001450513', 'BRG-001', 'Minyak Goreng Pouch 2 L isi 6', 'dus', 226000, 208000, 80, 20, true, '2026-09-09 10:00:00+07'),
+  ('671e7a37-5f79-5adc-a3b9-c9b01ac33e36', 'BRG-002', 'Gula Pasir 1 kg isi 20', 'bal', 362000, 341000, 22, 15, true, '2026-09-09 10:00:00+07'),
+  ('8de3a5b9-010d-5526-bdba-aa0ce0ca897a', 'BRG-003', 'Tepung Terigu 1 kg isi 12', 'dus', 138000, 125000, 43, 15, true, '2026-09-09 10:00:00+07'),
+  ('91f7a9a7-d484-54ea-bb4a-364cb5049c1e', 'BRG-004', 'Beras Premium 5 kg', 'karung', 78000, 71500, 183, 30, true, '2026-09-09 10:00:00+07'),
+  ('8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'BRG-005', 'Mi Instan Goreng isi 40', 'dus', 118000, 108000, 158, 25, true, '2026-09-09 10:00:00+07'),
+  ('becad5d3-b8a2-5221-b5f4-25f84b9b2162', 'BRG-006', 'Mi Instan Kuah isi 40', 'dus', 112000, 101500, 124, 25, true, '2026-09-09 10:00:00+07'),
+  ('75bc9358-ec31-57bc-a48e-112d0290fafa', 'BRG-007', 'Kecap Manis 520 ml isi 12', 'dus', 186000, 166000, 75, 10, true, '2026-09-09 10:00:00+07'),
+  ('ab808a73-0c70-5ac2-ab3b-99c27fd0f2b7', 'BRG-008', 'Saus Sambal 340 ml isi 24', 'dus', 192000, 171000, 8, 8, true, '2026-09-09 10:00:00+07'),
+  ('e0980a04-82e1-5d49-a262-2bfff2d6ca95', 'BRG-009', 'Kopi Sachet 3 in 1 isi 12 renceng', 'bal', 168000, 150000, 0, 12, true, '2026-09-09 10:00:00+07'),
+  ('ec3d6dbd-628a-5412-81d3-54c936a3e82f', 'BRG-010', 'Teh Celup isi 25 (24 kotak)', 'dus', 156000, 139000, 21, 6, true, '2026-09-09 10:00:00+07'),
+  ('e2656c25-d025-5ef6-8445-00e99f71ee26', 'BRG-011', 'Susu Kental Manis 370 g isi 48', 'dus', 552000, 512000, 1, 5, true, '2026-09-09 10:00:00+07'),
+  ('f546ffa5-cfb6-559b-b0f3-c68d26fa2b71', 'BRG-012', 'Sabun Cuci Piring 780 ml isi 12', 'dus', 168000, 148000, 50, 6, true, '2026-09-09 10:00:00+07'),
+  ('e31caa3a-cde5-5372-8a44-7f5b67b41f93', 'BRG-013', 'Deterjen Bubuk 800 g isi 12', 'dus', 204000, 181000, 30, 6, true, '2026-09-09 10:00:00+07'),
+  ('abeb85d1-5170-5581-833b-359c01b563e4', 'BRG-014', 'Air Mineral 600 ml isi 24', 'dus', 48000, 42000, 142, 30, true, '2026-09-09 10:00:00+07'),
+  ('1ecac6f4-140b-58eb-bcf2-e4a6feebf600', 'BRG-015', 'Margarin 200 g isi 48', 'dus', 336000, 305000, 0, 4, true, '2026-09-09 10:00:00+07'),
+  ('de9ae956-f16f-5764-95d3-2ac39c201c12', 'BRG-016', 'Minyak Goreng Botol 1 L isi 12 (dihentikan)', 'dus', 228000, 210000, 0, 0, false, '2026-09-09 10:00:00+07');
 
 -- 8. Tabel: pembelian (19 baris)
+ALTER TABLE public.pembelian DROP CONSTRAINT IF EXISTS pembelian_status_check;
+ALTER TABLE public.pembelian ADD CONSTRAINT pembelian_status_check CHECK (status IN ('diajukan', 'disetujui', 'ditolak', 'diterima', 'dibatalkan'));
 INSERT INTO public.pembelian (id, nomor, pemasok_id, barang_id, jumlah_dipesan, jumlah_diterima, harga_beli_satuan, status, alasan_tolak, diajukan_oleh, diajukan_pada, diputuskan_oleh, diputuskan_pada, diterima_oleh, diterima_pada) VALUES
-  ('06303baa-6d02-54f6-9b70-c7a62df647e2', 'PO-00001', '9c79f720-1929-5dd4-b15a-7bee0114f1e3', '91f7a9a7-d484-54ea-bb4a-364cb5049c1e', 60, 60, 70500, 'diterima', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-14 09:00:00+07', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-09-14 13:00:00+07', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-16 08:00:00+07'),
-  ('ccda8513-eaee-5f23-8b3f-5bdebcaf3ab0', 'PO-00002', 'fd3e13e6-b0ff-5028-baa5-a44998d2cbcd', 'abeb85d1-5170-5581-833b-359c01b563e4', 80, 80, 41500, 'diterima', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-15 09:00:00+07', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-09-15 13:00:00+07', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-18 08:00:00+07'),
-  ('2f0f300a-98f8-5c94-9286-d6cb5f618566', 'PO-00003', '5f18d9e0-326a-5538-b4de-56f1547ff7ad', '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 80, 80, 107000, 'diterima', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-19 09:00:00+07', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-09-19 13:00:00+07', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-21 08:00:00+07'),
-  ('ca2ba3f0-47c4-50c4-9833-4e89dc1b9fcf', 'PO-00004', '9c79f720-1929-5dd4-b15a-7bee0114f1e3', 'ec9ce527-ed5f-5b7e-80eb-939001450513', 60, 60, 206000, 'diterima', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-20 09:00:00+07', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-09-20 13:00:00+07', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-22 08:00:00+07'),
-  ('2e89aba8-c11c-57af-867a-e8d875a6bba7', 'PO-00005', '5f18d9e0-326a-5538-b4de-56f1547ff7ad', 'becad5d3-b8a2-5221-b5f4-25f84b9b2162', 80, 75, 101500, 'diterima', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-25 09:00:00+07', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-09-25 13:00:00+07', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-27 08:00:00+07'),
-  ('64dae0e1-c4b0-5d6c-9533-95be707832a4', 'PO-00006', '9c79f720-1929-5dd4-b15a-7bee0114f1e3', '671e7a37-5f79-5adc-a3b9-c9b01ac33e36', 40, 40, 341000, 'diterima', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-26 09:00:00+07', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-09-26 13:00:00+07', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-28 08:00:00+07'),
-  ('30e16d6e-605c-58b0-821a-19677004bd3f', 'PO-00007', '83e53bc5-a470-5069-9b1d-a8b2990fcdb2', 'e0980a04-82e1-5d49-a262-2bfff2d6ca95', 40, NULL, NULL, 'ditolak', 'Stok kopi masih cukup untuk 3 minggu, tunda bulan depan', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-28 09:00:00+07', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-09-28 13:00:00+07', NULL, NULL),
-  ('e108cdc2-782e-5274-b39e-c87dfe76bb6f', 'PO-00008', '9c79f720-1929-5dd4-b15a-7bee0114f1e3', '8de3a5b9-010d-5526-bdba-aa0ce0ca897a', 50, 50, 125000, 'diterima', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-02 09:00:00+07', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-10-02 13:00:00+07', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-04 08:00:00+07'),
-  ('73a09f56-091d-5522-b18a-b14d85e7deed', 'PO-00009', '9c79f720-1929-5dd4-b15a-7bee0114f1e3', '91f7a9a7-d484-54ea-bb4a-364cb5049c1e', 60, 60, 71500, 'diterima', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-03 09:00:00+07', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-10-03 13:00:00+07', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-05 08:00:00+07'),
-  ('994e9953-d616-56ff-826c-4057d5aa8bf2', 'PO-00010', 'fd3e13e6-b0ff-5028-baa5-a44998d2cbcd', 'abeb85d1-5170-5581-833b-359c01b563e4', 80, 80, 42000, 'diterima', NULL, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-10-06 09:00:00+07', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-10-06 13:00:00+07', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-09 08:00:00+07'),
-  ('47be15b5-6c08-548a-86f4-62b65f16cecb', 'PO-00011', '5f18d9e0-326a-5538-b4de-56f1547ff7ad', '75bc9358-ec31-57bc-a48e-112d0290fafa', 30, 30, 166000, 'diterima', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-10 09:00:00+07', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-10-10 13:00:00+07', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-12 08:00:00+07'),
-  ('e6f4cd7f-74e6-5ccb-a420-ac7759daffc9', 'PO-00012', '83e53bc5-a470-5069-9b1d-a8b2990fcdb2', 'ec3d6dbd-628a-5412-81d3-54c936a3e82f', 20, NULL, 140000, 'dibatalkan', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-11 09:00:00+07', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-10-11 13:00:00+07', NULL, NULL),
-  ('02989490-f44f-5e23-bbd8-3c30b5ed5d8f', 'PO-00013', '5f18d9e0-326a-5538-b4de-56f1547ff7ad', '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 80, 80, 108000, 'diterima', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-13 09:00:00+07', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-10-13 13:00:00+07', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-16 08:00:00+07'),
-  ('edff02d0-6460-5630-833d-f05f55c4e4ea', 'PO-00014', '9c79f720-1929-5dd4-b15a-7bee0114f1e3', 'ec9ce527-ed5f-5b7e-80eb-939001450513', 60, 58, 208000, 'diterima', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-17 09:00:00+07', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-10-17 13:00:00+07', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-19 08:00:00+07'),
-  ('bb6e7868-6500-5224-873b-2a19d0414149', 'PO-00015', 'fd3e13e6-b0ff-5028-baa5-a44998d2cbcd', 'f546ffa5-cfb6-559b-b0f3-c68d26fa2b71', 25, 25, 148000, 'diterima', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-18 09:00:00+07', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-10-18 13:00:00+07', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-20 08:00:00+07'),
-  ('cce9f696-2238-50ff-82d4-3f4909fc2509', 'PO-00016', '83e53bc5-a470-5069-9b1d-a8b2990fcdb2', 'e2656c25-d025-5ef6-8445-00e99f71ee26', 15, NULL, 515000, 'disetujui', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-23 09:00:00+07', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-10-23 13:00:00+07', NULL, NULL),
-  ('01df44d6-916d-554e-b362-eee23866b25f', 'PO-00017', '9c79f720-1929-5dd4-b15a-7bee0114f1e3', '1ecac6f4-140b-58eb-bcf2-e4a6feebf600', 12, NULL, 306000, 'disetujui', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-24 09:00:00+07', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-10-24 13:00:00+07', NULL, NULL),
-  ('6217d1f1-6b65-5b57-a75b-f0a14ae11a7b', 'PO-00018', '5f18d9e0-326a-5538-b4de-56f1547ff7ad', 'ab808a73-0c70-5ac2-ab3b-99c27fd0f2b7', 30, NULL, NULL, 'diajukan', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-25 09:00:00+07', NULL, NULL, NULL, NULL),
-  ('065c64b4-5613-51ce-9fc9-5bc7f6e65cee', 'PO-00019', 'fd3e13e6-b0ff-5028-baa5-a44998d2cbcd', 'e31caa3a-cde5-5372-8a44-7f5b67b41f93', 20, NULL, NULL, 'diajukan', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-25 09:00:00+07', NULL, NULL, NULL, NULL);
+  ('06303baa-6d02-54f6-9b70-c7a62df647e2', 'PO-00001', '9c79f720-1929-5dd4-b15a-7bee0114f1e3', '91f7a9a7-d484-54ea-bb4a-364cb5049c1e', 60, 60, 70500, 'diterima', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-15 09:00:00+07', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-09-15 13:00:00+07', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-17 08:00:00+07'),
+  ('ccda8513-eaee-5f23-8b3f-5bdebcaf3ab0', 'PO-00002', 'fd3e13e6-b0ff-5028-baa5-a44998d2cbcd', 'abeb85d1-5170-5581-833b-359c01b563e4', 80, 80, 41500, 'diterima', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-16 09:00:00+07', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-09-16 13:00:00+07', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-19 08:00:00+07'),
+  ('2f0f300a-98f8-5c94-9286-d6cb5f618566', 'PO-00003', '5f18d9e0-326a-5538-b4de-56f1547ff7ad', '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 80, 80, 107000, 'diterima', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-20 09:00:00+07', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-09-20 13:00:00+07', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-22 08:00:00+07'),
+  ('ca2ba3f0-47c4-50c4-9833-4e89dc1b9fcf', 'PO-00004', '9c79f720-1929-5dd4-b15a-7bee0114f1e3', 'ec9ce527-ed5f-5b7e-80eb-939001450513', 60, 60, 206000, 'diterima', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-21 09:00:00+07', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-09-21 13:00:00+07', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-23 08:00:00+07'),
+  ('2e89aba8-c11c-57af-867a-e8d875a6bba7', 'PO-00005', '5f18d9e0-326a-5538-b4de-56f1547ff7ad', 'becad5d3-b8a2-5221-b5f4-25f84b9b2162', 80, 75, 101500, 'diterima', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-26 09:00:00+07', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-09-26 13:00:00+07', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-28 08:00:00+07'),
+  ('64dae0e1-c4b0-5d6c-9533-95be707832a4', 'PO-00006', '9c79f720-1929-5dd4-b15a-7bee0114f1e3', '671e7a37-5f79-5adc-a3b9-c9b01ac33e36', 40, 40, 341000, 'diterima', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-27 09:00:00+07', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-09-27 13:00:00+07', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-29 08:00:00+07'),
+  ('30e16d6e-605c-58b0-821a-19677004bd3f', 'PO-00007', '83e53bc5-a470-5069-9b1d-a8b2990fcdb2', 'e0980a04-82e1-5d49-a262-2bfff2d6ca95', 40, 0, NULL, 'ditolak', 'Stok kopi masih cukup untuk 3 minggu, tunda bulan depan', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-29 09:00:00+07', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-09-29 13:00:00+07', NULL, NULL),
+  ('e108cdc2-782e-5274-b39e-c87dfe76bb6f', 'PO-00008', '9c79f720-1929-5dd4-b15a-7bee0114f1e3', '8de3a5b9-010d-5526-bdba-aa0ce0ca897a', 50, 50, 125000, 'diterima', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-03 09:00:00+07', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-10-03 13:00:00+07', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-05 08:00:00+07'),
+  ('73a09f56-091d-5522-b18a-b14d85e7deed', 'PO-00009', '9c79f720-1929-5dd4-b15a-7bee0114f1e3', '91f7a9a7-d484-54ea-bb4a-364cb5049c1e', 60, 60, 71500, 'diterima', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-04 09:00:00+07', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-10-04 13:00:00+07', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-06 08:00:00+07'),
+  ('994e9953-d616-56ff-826c-4057d5aa8bf2', 'PO-00010', 'fd3e13e6-b0ff-5028-baa5-a44998d2cbcd', 'abeb85d1-5170-5581-833b-359c01b563e4', 80, 80, 42000, 'diterima', NULL, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-10-07 09:00:00+07', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-10-07 13:00:00+07', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-10 08:00:00+07'),
+  ('47be15b5-6c08-548a-86f4-62b65f16cecb', 'PO-00011', '5f18d9e0-326a-5538-b4de-56f1547ff7ad', '75bc9358-ec31-57bc-a48e-112d0290fafa', 30, 30, 166000, 'diterima', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-11 09:00:00+07', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-10-11 13:00:00+07', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-13 08:00:00+07'),
+  ('e6f4cd7f-74e6-5ccb-a420-ac7759daffc9', 'PO-00012', '83e53bc5-a470-5069-9b1d-a8b2990fcdb2', 'ec3d6dbd-628a-5412-81d3-54c936a3e82f', 20, 0, 140000, 'dibatalkan', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-12 09:00:00+07', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-10-12 13:00:00+07', NULL, NULL),
+  ('02989490-f44f-5e23-bbd8-3c30b5ed5d8f', 'PO-00013', '5f18d9e0-326a-5538-b4de-56f1547ff7ad', '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 80, 80, 108000, 'diterima', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-14 09:00:00+07', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-10-14 13:00:00+07', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-17 08:00:00+07'),
+  ('edff02d0-6460-5630-833d-f05f55c4e4ea', 'PO-00014', '9c79f720-1929-5dd4-b15a-7bee0114f1e3', 'ec9ce527-ed5f-5b7e-80eb-939001450513', 60, 58, 208000, 'diterima', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-18 09:00:00+07', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-10-18 13:00:00+07', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-20 08:00:00+07'),
+  ('bb6e7868-6500-5224-873b-2a19d0414149', 'PO-00015', 'fd3e13e6-b0ff-5028-baa5-a44998d2cbcd', 'f546ffa5-cfb6-559b-b0f3-c68d26fa2b71', 25, 25, 148000, 'diterima', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-19 09:00:00+07', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-10-19 13:00:00+07', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-21 08:00:00+07'),
+  ('cce9f696-2238-50ff-82d4-3f4909fc2509', 'PO-00016', '83e53bc5-a470-5069-9b1d-a8b2990fcdb2', 'e2656c25-d025-5ef6-8445-00e99f71ee26', 15, 0, 515000, 'disetujui', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-24 09:00:00+07', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-10-24 13:00:00+07', NULL, NULL),
+  ('01df44d6-916d-554e-b362-eee23866b25f', 'PO-00017', '9c79f720-1929-5dd4-b15a-7bee0114f1e3', '1ecac6f4-140b-58eb-bcf2-e4a6feebf600', 12, 0, 306000, 'disetujui', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-25 09:00:00+07', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-10-25 13:00:00+07', NULL, NULL),
+  ('6217d1f1-6b65-5b57-a75b-f0a14ae11a7b', 'PO-00018', '5f18d9e0-326a-5538-b4de-56f1547ff7ad', 'ab808a73-0c70-5ac2-ab3b-99c27fd0f2b7', 30, 0, NULL, 'diajukan', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-26 09:00:00+07', NULL, NULL, NULL, NULL),
+  ('065c64b4-5613-51ce-9fc9-5bc7f6e65cee', 'PO-00019', 'fd3e13e6-b0ff-5028-baa5-a44998d2cbcd', 'e31caa3a-cde5-5372-8a44-7f5b67b41f93', 20, 0, NULL, 'diajukan', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-26 09:00:00+07', NULL, NULL, NULL, NULL);
 
 -- 9. Tabel: pesanan_jual (45 baris)
 INSERT INTO public.pesanan_jual (id, nomor, pelanggan_id, status, total, dibuat_oleh, dibuat_pada, dikonfirmasi_pada, dikirim_pada, jatuh_tempo, dilunasi_pada, dibatalkan_pada, alasan_batal) VALUES
-  ('8c767893-eb9d-584e-9496-d79b57fe95b7', 'SO-00001', '6f20e262-db32-5ce4-9a42-c4282d6e48ee', 'lunas', 8611200, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-12 09:05:00+07', '2026-09-12 09:55:00+07', '2026-09-13 14:00:00+07', '2026-10-13', '2026-10-11 16:00:00+07', NULL, NULL),
-  ('457923af-a620-557f-82d9-a0484a4ccebe', 'SO-00002', '6f20e262-db32-5ce4-9a42-c4282d6e48ee', 'lunas', 4975200, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-13 09:50:00+07', '2026-09-13 09:55:00+07', '2026-09-14 14:00:00+07', '2026-10-14', '2026-10-11 16:00:00+07', NULL, NULL),
-  ('2e674c3e-4123-549d-ac9d-a85065e5dc49', 'SO-00003', '649a6d3a-70b8-57d0-b2c3-15db3597f81c', 'lunas', 1092000, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-14 09:05:00+07', '2026-09-14 09:55:00+07', '2026-09-15 14:00:00+07', '2026-09-29', '2026-09-26 16:00:00+07', NULL, NULL),
-  ('b2f34183-5ad2-5514-8dd3-27cca6551273', 'SO-00004', '649a6d3a-70b8-57d0-b2c3-15db3597f81c', 'lunas', 3433600, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-15 09:20:00+07', '2026-09-15 09:55:00+07', '2026-09-16 14:00:00+07', '2026-09-30', '2026-09-30 16:00:00+07', NULL, NULL),
-  ('76dce0bf-c581-5f7d-bfc5-8f4e42806823', 'SO-00005', '66cedff9-bd54-539f-84ad-71c30475dc6c', 'lunas', 2192400, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-16 09:35:00+07', '2026-09-16 09:55:00+07', '2026-09-17 14:00:00+07', '2026-10-01', '2026-09-29 16:00:00+07', NULL, NULL),
-  ('53d14dbe-431a-566d-a7e6-94335dd7f8ac', 'SO-00006', '649a6d3a-70b8-57d0-b2c3-15db3597f81c', 'lunas', 1242000, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-18 09:35:00+07', '2026-09-18 09:55:00+07', '2026-09-19 14:00:00+07', '2026-10-03', '2026-09-30 16:00:00+07', NULL, NULL),
-  ('1824e36e-0e10-5511-b400-298f6c873fbd', 'SO-00007', '52647cb2-e389-5751-8c75-497e83ae35ff', 'lunas', 11711200, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-18 11:20:00+07', '2026-09-18 11:55:00+07', '2026-09-19 14:00:00+07', '2026-10-19', '2026-10-19 16:00:00+07', NULL, NULL),
-  ('cf298a5b-ca39-5a0a-860f-9db0a30c7626', 'SO-00008', '52647cb2-e389-5751-8c75-497e83ae35ff', 'lunas', 3363750, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-19 09:05:00+07', '2026-09-19 09:55:00+07', '2026-09-20 14:00:00+07', '2026-10-20', '2026-10-20 16:00:00+07', NULL, NULL),
-  ('a77e4b27-cf34-5ae2-babf-687f4d56e6f0', 'SO-00009', '649a6d3a-70b8-57d0-b2c3-15db3597f81c', 'lunas', 1954000, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-20 09:50:00+07', '2026-09-20 09:55:00+07', '2026-09-21 14:00:00+07', '2026-10-05', '2026-10-04 16:00:00+07', NULL, NULL),
-  ('4e07ed3c-8d7c-5543-b44f-682709ba4ede', 'SO-00010', '649a6d3a-70b8-57d0-b2c3-15db3597f81c', 'lunas', 3420000, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-20 11:35:00+07', '2026-09-20 11:55:00+07', '2026-09-21 14:00:00+07', '2026-10-05', '2026-10-05 16:00:00+07', NULL, NULL),
-  ('19a4ffdb-5adc-5da6-8305-c98fe3cc12c9', 'SO-00011', '3ddee844-7e55-5815-9483-91025a6add48', 'lunas', 474000, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-21 09:35:00+07', '2026-09-21 09:55:00+07', '2026-09-22 14:00:00+07', '2026-09-22', '2026-09-22 16:00:00+07', NULL, NULL),
-  ('354d97a2-f718-5745-92af-405bd72d6985', 'SO-00012', '3396f1af-27e4-568b-87b3-2087fc6af8a2', 'lunas', 651300, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-22 09:35:00+07', '2026-09-22 09:55:00+07', '2026-09-23 14:00:00+07', '2026-09-30', '2026-09-28 16:00:00+07', NULL, NULL),
-  ('3f50277c-0f45-57d1-a50f-4b19bd6472c7', 'SO-00013', '6f20e262-db32-5ce4-9a42-c4282d6e48ee', 'lunas', 2914600, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-23 09:20:00+07', '2026-09-23 09:55:00+07', '2026-09-24 14:00:00+07', '2026-10-24', '2026-10-22 16:00:00+07', NULL, NULL),
-  ('2a7e33d9-16ed-577f-88ff-1ff6281ea224', 'SO-00014', '649a6d3a-70b8-57d0-b2c3-15db3597f81c', 'lunas', 3124000, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-25 09:20:00+07', '2026-09-25 09:55:00+07', '2026-09-26 14:00:00+07', '2026-10-10', '2026-10-06 16:00:00+07', NULL, NULL),
-  ('8da43319-b085-5712-8fa6-15bbff7940e2', 'SO-00015', 'aaf9c7d6-09f9-53df-8090-3fc3b7e6e69b', 'dikirim', 3398800, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-26 08:40:00+07', '2026-09-26 08:50:00+07', '2026-09-27 14:00:00+07', '2026-10-11', NULL, NULL, NULL),
-  ('17fb99f3-a996-50ab-8c2a-ed6738895cc3', 'SO-00016', '649a6d3a-70b8-57d0-b2c3-15db3597f81c', 'lunas', 3878700, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-30 09:05:00+07', '2026-09-30 09:55:00+07', '2026-10-01 14:00:00+07', '2026-10-15', '2026-10-12 16:00:00+07', NULL, NULL),
-  ('da19ac2c-c57f-524d-ab7c-5453e7fe9fdc', 'SO-00017', '52647cb2-e389-5751-8c75-497e83ae35ff', 'dikirim', 7713200, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-02 09:50:00+07', '2026-10-02 09:55:00+07', '2026-10-03 14:00:00+07', '2026-11-02', NULL, NULL, NULL),
-  ('a8124be5-819e-54d1-845f-989aeaf0d4e0', 'SO-00018', '6f20e262-db32-5ce4-9a42-c4282d6e48ee', 'dikirim', 2505600, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-02 11:20:00+07', '2026-10-02 11:55:00+07', '2026-10-03 14:00:00+07', '2026-11-02', NULL, NULL, NULL),
-  ('0a1a50ff-4dd1-534c-8247-e7f1b231b29f', 'SO-00019', '649a6d3a-70b8-57d0-b2c3-15db3597f81c', 'lunas', 2441600, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-03 09:35:00+07', '2026-10-03 09:55:00+07', '2026-10-04 14:00:00+07', '2026-10-18', '2026-10-14 16:00:00+07', NULL, NULL),
-  ('0fd52099-6a0c-5271-9b8a-3dc2970b96b6', 'SO-00020', '649a6d3a-70b8-57d0-b2c3-15db3597f81c', 'lunas', 1356000, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-04 09:35:00+07', '2026-10-04 09:55:00+07', '2026-10-05 14:00:00+07', '2026-10-19', '2026-10-17 16:00:00+07', NULL, NULL),
-  ('359e7a00-f8a5-584a-a503-d35e2b98a2fc', 'SO-00021', '649a6d3a-70b8-57d0-b2c3-15db3597f81c', 'lunas', 655200, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-04 11:35:00+07', '2026-10-04 11:55:00+07', '2026-10-05 14:00:00+07', '2026-10-19', '2026-10-17 16:00:00+07', NULL, NULL),
-  ('0cadd905-5bdd-5167-b034-5bc19c1228a0', 'SO-00022', '649a6d3a-70b8-57d0-b2c3-15db3597f81c', 'lunas', 3571200, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-06 09:20:00+07', '2026-10-06 09:55:00+07', '2026-10-07 14:00:00+07', '2026-10-21', '2026-10-17 16:00:00+07', NULL, NULL),
-  ('3d3f27db-2a8b-5612-ba30-7b088a6d4576', 'SO-00023', '3396f1af-27e4-568b-87b3-2087fc6af8a2', 'lunas', 1583250, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-09 09:50:00+07', '2026-10-09 09:55:00+07', '2026-10-10 14:00:00+07', '2026-10-17', '2026-10-14 16:00:00+07', NULL, NULL),
-  ('486a9c52-7435-5349-a2c3-3789412a42de', 'SO-00024', '649a6d3a-70b8-57d0-b2c3-15db3597f81c', 'lunas', 240000, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-09 11:20:00+07', '2026-10-09 11:55:00+07', '2026-10-10 14:00:00+07', '2026-10-24', '2026-10-20 16:00:00+07', NULL, NULL),
-  ('7f0b2ba0-8d63-59ca-9518-0d6fbf5c5b74', 'SO-00025', '52647cb2-e389-5751-8c75-497e83ae35ff', 'dikirim', 2789600, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-13 11:35:00+07', '2026-10-13 11:55:00+07', '2026-10-14 14:00:00+07', '2026-11-13', NULL, NULL, NULL),
-  ('26f2ef97-0d22-588d-a440-a388ba527606', 'SO-00026', '66cedff9-bd54-539f-84ad-71c30475dc6c', 'dikirim', 7564000, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-17 08:40:00+07', '2026-10-17 08:50:00+07', '2026-10-18 14:00:00+07', '2026-11-01', NULL, NULL, NULL),
-  ('ff02aa9d-3b7a-543e-b617-7c5150b0ac89', 'SO-00027', '52647cb2-e389-5751-8c75-497e83ae35ff', 'dikirim', 3982000, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-17 09:05:00+07', '2026-10-17 09:55:00+07', '2026-10-18 14:00:00+07', '2026-11-17', NULL, NULL, NULL),
-  ('deb4a706-4323-5997-b6f5-ed15b596833e', 'SO-00028', '6f20e262-db32-5ce4-9a42-c4282d6e48ee', 'dikirim', 7710000, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-18 09:50:00+07', '2026-10-18 09:55:00+07', '2026-10-19 14:00:00+07', '2026-11-18', NULL, NULL, NULL),
-  ('d285b294-521c-5b05-a90f-1d772f4f4ec0', 'SO-00029', '6f20e262-db32-5ce4-9a42-c4282d6e48ee', 'dikirim', 6108000, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-19 09:20:00+07', '2026-10-19 09:55:00+07', '2026-10-20 14:00:00+07', '2026-11-19', NULL, NULL, NULL),
-  ('82c6ba12-0641-552c-9028-e6b218375c6f', 'SO-00030', '649a6d3a-70b8-57d0-b2c3-15db3597f81c', 'dikirim', 4313200, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-20 09:35:00+07', '2026-10-20 09:55:00+07', '2026-10-21 14:00:00+07', '2026-11-04', NULL, NULL, NULL),
-  ('c3f86068-49f5-5885-a603-ad2ee5d093ac', 'SO-00031', '3396f1af-27e4-568b-87b3-2087fc6af8a2', 'dikirim', 3049600, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-21 09:05:00+07', '2026-10-21 09:55:00+07', '2026-10-22 14:00:00+07', '2026-10-29', NULL, NULL, NULL),
-  ('04e1590c-1736-5c73-92bd-7e510f98e413', 'SO-00032', '649a6d3a-70b8-57d0-b2c3-15db3597f81c', 'dibatalkan', 1418000, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-23 13:10:00+07', '2026-10-23 13:30:00+07', NULL, NULL, NULL, '2026-10-23 16:00:00+07', 'Toko membatalkan karena salah pesan barang'),
-  ('fd7b44f7-79dc-5886-b7d6-5ec09e35085d', 'SO-00033', '3396f1af-27e4-568b-87b3-2087fc6af8a2', 'dibatalkan', 240000, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-24 09:15:00+07', NULL, NULL, NULL, NULL, '2026-10-24 09:40:00+07', 'Dobel input'),
-  ('f43e5c90-7904-5ce1-ab9b-5490daba4828', 'SO-00034', '6f20e262-db32-5ce4-9a42-c4282d6e48ee', 'dikirim', 4668000, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-24 09:20:00+07', '2026-10-24 09:55:00+07', '2026-10-25 14:00:00+07', '2026-11-24', NULL, NULL, NULL),
-  ('dbe37cd5-0d02-5c47-b9fd-16be14da9a4d', 'SO-00035', '52647cb2-e389-5751-8c75-497e83ae35ff', 'dikonfirmasi', 4416000, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-24 13:10:00+07', '2026-10-24 13:20:00+07', NULL, NULL, NULL, NULL, NULL),
-  ('60fcc970-eedd-58d2-bd64-f6a23932cfd0', 'SO-00036', '6f20e262-db32-5ce4-9a42-c4282d6e48ee', 'dikonfirmasi', 2244000, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-25 09:30:00+07', '2026-10-25 09:45:00+07', NULL, NULL, NULL, NULL, NULL),
-  ('b86e03b4-56ef-55e8-a685-1819b826e020', 'SO-00037', '52647cb2-e389-5751-8c75-497e83ae35ff', 'dikonfirmasi', 3315000, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-25 09:30:00+07', '2026-10-25 09:45:00+07', NULL, NULL, NULL, NULL, NULL),
-  ('3bdd5804-17ae-5c49-8aff-c4fdab80c8c7', 'SO-00038', '649a6d3a-70b8-57d0-b2c3-15db3597f81c', 'draf', 552000, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-25 10:00:00+07', NULL, NULL, NULL, NULL, NULL, NULL),
-  ('21119920-fe2c-51a0-8360-721fb7d5e504', 'SO-00039', '52647cb2-e389-5751-8c75-497e83ae35ff', 'draf', 552000, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-25 10:02:00+07', NULL, NULL, NULL, NULL, NULL, NULL),
-  ('2375d597-efa6-5ecf-872a-aab957e9ab0b', 'SO-00040', '649a6d3a-70b8-57d0-b2c3-15db3597f81c', 'draf', 780000, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-25 10:10:00+07', NULL, NULL, NULL, NULL, NULL, NULL),
-  ('325e0bda-ded1-53f1-850c-ec697c37cf18', 'SO-00041', '66cedff9-bd54-539f-84ad-71c30475dc6c', 'draf', 1086000, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-25 10:20:00+07', NULL, NULL, NULL, NULL, NULL, NULL),
-  ('35b6d7e3-6864-5ba1-8848-424fd220ee07', 'SO-00042', 'aaf9c7d6-09f9-53df-8090-3fc3b7e6e69b', 'draf', 96000, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-25 10:30:00+07', NULL, NULL, NULL, NULL, NULL, NULL),
-  ('a20ca835-806e-544e-9247-9007f1c3b29b', 'SO-00043', 'ecb2b2af-b87c-51d7-8050-ca88d487c764', 'draf', 486000, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-25 10:40:00+07', NULL, NULL, NULL, NULL, NULL, NULL),
-  ('7f6ca835-8b37-546a-a841-c507168494bb', 'SO-00044', 'ecb2b2af-b87c-51d7-8050-ca88d487c764', 'draf', 325800, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-25 10:50:00+07', NULL, NULL, NULL, NULL, NULL, NULL),
-  ('52057d5e-dd4c-5353-b05f-13bfec548423', 'SO-00045', '32869406-4c79-5a0a-a515-caecdbcbd993', 'draf', 48000, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-25 11:00:00+07', NULL, NULL, NULL, NULL, NULL, NULL);
+  ('8c767893-eb9d-584e-9496-d79b57fe95b7', 'SO-00001', '6f20e262-db32-5ce4-9a42-c4282d6e48ee', 'lunas', 8611200, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-13 09:05:00+07', '2026-09-13 09:55:00+07', '2026-09-14 14:00:00+07', '2026-10-14', '2026-10-12 16:00:00+07', NULL, NULL),
+  ('457923af-a620-557f-82d9-a0484a4ccebe', 'SO-00002', '6f20e262-db32-5ce4-9a42-c4282d6e48ee', 'lunas', 4975200, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-14 09:50:00+07', '2026-09-14 09:55:00+07', '2026-09-15 14:00:00+07', '2026-10-15', '2026-10-12 16:00:00+07', NULL, NULL),
+  ('2e674c3e-4123-549d-ac9d-a85065e5dc49', 'SO-00003', '649a6d3a-70b8-57d0-b2c3-15db3597f81c', 'lunas', 1092000, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-15 09:05:00+07', '2026-09-15 09:55:00+07', '2026-09-16 14:00:00+07', '2026-09-30', '2026-09-27 16:00:00+07', NULL, NULL),
+  ('b2f34183-5ad2-5514-8dd3-27cca6551273', 'SO-00004', '649a6d3a-70b8-57d0-b2c3-15db3597f81c', 'lunas', 3433600, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-16 09:20:00+07', '2026-09-16 09:55:00+07', '2026-09-17 14:00:00+07', '2026-10-01', '2026-10-01 16:00:00+07', NULL, NULL),
+  ('76dce0bf-c581-5f7d-bfc5-8f4e42806823', 'SO-00005', '66cedff9-bd54-539f-84ad-71c30475dc6c', 'lunas', 2192400, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-17 09:35:00+07', '2026-09-17 09:55:00+07', '2026-09-18 14:00:00+07', '2026-10-02', '2026-09-30 16:00:00+07', NULL, NULL),
+  ('53d14dbe-431a-566d-a7e6-94335dd7f8ac', 'SO-00006', '649a6d3a-70b8-57d0-b2c3-15db3597f81c', 'lunas', 1242000, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-19 09:35:00+07', '2026-09-19 09:55:00+07', '2026-09-20 14:00:00+07', '2026-10-04', '2026-10-01 16:00:00+07', NULL, NULL),
+  ('1824e36e-0e10-5511-b400-298f6c873fbd', 'SO-00007', '52647cb2-e389-5751-8c75-497e83ae35ff', 'lunas', 11711200, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-19 11:20:00+07', '2026-09-19 11:55:00+07', '2026-09-20 14:00:00+07', '2026-10-20', '2026-10-20 16:00:00+07', NULL, NULL),
+  ('cf298a5b-ca39-5a0a-860f-9db0a30c7626', 'SO-00008', '52647cb2-e389-5751-8c75-497e83ae35ff', 'lunas', 3363750, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-20 09:05:00+07', '2026-09-20 09:55:00+07', '2026-09-21 14:00:00+07', '2026-10-21', '2026-10-21 16:00:00+07', NULL, NULL),
+  ('a77e4b27-cf34-5ae2-babf-687f4d56e6f0', 'SO-00009', '649a6d3a-70b8-57d0-b2c3-15db3597f81c', 'lunas', 1954000, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-21 09:50:00+07', '2026-09-21 09:55:00+07', '2026-09-22 14:00:00+07', '2026-10-06', '2026-10-05 16:00:00+07', NULL, NULL),
+  ('4e07ed3c-8d7c-5543-b44f-682709ba4ede', 'SO-00010', '649a6d3a-70b8-57d0-b2c3-15db3597f81c', 'lunas', 3420000, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-21 11:35:00+07', '2026-09-21 11:55:00+07', '2026-09-22 14:00:00+07', '2026-10-06', '2026-10-06 16:00:00+07', NULL, NULL),
+  ('19a4ffdb-5adc-5da6-8305-c98fe3cc12c9', 'SO-00011', '3ddee844-7e55-5815-9483-91025a6add48', 'lunas', 474000, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-22 09:35:00+07', '2026-09-22 09:55:00+07', '2026-09-23 14:00:00+07', '2026-09-23', '2026-09-23 16:00:00+07', NULL, NULL),
+  ('354d97a2-f718-5745-92af-405bd72d6985', 'SO-00012', '3396f1af-27e4-568b-87b3-2087fc6af8a2', 'lunas', 651300, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-23 09:35:00+07', '2026-09-23 09:55:00+07', '2026-09-24 14:00:00+07', '2026-10-01', '2026-09-29 16:00:00+07', NULL, NULL),
+  ('3f50277c-0f45-57d1-a50f-4b19bd6472c7', 'SO-00013', '6f20e262-db32-5ce4-9a42-c4282d6e48ee', 'lunas', 2914600, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-24 09:20:00+07', '2026-09-24 09:55:00+07', '2026-09-25 14:00:00+07', '2026-10-25', '2026-10-23 16:00:00+07', NULL, NULL),
+  ('2a7e33d9-16ed-577f-88ff-1ff6281ea224', 'SO-00014', '649a6d3a-70b8-57d0-b2c3-15db3597f81c', 'lunas', 3124000, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-26 09:20:00+07', '2026-09-26 09:55:00+07', '2026-09-27 14:00:00+07', '2026-10-11', '2026-10-07 16:00:00+07', NULL, NULL),
+  ('8da43319-b085-5712-8fa6-15bbff7940e2', 'SO-00015', 'aaf9c7d6-09f9-53df-8090-3fc3b7e6e69b', 'dikirim', 3398800, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-27 08:40:00+07', '2026-09-27 08:50:00+07', '2026-09-28 14:00:00+07', '2026-10-12', NULL, NULL, NULL),
+  ('17fb99f3-a996-50ab-8c2a-ed6738895cc3', 'SO-00016', '649a6d3a-70b8-57d0-b2c3-15db3597f81c', 'lunas', 3878700, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-01 09:05:00+07', '2026-10-01 09:55:00+07', '2026-10-02 14:00:00+07', '2026-10-16', '2026-10-13 16:00:00+07', NULL, NULL),
+  ('da19ac2c-c57f-524d-ab7c-5453e7fe9fdc', 'SO-00017', '52647cb2-e389-5751-8c75-497e83ae35ff', 'dikirim', 7713200, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-03 09:50:00+07', '2026-10-03 09:55:00+07', '2026-10-04 14:00:00+07', '2026-11-03', NULL, NULL, NULL),
+  ('a8124be5-819e-54d1-845f-989aeaf0d4e0', 'SO-00018', '6f20e262-db32-5ce4-9a42-c4282d6e48ee', 'dikirim', 2505600, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-03 11:20:00+07', '2026-10-03 11:55:00+07', '2026-10-04 14:00:00+07', '2026-11-03', NULL, NULL, NULL),
+  ('0a1a50ff-4dd1-534c-8247-e7f1b231b29f', 'SO-00019', '649a6d3a-70b8-57d0-b2c3-15db3597f81c', 'lunas', 2441600, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-04 09:35:00+07', '2026-10-04 09:55:00+07', '2026-10-05 14:00:00+07', '2026-10-19', '2026-10-15 16:00:00+07', NULL, NULL),
+  ('0fd52099-6a0c-5271-9b8a-3dc2970b96b6', 'SO-00020', '649a6d3a-70b8-57d0-b2c3-15db3597f81c', 'lunas', 1356000, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-05 09:35:00+07', '2026-10-05 09:55:00+07', '2026-10-06 14:00:00+07', '2026-10-20', '2026-10-18 16:00:00+07', NULL, NULL),
+  ('359e7a00-f8a5-584a-a503-d35e2b98a2fc', 'SO-00021', '649a6d3a-70b8-57d0-b2c3-15db3597f81c', 'lunas', 655200, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-05 11:35:00+07', '2026-10-05 11:55:00+07', '2026-10-06 14:00:00+07', '2026-10-20', '2026-10-18 16:00:00+07', NULL, NULL),
+  ('0cadd905-5bdd-5167-b034-5bc19c1228a0', 'SO-00022', '649a6d3a-70b8-57d0-b2c3-15db3597f81c', 'lunas', 3571200, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-07 09:20:00+07', '2026-10-07 09:55:00+07', '2026-10-08 14:00:00+07', '2026-10-22', '2026-10-18 16:00:00+07', NULL, NULL),
+  ('3d3f27db-2a8b-5612-ba30-7b088a6d4576', 'SO-00023', '3396f1af-27e4-568b-87b3-2087fc6af8a2', 'lunas', 1583250, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-10 09:50:00+07', '2026-10-10 09:55:00+07', '2026-10-11 14:00:00+07', '2026-10-18', '2026-10-15 16:00:00+07', NULL, NULL),
+  ('486a9c52-7435-5349-a2c3-3789412a42de', 'SO-00024', '649a6d3a-70b8-57d0-b2c3-15db3597f81c', 'lunas', 240000, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-10 11:20:00+07', '2026-10-10 11:55:00+07', '2026-10-11 14:00:00+07', '2026-10-25', '2026-10-21 16:00:00+07', NULL, NULL),
+  ('7f0b2ba0-8d63-59ca-9518-0d6fbf5c5b74', 'SO-00025', '52647cb2-e389-5751-8c75-497e83ae35ff', 'dikirim', 2789600, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-14 11:35:00+07', '2026-10-14 11:55:00+07', '2026-10-15 14:00:00+07', '2026-11-14', NULL, NULL, NULL),
+  ('26f2ef97-0d22-588d-a440-a388ba527606', 'SO-00026', '66cedff9-bd54-539f-84ad-71c30475dc6c', 'dikirim', 7564000, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-18 08:40:00+07', '2026-10-18 08:50:00+07', '2026-10-19 14:00:00+07', '2026-11-02', NULL, NULL, NULL),
+  ('ff02aa9d-3b7a-543e-b617-7c5150b0ac89', 'SO-00027', '52647cb2-e389-5751-8c75-497e83ae35ff', 'dikirim', 3982000, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-18 09:05:00+07', '2026-10-18 09:55:00+07', '2026-10-19 14:00:00+07', '2026-11-18', NULL, NULL, NULL),
+  ('deb4a706-4323-5997-b6f5-ed15b596833e', 'SO-00028', '6f20e262-db32-5ce4-9a42-c4282d6e48ee', 'dikirim', 7710000, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-19 09:50:00+07', '2026-10-19 09:55:00+07', '2026-10-20 14:00:00+07', '2026-11-19', NULL, NULL, NULL),
+  ('d285b294-521c-5b05-a90f-1d772f4f4ec0', 'SO-00029', '6f20e262-db32-5ce4-9a42-c4282d6e48ee', 'dikirim', 6108000, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-20 09:20:00+07', '2026-10-20 09:55:00+07', '2026-10-21 14:00:00+07', '2026-11-20', NULL, NULL, NULL),
+  ('82c6ba12-0641-552c-9028-e6b218375c6f', 'SO-00030', '649a6d3a-70b8-57d0-b2c3-15db3597f81c', 'dikirim', 4313200, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-21 09:35:00+07', '2026-10-21 09:55:00+07', '2026-10-22 14:00:00+07', '2026-11-05', NULL, NULL, NULL),
+  ('c3f86068-49f5-5885-a603-ad2ee5d093ac', 'SO-00031', '3396f1af-27e4-568b-87b3-2087fc6af8a2', 'dikirim', 3049600, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-22 09:05:00+07', '2026-10-22 09:55:00+07', '2026-10-23 14:00:00+07', '2026-10-30', NULL, NULL, NULL),
+  ('04e1590c-1736-5c73-92bd-7e510f98e413', 'SO-00032', '649a6d3a-70b8-57d0-b2c3-15db3597f81c', 'dibatalkan', 1418000, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-24 13:10:00+07', '2026-10-24 13:30:00+07', NULL, NULL, NULL, '2026-10-24 16:00:00+07', 'Toko membatalkan karena salah pesan barang'),
+  ('fd7b44f7-79dc-5886-b7d6-5ec09e35085d', 'SO-00033', '3396f1af-27e4-568b-87b3-2087fc6af8a2', 'dibatalkan', 240000, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-25 09:15:00+07', NULL, NULL, NULL, NULL, '2026-10-25 09:40:00+07', 'Dobel input'),
+  ('f43e5c90-7904-5ce1-ab9b-5490daba4828', 'SO-00034', '6f20e262-db32-5ce4-9a42-c4282d6e48ee', 'dikirim', 4668000, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-25 09:20:00+07', '2026-10-25 09:55:00+07', '2026-10-26 14:00:00+07', '2026-11-25', NULL, NULL, NULL),
+  ('dbe37cd5-0d02-5c47-b9fd-16be14da9a4d', 'SO-00035', '52647cb2-e389-5751-8c75-497e83ae35ff', 'dikonfirmasi', 4416000, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-25 13:10:00+07', '2026-10-25 13:20:00+07', NULL, NULL, NULL, NULL, NULL),
+  ('60fcc970-eedd-58d2-bd64-f6a23932cfd0', 'SO-00036', '6f20e262-db32-5ce4-9a42-c4282d6e48ee', 'dikonfirmasi', 2244000, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-26 09:30:00+07', '2026-10-26 09:45:00+07', NULL, NULL, NULL, NULL, NULL),
+  ('b86e03b4-56ef-55e8-a685-1819b826e020', 'SO-00037', '52647cb2-e389-5751-8c75-497e83ae35ff', 'dikonfirmasi', 3315000, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-26 09:30:00+07', '2026-10-26 09:45:00+07', NULL, NULL, NULL, NULL, NULL),
+  ('3bdd5804-17ae-5c49-8aff-c4fdab80c8c7', 'SO-00038', '649a6d3a-70b8-57d0-b2c3-15db3597f81c', 'draf', 552000, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-26 10:00:00+07', NULL, NULL, NULL, NULL, NULL, NULL),
+  ('21119920-fe2c-51a0-8360-721fb7d5e504', 'SO-00039', '52647cb2-e389-5751-8c75-497e83ae35ff', 'draf', 552000, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-26 10:02:00+07', NULL, NULL, NULL, NULL, NULL, NULL),
+  ('2375d597-efa6-5ecf-872a-aab957e9ab0b', 'SO-00040', '649a6d3a-70b8-57d0-b2c3-15db3597f81c', 'draf', 780000, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-26 10:10:00+07', NULL, NULL, NULL, NULL, NULL, NULL),
+  ('325e0bda-ded1-53f1-850c-ec697c37cf18', 'SO-00041', '66cedff9-bd54-539f-84ad-71c30475dc6c', 'draf', 1086000, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-26 10:20:00+07', NULL, NULL, NULL, NULL, NULL, NULL),
+  ('35b6d7e3-6864-5ba1-8848-424fd220ee07', 'SO-00042', 'aaf9c7d6-09f9-53df-8090-3fc3b7e6e69b', 'draf', 96000, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-26 10:30:00+07', NULL, NULL, NULL, NULL, NULL, NULL),
+  ('a20ca835-806e-544e-9247-9007f1c3b29b', 'SO-00043', 'ecb2b2af-b87c-51d7-8050-ca88d487c764', 'draf', 486000, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-26 10:40:00+07', NULL, NULL, NULL, NULL, NULL, NULL),
+  ('7f6ca835-8b37-546a-a841-c507168494bb', 'SO-00044', 'ecb2b2af-b87c-51d7-8050-ca88d487c764', 'draf', 325800, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-26 10:50:00+07', NULL, NULL, NULL, NULL, NULL, NULL),
+  ('52057d5e-dd4c-5353-b05f-13bfec548423', 'SO-00045', '32869406-4c79-5a0a-a515-caecdbcbd993', 'draf', 48000, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-26 11:00:00+07', NULL, NULL, NULL, NULL, NULL, NULL);
 
 -- 10. Tabel: item_pesanan_jual (107 baris)
 INSERT INTO public.item_pesanan_jual (id, pesanan_jual_id, barang_id, jumlah, harga_satuan, diskon_persen, subtotal, hpp_satuan) VALUES
@@ -303,209 +351,209 @@ INSERT INTO public.item_pesanan_jual (id, pesanan_jual_id, barang_id, jumlah, ha
 
 -- 11. Tabel: mutasi_stok (128 baris)
 INSERT INTO public.mutasi_stok (id, barang_id, jenis, jumlah, stok_sesudah, nomor_dokumen, alasan, dibuat_oleh, dibuat_pada) OVERRIDING SYSTEM VALUE VALUES
-  (1, 'ec9ce527-ed5f-5b7e-80eb-939001450513', 'penyesuaian', 90, 90, 'ADJ-260901', 'Stok awal hasil hitung fisik 1 September 2026', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-12 07:30:00+07'),
-  (2, '671e7a37-5f79-5adc-a3b9-c9b01ac33e36', 'penyesuaian', 60, 60, 'ADJ-260901', 'Stok awal hasil hitung fisik 1 September 2026', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-12 07:30:00+07'),
-  (3, '8de3a5b9-010d-5526-bdba-aa0ce0ca897a', 'penyesuaian', 70, 70, 'ADJ-260901', 'Stok awal hasil hitung fisik 1 September 2026', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-12 07:30:00+07'),
-  (4, '91f7a9a7-d484-54ea-bb4a-364cb5049c1e', 'penyesuaian', 150, 150, 'ADJ-260901', 'Stok awal hasil hitung fisik 1 September 2026', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-12 07:30:00+07'),
-  (5, '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'penyesuaian', 120, 120, 'ADJ-260901', 'Stok awal hasil hitung fisik 1 September 2026', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-12 07:30:00+07'),
-  (6, 'becad5d3-b8a2-5221-b5f4-25f84b9b2162', 'penyesuaian', 110, 110, 'ADJ-260901', 'Stok awal hasil hitung fisik 1 September 2026', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-12 07:30:00+07'),
-  (7, '75bc9358-ec31-57bc-a48e-112d0290fafa', 'penyesuaian', 45, 45, 'ADJ-260901', 'Stok awal hasil hitung fisik 1 September 2026', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-12 07:30:00+07'),
-  (8, 'ab808a73-0c70-5ac2-ab3b-99c27fd0f2b7', 'penyesuaian', 40, 40, 'ADJ-260901', 'Stok awal hasil hitung fisik 1 September 2026', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-12 07:30:00+07'),
-  (9, 'e0980a04-82e1-5d49-a262-2bfff2d6ca95', 'penyesuaian', 55, 55, 'ADJ-260901', 'Stok awal hasil hitung fisik 1 September 2026', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-12 07:30:00+07'),
-  (10, 'ec3d6dbd-628a-5412-81d3-54c936a3e82f', 'penyesuaian', 30, 30, 'ADJ-260901', 'Stok awal hasil hitung fisik 1 September 2026', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-12 07:30:00+07'),
-  (11, 'e2656c25-d025-5ef6-8445-00e99f71ee26', 'penyesuaian', 20, 20, 'ADJ-260901', 'Stok awal hasil hitung fisik 1 September 2026', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-12 07:30:00+07'),
-  (12, 'f546ffa5-cfb6-559b-b0f3-c68d26fa2b71', 'penyesuaian', 30, 30, 'ADJ-260901', 'Stok awal hasil hitung fisik 1 September 2026', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-12 07:30:00+07'),
-  (13, 'e31caa3a-cde5-5372-8a44-7f5b67b41f93', 'penyesuaian', 30, 30, 'ADJ-260901', 'Stok awal hasil hitung fisik 1 September 2026', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-12 07:30:00+07'),
-  (14, 'abeb85d1-5170-5581-833b-359c01b563e4', 'penyesuaian', 160, 160, 'ADJ-260901', 'Stok awal hasil hitung fisik 1 September 2026', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-12 07:30:00+07'),
-  (15, '1ecac6f4-140b-58eb-bcf2-e4a6feebf600', 'penyesuaian', 16, 16, 'ADJ-260901', 'Stok awal hasil hitung fisik 1 September 2026', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-12 07:30:00+07'),
-  (16, 'abeb85d1-5170-5581-833b-359c01b563e4', 'keluar', -20, 140, 'SO-00001', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-12 09:55:00+07'),
-  (17, 'becad5d3-b8a2-5221-b5f4-25f84b9b2162', 'keluar', -6, 104, 'SO-00001', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-12 09:55:00+07'),
-  (18, 'e0980a04-82e1-5d49-a262-2bfff2d6ca95', 'keluar', -13, 42, 'SO-00001', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-12 09:55:00+07'),
-  (19, 'ec9ce527-ed5f-5b7e-80eb-939001450513', 'keluar', -24, 66, 'SO-00001', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-12 09:55:00+07'),
-  (20, '1ecac6f4-140b-58eb-bcf2-e4a6feebf600', 'keluar', -10, 6, 'SO-00002', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-13 09:55:00+07'),
-  (21, '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'keluar', -6, 114, 'SO-00002', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-13 09:55:00+07'),
-  (22, 'e0980a04-82e1-5d49-a262-2bfff2d6ca95', 'keluar', -6, 36, 'SO-00002', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-13 09:55:00+07'),
-  (23, '91f7a9a7-d484-54ea-bb4a-364cb5049c1e', 'keluar', -14, 136, 'SO-00003', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-14 09:55:00+07'),
-  (24, '671e7a37-5f79-5adc-a3b9-c9b01ac33e36', 'keluar', -4, 56, 'SO-00004', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-15 09:55:00+07'),
-  (25, '91f7a9a7-d484-54ea-bb4a-364cb5049c1e', 'keluar', -7, 129, 'SO-00004', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-15 09:55:00+07'),
-  (26, 'e0980a04-82e1-5d49-a262-2bfff2d6ca95', 'keluar', -9, 27, 'SO-00004', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-15 09:55:00+07'),
-  (27, '91f7a9a7-d484-54ea-bb4a-364cb5049c1e', 'masuk', 60, 189, 'PO-00001', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-16 08:00:00+07'),
-  (28, '671e7a37-5f79-5adc-a3b9-c9b01ac33e36', 'keluar', -3, 53, 'SO-00005', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-16 09:55:00+07'),
-  (29, '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'keluar', -3, 111, 'SO-00005', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-16 09:55:00+07'),
-  (30, '91f7a9a7-d484-54ea-bb4a-364cb5049c1e', 'keluar', -7, 182, 'SO-00005', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-16 09:55:00+07'),
-  (31, 'ab808a73-0c70-5ac2-ab3b-99c27fd0f2b7', 'keluar', -1, 39, 'SO-00005', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-16 09:55:00+07'),
-  (32, 'abeb85d1-5170-5581-833b-359c01b563e4', 'keluar', -2, 138, 'SO-00005', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-16 09:55:00+07'),
-  (33, 'abeb85d1-5170-5581-833b-359c01b563e4', 'masuk', 80, 218, 'PO-00002', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-18 08:00:00+07'),
-  (34, '8de3a5b9-010d-5526-bdba-aa0ce0ca897a', 'keluar', -9, 61, 'SO-00006', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-18 09:55:00+07'),
-  (35, '671e7a37-5f79-5adc-a3b9-c9b01ac33e36', 'keluar', -11, 42, 'SO-00007', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-18 11:55:00+07'),
-  (36, 'e0980a04-82e1-5d49-a262-2bfff2d6ca95', 'keluar', -22, 5, 'SO-00007', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-18 11:55:00+07'),
-  (37, 'ec9ce527-ed5f-5b7e-80eb-939001450513', 'keluar', -19, 47, 'SO-00007', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-18 11:55:00+07'),
-  (38, '8de3a5b9-010d-5526-bdba-aa0ce0ca897a', 'keluar', -25, 36, 'SO-00008', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-19 09:55:00+07'),
-  (39, '671e7a37-5f79-5adc-a3b9-c9b01ac33e36', 'keluar', -1, 41, 'SO-00009', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-20 09:55:00+07'),
-  (40, '91f7a9a7-d484-54ea-bb4a-364cb5049c1e', 'keluar', -4, 178, 'SO-00009', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-20 09:55:00+07'),
-  (41, 'becad5d3-b8a2-5221-b5f4-25f84b9b2162', 'keluar', -2, 102, 'SO-00009', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-20 09:55:00+07'),
-  (42, 'e0980a04-82e1-5d49-a262-2bfff2d6ca95', 'keluar', -3, 2, 'SO-00009', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-20 09:55:00+07'),
-  (43, 'e2656c25-d025-5ef6-8445-00e99f71ee26', 'keluar', -1, 19, 'SO-00009', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-20 09:55:00+07'),
-  (44, 'ec3d6dbd-628a-5412-81d3-54c936a3e82f', 'keluar', -2, 28, 'SO-00010', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-20 11:55:00+07'),
-  (45, 'ec9ce527-ed5f-5b7e-80eb-939001450513', 'keluar', -14, 33, 'SO-00010', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-20 11:55:00+07'),
-  (46, '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'masuk', 80, 191, 'PO-00003', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-21 08:00:00+07'),
-  (47, '8de3a5b9-010d-5526-bdba-aa0ce0ca897a', 'keluar', -1, 35, 'SO-00011', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-21 09:55:00+07'),
-  (48, 'becad5d3-b8a2-5221-b5f4-25f84b9b2162', 'keluar', -3, 99, 'SO-00011', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-21 09:55:00+07'),
-  (49, 'ec9ce527-ed5f-5b7e-80eb-939001450513', 'masuk', 60, 93, 'PO-00004', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-22 08:00:00+07'),
-  (50, '8de3a5b9-010d-5526-bdba-aa0ce0ca897a', 'keluar', -1, 34, 'SO-00012', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-22 09:55:00+07'),
-  (51, 'e0980a04-82e1-5d49-a262-2bfff2d6ca95', 'keluar', -2, 0, 'SO-00012', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-22 09:55:00+07'),
-  (52, 'ec9ce527-ed5f-5b7e-80eb-939001450513', 'keluar', -1, 92, 'SO-00012', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-22 09:55:00+07'),
-  (53, '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'keluar', -26, 165, 'SO-00013', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-23 09:55:00+07'),
-  (54, '671e7a37-5f79-5adc-a3b9-c9b01ac33e36', 'keluar', -8, 33, 'SO-00014', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-25 09:55:00+07'),
-  (55, 'abeb85d1-5170-5581-833b-359c01b563e4', 'keluar', -5, 213, 'SO-00014', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-25 09:55:00+07'),
-  (56, '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'keluar', -8, 157, 'SO-00015', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-26 08:50:00+07'),
-  (57, '91f7a9a7-d484-54ea-bb4a-364cb5049c1e', 'keluar', -15, 163, 'SO-00015', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-26 08:50:00+07'),
-  (58, 'ec9ce527-ed5f-5b7e-80eb-939001450513', 'keluar', -6, 86, 'SO-00015', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-26 08:50:00+07'),
-  (59, 'becad5d3-b8a2-5221-b5f4-25f84b9b2162', 'masuk', 75, 174, 'PO-00005', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-27 08:00:00+07'),
-  (60, '671e7a37-5f79-5adc-a3b9-c9b01ac33e36', 'masuk', 40, 73, 'PO-00006', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-28 08:00:00+07'),
-  (61, '671e7a37-5f79-5adc-a3b9-c9b01ac33e36', 'keluar', -7, 66, 'SO-00016', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-30 09:55:00+07'),
-  (62, '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'keluar', -7, 150, 'SO-00016', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-30 09:55:00+07'),
-  (63, '91f7a9a7-d484-54ea-bb4a-364cb5049c1e', 'keluar', -7, 156, 'SO-00016', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-30 09:55:00+07'),
-  (64, '8de3a5b9-010d-5526-bdba-aa0ce0ca897a', 'keluar', -8, 26, 'SO-00017', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-02 09:55:00+07'),
-  (65, '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'keluar', -4, 146, 'SO-00017', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-02 09:55:00+07'),
-  (66, 'abeb85d1-5170-5581-833b-359c01b563e4', 'keluar', -4, 209, 'SO-00017', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-02 09:55:00+07'),
-  (67, 'e2656c25-d025-5ef6-8445-00e99f71ee26', 'keluar', -6, 13, 'SO-00017', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-02 09:55:00+07'),
-  (68, 'ec9ce527-ed5f-5b7e-80eb-939001450513', 'keluar', -12, 74, 'SO-00017', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-02 09:55:00+07'),
-  (69, 'ab808a73-0c70-5ac2-ab3b-99c27fd0f2b7', 'keluar', -8, 31, 'SO-00018', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-02 11:55:00+07'),
-  (70, 'abeb85d1-5170-5581-833b-359c01b563e4', 'keluar', -24, 185, 'SO-00018', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-02 11:55:00+07'),
-  (71, '671e7a37-5f79-5adc-a3b9-c9b01ac33e36', 'keluar', -4, 62, 'SO-00019', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-03 09:55:00+07'),
-  (72, '8de3a5b9-010d-5526-bdba-aa0ce0ca897a', 'keluar', -8, 18, 'SO-00019', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-03 09:55:00+07'),
-  (73, '8de3a5b9-010d-5526-bdba-aa0ce0ca897a', 'masuk', 50, 68, 'PO-00008', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-04 08:00:00+07'),
-  (74, '671e7a37-5f79-5adc-a3b9-c9b01ac33e36', 'keluar', -2, 60, 'SO-00020', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-04 09:55:00+07'),
-  (75, '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'keluar', -4, 142, 'SO-00020', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-04 09:55:00+07'),
-  (76, 'abeb85d1-5170-5581-833b-359c01b563e4', 'keluar', -1, 184, 'SO-00020', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-04 09:55:00+07'),
-  (77, 'becad5d3-b8a2-5221-b5f4-25f84b9b2162', 'keluar', -1, 173, 'SO-00020', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-04 09:55:00+07'),
-  (78, '1ecac6f4-140b-58eb-bcf2-e4a6feebf600', 'keluar', -1, 5, 'SO-00021', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-04 11:55:00+07'),
-  (79, 'abeb85d1-5170-5581-833b-359c01b563e4', 'keluar', -7, 177, 'SO-00021', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-04 11:55:00+07'),
-  (80, '91f7a9a7-d484-54ea-bb4a-364cb5049c1e', 'masuk', 60, 216, 'PO-00009', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-05 08:00:00+07'),
-  (81, 'abeb85d1-5170-5581-833b-359c01b563e4', 'keluar', -4, 173, 'SO-00022', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-06 09:55:00+07'),
-  (82, 'ec9ce527-ed5f-5b7e-80eb-939001450513', 'keluar', -12, 62, 'SO-00022', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-06 09:55:00+07'),
-  (83, 'f546ffa5-cfb6-559b-b0f3-c68d26fa2b71', 'keluar', -4, 26, 'SO-00022', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-06 09:55:00+07'),
-  (84, 'abeb85d1-5170-5581-833b-359c01b563e4', 'masuk', 80, 253, 'PO-00010', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-09 08:00:00+07'),
-  (85, '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'keluar', -5, 137, 'SO-00023', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-09 09:55:00+07'),
-  (86, 'abeb85d1-5170-5581-833b-359c01b563e4', 'keluar', -8, 245, 'SO-00023', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-09 09:55:00+07'),
-  (87, 'ec3d6dbd-628a-5412-81d3-54c936a3e82f', 'keluar', -4, 24, 'SO-00023', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-09 09:55:00+07'),
-  (88, 'abeb85d1-5170-5581-833b-359c01b563e4', 'keluar', -5, 240, 'SO-00024', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-09 11:55:00+07'),
-  (89, '75bc9358-ec31-57bc-a48e-112d0290fafa', 'masuk', 30, 75, 'PO-00011', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-12 08:00:00+07'),
-  (90, 'abeb85d1-5170-5581-833b-359c01b563e4', 'keluar', -16, 224, 'SO-00025', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-13 11:55:00+07'),
-  (91, 'becad5d3-b8a2-5221-b5f4-25f84b9b2162', 'keluar', -19, 154, 'SO-00025', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-13 11:55:00+07'),
-  (92, '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'masuk', 80, 217, 'PO-00013', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-16 08:00:00+07'),
-  (93, '671e7a37-5f79-5adc-a3b9-c9b01ac33e36', 'keluar', -14, 46, 'SO-00026', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-17 08:50:00+07'),
-  (94, 'abeb85d1-5170-5581-833b-359c01b563e4', 'keluar', -52, 172, 'SO-00026', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-17 08:50:00+07'),
-  (95, '671e7a37-5f79-5adc-a3b9-c9b01ac33e36', 'keluar', -11, 35, 'SO-00027', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-17 09:55:00+07'),
-  (96, '8de3a5b9-010d-5526-bdba-aa0ce0ca897a', 'keluar', -13, 55, 'SO-00028', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-18 09:55:00+07'),
-  (97, '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'keluar', -15, 202, 'SO-00028', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-18 09:55:00+07'),
-  (98, '91f7a9a7-d484-54ea-bb4a-364cb5049c1e', 'keluar', -13, 203, 'SO-00028', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-18 09:55:00+07'),
-  (99, 'ec9ce527-ed5f-5b7e-80eb-939001450513', 'keluar', -15, 47, 'SO-00028', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-18 09:55:00+07'),
-  (100, 'ec9ce527-ed5f-5b7e-80eb-939001450513', 'masuk', 58, 105, 'PO-00014', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-19 08:00:00+07'),
-  (101, '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'keluar', -12, 190, 'SO-00029', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-19 09:55:00+07'),
-  (102, 'abeb85d1-5170-5581-833b-359c01b563e4', 'keluar', -8, 164, 'SO-00029', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-19 09:55:00+07'),
-  (103, 'becad5d3-b8a2-5221-b5f4-25f84b9b2162', 'keluar', -12, 142, 'SO-00029', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-19 09:55:00+07'),
-  (104, 'ec3d6dbd-628a-5412-81d3-54c936a3e82f', 'keluar', -3, 21, 'SO-00029', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-19 09:55:00+07'),
-  (105, 'ec9ce527-ed5f-5b7e-80eb-939001450513', 'keluar', -12, 93, 'SO-00029', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-19 09:55:00+07'),
-  (106, 'f546ffa5-cfb6-559b-b0f3-c68d26fa2b71', 'masuk', 25, 51, 'PO-00015', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-20 08:00:00+07'),
-  (107, '671e7a37-5f79-5adc-a3b9-c9b01ac33e36', 'keluar', -5, 30, 'SO-00030', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-20 09:55:00+07'),
-  (108, '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'keluar', -14, 176, 'SO-00030', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-20 09:55:00+07'),
-  (109, 'becad5d3-b8a2-5221-b5f4-25f84b9b2162', 'keluar', -8, 134, 'SO-00030', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-20 09:55:00+07'),
-  (110, '8de3a5b9-010d-5526-bdba-aa0ce0ca897a', 'keluar', -6, 49, 'SO-00031', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-21 09:55:00+07'),
-  (111, 'abeb85d1-5170-5581-833b-359c01b563e4', 'keluar', -7, 157, 'SO-00031', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-21 09:55:00+07'),
-  (112, 'ec9ce527-ed5f-5b7e-80eb-939001450513', 'keluar', -8, 85, 'SO-00031', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-21 09:55:00+07'),
-  (113, 'f546ffa5-cfb6-559b-b0f3-c68d26fa2b71', 'keluar', -1, 50, 'SO-00031', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-21 09:55:00+07'),
-  (114, '8de3a5b9-010d-5526-bdba-aa0ce0ca897a', 'keluar', -6, 43, 'SO-00032', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-23 13:30:00+07'),
-  (115, '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'keluar', -5, 171, 'SO-00032', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-23 13:30:00+07'),
-  (116, '8de3a5b9-010d-5526-bdba-aa0ce0ca897a', 'batal', 6, 49, 'SO-00032', 'Toko membatalkan karena salah pesan barang', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-10-23 16:00:00+07'),
-  (117, '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'batal', 5, 176, 'SO-00032', 'Toko membatalkan karena salah pesan barang', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-10-23 16:00:00+07'),
-  (118, '671e7a37-5f79-5adc-a3b9-c9b01ac33e36', 'keluar', -8, 22, 'SO-00034', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-24 09:55:00+07'),
-  (119, '8de3a5b9-010d-5526-bdba-aa0ce0ca897a', 'keluar', -6, 43, 'SO-00034', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-24 09:55:00+07'),
-  (120, '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'keluar', -8, 168, 'SO-00034', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-24 09:55:00+07'),
-  (121, 'ab808a73-0c70-5ac2-ab3b-99c27fd0f2b7', 'keluar', -23, 8, 'SO-00035', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-24 13:20:00+07'),
-  (122, 'e2656c25-d025-5ef6-8445-00e99f71ee26', 'penyesuaian', -12, 1, 'ADJ-261013', 'Barang penyok dan bocor saat bongkar muat', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-24 16:00:00+07'),
-  (123, '1ecac6f4-140b-58eb-bcf2-e4a6feebf600', 'penyesuaian', -5, 0, 'ADJ-261013', 'Kemasan meleleh karena gudang panas, dimusnahkan', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-24 16:00:00+07'),
-  (124, '91f7a9a7-d484-54ea-bb4a-364cb5049c1e', 'keluar', -20, 183, 'SO-00036', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-25 09:45:00+07'),
-  (125, 'abeb85d1-5170-5581-833b-359c01b563e4', 'keluar', -15, 142, 'SO-00036', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-25 09:45:00+07'),
-  (126, '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'keluar', -10, 158, 'SO-00037', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-25 09:45:00+07'),
-  (127, 'becad5d3-b8a2-5221-b5f4-25f84b9b2162', 'keluar', -10, 124, 'SO-00037', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-25 09:45:00+07'),
-  (128, 'ec9ce527-ed5f-5b7e-80eb-939001450513', 'keluar', -5, 80, 'SO-00037', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-25 09:45:00+07');
+  (1, 'ec9ce527-ed5f-5b7e-80eb-939001450513', 'penyesuaian', 90, 90, 'ADJ-260901', 'Stok awal hasil hitung fisik 1 September 2026', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-13 07:30:00+07'),
+  (2, '671e7a37-5f79-5adc-a3b9-c9b01ac33e36', 'penyesuaian', 60, 60, 'ADJ-260901', 'Stok awal hasil hitung fisik 1 September 2026', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-13 07:30:00+07'),
+  (3, '8de3a5b9-010d-5526-bdba-aa0ce0ca897a', 'penyesuaian', 70, 70, 'ADJ-260901', 'Stok awal hasil hitung fisik 1 September 2026', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-13 07:30:00+07'),
+  (4, '91f7a9a7-d484-54ea-bb4a-364cb5049c1e', 'penyesuaian', 150, 150, 'ADJ-260901', 'Stok awal hasil hitung fisik 1 September 2026', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-13 07:30:00+07'),
+  (5, '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'penyesuaian', 120, 120, 'ADJ-260901', 'Stok awal hasil hitung fisik 1 September 2026', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-13 07:30:00+07'),
+  (6, 'becad5d3-b8a2-5221-b5f4-25f84b9b2162', 'penyesuaian', 110, 110, 'ADJ-260901', 'Stok awal hasil hitung fisik 1 September 2026', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-13 07:30:00+07'),
+  (7, '75bc9358-ec31-57bc-a48e-112d0290fafa', 'penyesuaian', 45, 45, 'ADJ-260901', 'Stok awal hasil hitung fisik 1 September 2026', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-13 07:30:00+07'),
+  (8, 'ab808a73-0c70-5ac2-ab3b-99c27fd0f2b7', 'penyesuaian', 40, 40, 'ADJ-260901', 'Stok awal hasil hitung fisik 1 September 2026', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-13 07:30:00+07'),
+  (9, 'e0980a04-82e1-5d49-a262-2bfff2d6ca95', 'penyesuaian', 55, 55, 'ADJ-260901', 'Stok awal hasil hitung fisik 1 September 2026', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-13 07:30:00+07'),
+  (10, 'ec3d6dbd-628a-5412-81d3-54c936a3e82f', 'penyesuaian', 30, 30, 'ADJ-260901', 'Stok awal hasil hitung fisik 1 September 2026', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-13 07:30:00+07'),
+  (11, 'e2656c25-d025-5ef6-8445-00e99f71ee26', 'penyesuaian', 20, 20, 'ADJ-260901', 'Stok awal hasil hitung fisik 1 September 2026', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-13 07:30:00+07'),
+  (12, 'f546ffa5-cfb6-559b-b0f3-c68d26fa2b71', 'penyesuaian', 30, 30, 'ADJ-260901', 'Stok awal hasil hitung fisik 1 September 2026', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-13 07:30:00+07'),
+  (13, 'e31caa3a-cde5-5372-8a44-7f5b67b41f93', 'penyesuaian', 30, 30, 'ADJ-260901', 'Stok awal hasil hitung fisik 1 September 2026', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-13 07:30:00+07'),
+  (14, 'abeb85d1-5170-5581-833b-359c01b563e4', 'penyesuaian', 160, 160, 'ADJ-260901', 'Stok awal hasil hitung fisik 1 September 2026', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-13 07:30:00+07'),
+  (15, '1ecac6f4-140b-58eb-bcf2-e4a6feebf600', 'penyesuaian', 16, 16, 'ADJ-260901', 'Stok awal hasil hitung fisik 1 September 2026', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-13 07:30:00+07'),
+  (16, 'abeb85d1-5170-5581-833b-359c01b563e4', 'keluar', -20, 140, 'SO-00001', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-13 09:55:00+07'),
+  (17, 'becad5d3-b8a2-5221-b5f4-25f84b9b2162', 'keluar', -6, 104, 'SO-00001', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-13 09:55:00+07'),
+  (18, 'e0980a04-82e1-5d49-a262-2bfff2d6ca95', 'keluar', -13, 42, 'SO-00001', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-13 09:55:00+07'),
+  (19, 'ec9ce527-ed5f-5b7e-80eb-939001450513', 'keluar', -24, 66, 'SO-00001', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-13 09:55:00+07'),
+  (20, '1ecac6f4-140b-58eb-bcf2-e4a6feebf600', 'keluar', -10, 6, 'SO-00002', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-14 09:55:00+07'),
+  (21, '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'keluar', -6, 114, 'SO-00002', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-14 09:55:00+07'),
+  (22, 'e0980a04-82e1-5d49-a262-2bfff2d6ca95', 'keluar', -6, 36, 'SO-00002', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-14 09:55:00+07'),
+  (23, '91f7a9a7-d484-54ea-bb4a-364cb5049c1e', 'keluar', -14, 136, 'SO-00003', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-15 09:55:00+07'),
+  (24, '671e7a37-5f79-5adc-a3b9-c9b01ac33e36', 'keluar', -4, 56, 'SO-00004', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-16 09:55:00+07'),
+  (25, '91f7a9a7-d484-54ea-bb4a-364cb5049c1e', 'keluar', -7, 129, 'SO-00004', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-16 09:55:00+07'),
+  (26, 'e0980a04-82e1-5d49-a262-2bfff2d6ca95', 'keluar', -9, 27, 'SO-00004', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-16 09:55:00+07'),
+  (27, '91f7a9a7-d484-54ea-bb4a-364cb5049c1e', 'masuk', 60, 189, 'PO-00001', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-17 08:00:00+07'),
+  (28, '671e7a37-5f79-5adc-a3b9-c9b01ac33e36', 'keluar', -3, 53, 'SO-00005', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-17 09:55:00+07'),
+  (29, '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'keluar', -3, 111, 'SO-00005', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-17 09:55:00+07'),
+  (30, '91f7a9a7-d484-54ea-bb4a-364cb5049c1e', 'keluar', -7, 182, 'SO-00005', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-17 09:55:00+07'),
+  (31, 'ab808a73-0c70-5ac2-ab3b-99c27fd0f2b7', 'keluar', -1, 39, 'SO-00005', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-17 09:55:00+07'),
+  (32, 'abeb85d1-5170-5581-833b-359c01b563e4', 'keluar', -2, 138, 'SO-00005', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-17 09:55:00+07'),
+  (33, 'abeb85d1-5170-5581-833b-359c01b563e4', 'masuk', 80, 218, 'PO-00002', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-19 08:00:00+07'),
+  (34, '8de3a5b9-010d-5526-bdba-aa0ce0ca897a', 'keluar', -9, 61, 'SO-00006', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-19 09:55:00+07'),
+  (35, '671e7a37-5f79-5adc-a3b9-c9b01ac33e36', 'keluar', -11, 42, 'SO-00007', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-19 11:55:00+07'),
+  (36, 'e0980a04-82e1-5d49-a262-2bfff2d6ca95', 'keluar', -22, 5, 'SO-00007', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-19 11:55:00+07'),
+  (37, 'ec9ce527-ed5f-5b7e-80eb-939001450513', 'keluar', -19, 47, 'SO-00007', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-19 11:55:00+07'),
+  (38, '8de3a5b9-010d-5526-bdba-aa0ce0ca897a', 'keluar', -25, 36, 'SO-00008', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-20 09:55:00+07'),
+  (39, '671e7a37-5f79-5adc-a3b9-c9b01ac33e36', 'keluar', -1, 41, 'SO-00009', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-21 09:55:00+07'),
+  (40, '91f7a9a7-d484-54ea-bb4a-364cb5049c1e', 'keluar', -4, 178, 'SO-00009', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-21 09:55:00+07'),
+  (41, 'becad5d3-b8a2-5221-b5f4-25f84b9b2162', 'keluar', -2, 102, 'SO-00009', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-21 09:55:00+07'),
+  (42, 'e0980a04-82e1-5d49-a262-2bfff2d6ca95', 'keluar', -3, 2, 'SO-00009', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-21 09:55:00+07'),
+  (43, 'e2656c25-d025-5ef6-8445-00e99f71ee26', 'keluar', -1, 19, 'SO-00009', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-21 09:55:00+07'),
+  (44, 'ec3d6dbd-628a-5412-81d3-54c936a3e82f', 'keluar', -2, 28, 'SO-00010', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-21 11:55:00+07'),
+  (45, 'ec9ce527-ed5f-5b7e-80eb-939001450513', 'keluar', -14, 33, 'SO-00010', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-21 11:55:00+07'),
+  (46, '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'masuk', 80, 191, 'PO-00003', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-22 08:00:00+07'),
+  (47, '8de3a5b9-010d-5526-bdba-aa0ce0ca897a', 'keluar', -1, 35, 'SO-00011', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-22 09:55:00+07'),
+  (48, 'becad5d3-b8a2-5221-b5f4-25f84b9b2162', 'keluar', -3, 99, 'SO-00011', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-22 09:55:00+07'),
+  (49, 'ec9ce527-ed5f-5b7e-80eb-939001450513', 'masuk', 60, 93, 'PO-00004', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-23 08:00:00+07'),
+  (50, '8de3a5b9-010d-5526-bdba-aa0ce0ca897a', 'keluar', -1, 34, 'SO-00012', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-23 09:55:00+07'),
+  (51, 'e0980a04-82e1-5d49-a262-2bfff2d6ca95', 'keluar', -2, 0, 'SO-00012', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-23 09:55:00+07'),
+  (52, 'ec9ce527-ed5f-5b7e-80eb-939001450513', 'keluar', -1, 92, 'SO-00012', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-23 09:55:00+07'),
+  (53, '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'keluar', -26, 165, 'SO-00013', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-24 09:55:00+07'),
+  (54, '671e7a37-5f79-5adc-a3b9-c9b01ac33e36', 'keluar', -8, 33, 'SO-00014', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-26 09:55:00+07'),
+  (55, 'abeb85d1-5170-5581-833b-359c01b563e4', 'keluar', -5, 213, 'SO-00014', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-09-26 09:55:00+07'),
+  (56, '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'keluar', -8, 157, 'SO-00015', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-27 08:50:00+07'),
+  (57, '91f7a9a7-d484-54ea-bb4a-364cb5049c1e', 'keluar', -15, 163, 'SO-00015', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-27 08:50:00+07'),
+  (58, 'ec9ce527-ed5f-5b7e-80eb-939001450513', 'keluar', -6, 86, 'SO-00015', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-09-27 08:50:00+07'),
+  (59, 'becad5d3-b8a2-5221-b5f4-25f84b9b2162', 'masuk', 75, 174, 'PO-00005', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-28 08:00:00+07'),
+  (60, '671e7a37-5f79-5adc-a3b9-c9b01ac33e36', 'masuk', 40, 73, 'PO-00006', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-09-29 08:00:00+07'),
+  (61, '671e7a37-5f79-5adc-a3b9-c9b01ac33e36', 'keluar', -7, 66, 'SO-00016', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-01 09:55:00+07'),
+  (62, '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'keluar', -7, 150, 'SO-00016', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-01 09:55:00+07'),
+  (63, '91f7a9a7-d484-54ea-bb4a-364cb5049c1e', 'keluar', -7, 156, 'SO-00016', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-01 09:55:00+07'),
+  (64, '8de3a5b9-010d-5526-bdba-aa0ce0ca897a', 'keluar', -8, 26, 'SO-00017', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-03 09:55:00+07'),
+  (65, '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'keluar', -4, 146, 'SO-00017', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-03 09:55:00+07'),
+  (66, 'abeb85d1-5170-5581-833b-359c01b563e4', 'keluar', -4, 209, 'SO-00017', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-03 09:55:00+07'),
+  (67, 'e2656c25-d025-5ef6-8445-00e99f71ee26', 'keluar', -6, 13, 'SO-00017', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-03 09:55:00+07'),
+  (68, 'ec9ce527-ed5f-5b7e-80eb-939001450513', 'keluar', -12, 74, 'SO-00017', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-03 09:55:00+07'),
+  (69, 'ab808a73-0c70-5ac2-ab3b-99c27fd0f2b7', 'keluar', -8, 31, 'SO-00018', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-03 11:55:00+07'),
+  (70, 'abeb85d1-5170-5581-833b-359c01b563e4', 'keluar', -24, 185, 'SO-00018', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-03 11:55:00+07'),
+  (71, '671e7a37-5f79-5adc-a3b9-c9b01ac33e36', 'keluar', -4, 62, 'SO-00019', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-04 09:55:00+07'),
+  (72, '8de3a5b9-010d-5526-bdba-aa0ce0ca897a', 'keluar', -8, 18, 'SO-00019', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-04 09:55:00+07'),
+  (73, '8de3a5b9-010d-5526-bdba-aa0ce0ca897a', 'masuk', 50, 68, 'PO-00008', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-05 08:00:00+07'),
+  (74, '671e7a37-5f79-5adc-a3b9-c9b01ac33e36', 'keluar', -2, 60, 'SO-00020', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-05 09:55:00+07'),
+  (75, '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'keluar', -4, 142, 'SO-00020', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-05 09:55:00+07'),
+  (76, 'abeb85d1-5170-5581-833b-359c01b563e4', 'keluar', -1, 184, 'SO-00020', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-05 09:55:00+07'),
+  (77, 'becad5d3-b8a2-5221-b5f4-25f84b9b2162', 'keluar', -1, 173, 'SO-00020', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-05 09:55:00+07'),
+  (78, '1ecac6f4-140b-58eb-bcf2-e4a6feebf600', 'keluar', -1, 5, 'SO-00021', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-05 11:55:00+07'),
+  (79, 'abeb85d1-5170-5581-833b-359c01b563e4', 'keluar', -7, 177, 'SO-00021', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-05 11:55:00+07'),
+  (80, '91f7a9a7-d484-54ea-bb4a-364cb5049c1e', 'masuk', 60, 216, 'PO-00009', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-06 08:00:00+07'),
+  (81, 'abeb85d1-5170-5581-833b-359c01b563e4', 'keluar', -4, 173, 'SO-00022', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-07 09:55:00+07'),
+  (82, 'ec9ce527-ed5f-5b7e-80eb-939001450513', 'keluar', -12, 62, 'SO-00022', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-07 09:55:00+07'),
+  (83, 'f546ffa5-cfb6-559b-b0f3-c68d26fa2b71', 'keluar', -4, 26, 'SO-00022', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-07 09:55:00+07'),
+  (84, 'abeb85d1-5170-5581-833b-359c01b563e4', 'masuk', 80, 253, 'PO-00010', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-10 08:00:00+07'),
+  (85, '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'keluar', -5, 137, 'SO-00023', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-10 09:55:00+07'),
+  (86, 'abeb85d1-5170-5581-833b-359c01b563e4', 'keluar', -8, 245, 'SO-00023', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-10 09:55:00+07'),
+  (87, 'ec3d6dbd-628a-5412-81d3-54c936a3e82f', 'keluar', -4, 24, 'SO-00023', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-10 09:55:00+07'),
+  (88, 'abeb85d1-5170-5581-833b-359c01b563e4', 'keluar', -5, 240, 'SO-00024', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-10 11:55:00+07'),
+  (89, '75bc9358-ec31-57bc-a48e-112d0290fafa', 'masuk', 30, 75, 'PO-00011', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-13 08:00:00+07'),
+  (90, 'abeb85d1-5170-5581-833b-359c01b563e4', 'keluar', -16, 224, 'SO-00025', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-14 11:55:00+07'),
+  (91, 'becad5d3-b8a2-5221-b5f4-25f84b9b2162', 'keluar', -19, 154, 'SO-00025', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-14 11:55:00+07'),
+  (92, '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'masuk', 80, 217, 'PO-00013', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-17 08:00:00+07'),
+  (93, '671e7a37-5f79-5adc-a3b9-c9b01ac33e36', 'keluar', -14, 46, 'SO-00026', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-18 08:50:00+07'),
+  (94, 'abeb85d1-5170-5581-833b-359c01b563e4', 'keluar', -52, 172, 'SO-00026', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-18 08:50:00+07'),
+  (95, '671e7a37-5f79-5adc-a3b9-c9b01ac33e36', 'keluar', -11, 35, 'SO-00027', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-18 09:55:00+07'),
+  (96, '8de3a5b9-010d-5526-bdba-aa0ce0ca897a', 'keluar', -13, 55, 'SO-00028', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-19 09:55:00+07'),
+  (97, '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'keluar', -15, 202, 'SO-00028', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-19 09:55:00+07'),
+  (98, '91f7a9a7-d484-54ea-bb4a-364cb5049c1e', 'keluar', -13, 203, 'SO-00028', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-19 09:55:00+07'),
+  (99, 'ec9ce527-ed5f-5b7e-80eb-939001450513', 'keluar', -15, 47, 'SO-00028', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-19 09:55:00+07'),
+  (100, 'ec9ce527-ed5f-5b7e-80eb-939001450513', 'masuk', 58, 105, 'PO-00014', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-20 08:00:00+07'),
+  (101, '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'keluar', -12, 190, 'SO-00029', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-20 09:55:00+07'),
+  (102, 'abeb85d1-5170-5581-833b-359c01b563e4', 'keluar', -8, 164, 'SO-00029', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-20 09:55:00+07'),
+  (103, 'becad5d3-b8a2-5221-b5f4-25f84b9b2162', 'keluar', -12, 142, 'SO-00029', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-20 09:55:00+07'),
+  (104, 'ec3d6dbd-628a-5412-81d3-54c936a3e82f', 'keluar', -3, 21, 'SO-00029', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-20 09:55:00+07'),
+  (105, 'ec9ce527-ed5f-5b7e-80eb-939001450513', 'keluar', -12, 93, 'SO-00029', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-20 09:55:00+07'),
+  (106, 'f546ffa5-cfb6-559b-b0f3-c68d26fa2b71', 'masuk', 25, 51, 'PO-00015', NULL, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-21 08:00:00+07'),
+  (107, '671e7a37-5f79-5adc-a3b9-c9b01ac33e36', 'keluar', -5, 30, 'SO-00030', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-21 09:55:00+07'),
+  (108, '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'keluar', -14, 176, 'SO-00030', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-21 09:55:00+07'),
+  (109, 'becad5d3-b8a2-5221-b5f4-25f84b9b2162', 'keluar', -8, 134, 'SO-00030', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-21 09:55:00+07'),
+  (110, '8de3a5b9-010d-5526-bdba-aa0ce0ca897a', 'keluar', -6, 49, 'SO-00031', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-22 09:55:00+07'),
+  (111, 'abeb85d1-5170-5581-833b-359c01b563e4', 'keluar', -7, 157, 'SO-00031', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-22 09:55:00+07'),
+  (112, 'ec9ce527-ed5f-5b7e-80eb-939001450513', 'keluar', -8, 85, 'SO-00031', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-22 09:55:00+07'),
+  (113, 'f546ffa5-cfb6-559b-b0f3-c68d26fa2b71', 'keluar', -1, 50, 'SO-00031', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-22 09:55:00+07'),
+  (114, '8de3a5b9-010d-5526-bdba-aa0ce0ca897a', 'keluar', -6, 43, 'SO-00032', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-24 13:30:00+07'),
+  (115, '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'keluar', -5, 171, 'SO-00032', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-24 13:30:00+07'),
+  (116, '8de3a5b9-010d-5526-bdba-aa0ce0ca897a', 'batal', 6, 49, 'SO-00032', 'Toko membatalkan karena salah pesan barang', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-10-24 16:00:00+07'),
+  (117, '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'batal', 5, 176, 'SO-00032', 'Toko membatalkan karena salah pesan barang', 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', '2026-10-24 16:00:00+07'),
+  (118, '671e7a37-5f79-5adc-a3b9-c9b01ac33e36', 'keluar', -8, 22, 'SO-00034', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-25 09:55:00+07'),
+  (119, '8de3a5b9-010d-5526-bdba-aa0ce0ca897a', 'keluar', -6, 43, 'SO-00034', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-25 09:55:00+07'),
+  (120, '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'keluar', -8, 168, 'SO-00034', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-25 09:55:00+07'),
+  (121, 'ab808a73-0c70-5ac2-ab3b-99c27fd0f2b7', 'keluar', -23, 8, 'SO-00035', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-25 13:20:00+07'),
+  (122, 'e2656c25-d025-5ef6-8445-00e99f71ee26', 'penyesuaian', -12, 1, 'ADJ-261013', 'Barang penyok dan bocor saat bongkar muat', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-25 16:00:00+07'),
+  (123, '1ecac6f4-140b-58eb-bcf2-e4a6feebf600', 'penyesuaian', -5, 0, 'ADJ-261013', 'Kemasan meleleh karena gudang panas, dimusnahkan', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '2026-10-25 16:00:00+07'),
+  (124, '91f7a9a7-d484-54ea-bb4a-364cb5049c1e', 'keluar', -20, 183, 'SO-00036', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-26 09:45:00+07'),
+  (125, 'abeb85d1-5170-5581-833b-359c01b563e4', 'keluar', -15, 142, 'SO-00036', NULL, '1eb18f29-66c1-5086-900e-874c2d3208e5', '2026-10-26 09:45:00+07'),
+  (126, '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', 'keluar', -10, 158, 'SO-00037', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-26 09:45:00+07'),
+  (127, 'becad5d3-b8a2-5221-b5f4-25f84b9b2162', 'keluar', -10, 124, 'SO-00037', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-26 09:45:00+07'),
+  (128, 'ec9ce527-ed5f-5b7e-80eb-939001450513', 'keluar', -5, 80, 'SO-00037', NULL, '0c99b1d9-84f8-5784-a479-3df27328aebd', '2026-10-26 09:45:00+07');
 
 -- 12. Tabel: audit_log (61 baris)
 INSERT INTO public.audit_log (id, pelaku_id, aksi, nama_tabel, data_id, nilai_lama, nilai_baru, dibuat_pada) OVERRIDING SYSTEM VALUE VALUES
-  (1, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'ubah_peran_akun', 'profiles', '1eb18f29-66c1-5086-900e-874c2d3208e5', '{"peran": "penjualan", "aktif": false}'::jsonb, '{"peran": "penjualan", "aktif": true}'::jsonb, '2026-09-08 09:30:00+07'),
-  (2, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'ubah_peran_akun', 'profiles', '0c99b1d9-84f8-5784-a479-3df27328aebd', '{"peran": "penjualan", "aktif": false}'::jsonb, '{"peran": "penjualan", "aktif": true}'::jsonb, '2026-09-08 09:30:00+07'),
-  (3, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'ubah_peran_akun', 'profiles', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '{"peran": "penjualan", "aktif": false}'::jsonb, '{"peran": "gudang", "aktif": true}'::jsonb, '2026-09-08 09:30:00+07'),
-  (4, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'penyesuaian_stok', 'barang', 'ec9ce527-ed5f-5b7e-80eb-939001450513', '{"stok": 0}'::jsonb, '{"stok": 90, "alasan": "Stok awal hasil hitung fisik 1 September 2026"}'::jsonb, '2026-09-12 07:30:00+07'),
-  (5, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'penyesuaian_stok', 'barang', '671e7a37-5f79-5adc-a3b9-c9b01ac33e36', '{"stok": 0}'::jsonb, '{"stok": 60, "alasan": "Stok awal hasil hitung fisik 1 September 2026"}'::jsonb, '2026-09-12 07:30:00+07'),
-  (6, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'penyesuaian_stok', 'barang', '8de3a5b9-010d-5526-bdba-aa0ce0ca897a', '{"stok": 0}'::jsonb, '{"stok": 70, "alasan": "Stok awal hasil hitung fisik 1 September 2026"}'::jsonb, '2026-09-12 07:30:00+07'),
-  (7, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'penyesuaian_stok', 'barang', '91f7a9a7-d484-54ea-bb4a-364cb5049c1e', '{"stok": 0}'::jsonb, '{"stok": 150, "alasan": "Stok awal hasil hitung fisik 1 September 2026"}'::jsonb, '2026-09-12 07:30:00+07'),
-  (8, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'penyesuaian_stok', 'barang', '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', '{"stok": 0}'::jsonb, '{"stok": 120, "alasan": "Stok awal hasil hitung fisik 1 September 2026"}'::jsonb, '2026-09-12 07:30:00+07'),
-  (9, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'penyesuaian_stok', 'barang', 'becad5d3-b8a2-5221-b5f4-25f84b9b2162', '{"stok": 0}'::jsonb, '{"stok": 110, "alasan": "Stok awal hasil hitung fisik 1 September 2026"}'::jsonb, '2026-09-12 07:30:00+07'),
-  (10, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'penyesuaian_stok', 'barang', '75bc9358-ec31-57bc-a48e-112d0290fafa', '{"stok": 0}'::jsonb, '{"stok": 45, "alasan": "Stok awal hasil hitung fisik 1 September 2026"}'::jsonb, '2026-09-12 07:30:00+07'),
-  (11, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'penyesuaian_stok', 'barang', 'ab808a73-0c70-5ac2-ab3b-99c27fd0f2b7', '{"stok": 0}'::jsonb, '{"stok": 40, "alasan": "Stok awal hasil hitung fisik 1 September 2026"}'::jsonb, '2026-09-12 07:30:00+07'),
-  (12, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'penyesuaian_stok', 'barang', 'e0980a04-82e1-5d49-a262-2bfff2d6ca95', '{"stok": 0}'::jsonb, '{"stok": 55, "alasan": "Stok awal hasil hitung fisik 1 September 2026"}'::jsonb, '2026-09-12 07:30:00+07'),
-  (13, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'penyesuaian_stok', 'barang', 'ec3d6dbd-628a-5412-81d3-54c936a3e82f', '{"stok": 0}'::jsonb, '{"stok": 30, "alasan": "Stok awal hasil hitung fisik 1 September 2026"}'::jsonb, '2026-09-12 07:30:00+07'),
-  (14, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'penyesuaian_stok', 'barang', 'e2656c25-d025-5ef6-8445-00e99f71ee26', '{"stok": 0}'::jsonb, '{"stok": 20, "alasan": "Stok awal hasil hitung fisik 1 September 2026"}'::jsonb, '2026-09-12 07:30:00+07'),
-  (15, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'penyesuaian_stok', 'barang', 'f546ffa5-cfb6-559b-b0f3-c68d26fa2b71', '{"stok": 0}'::jsonb, '{"stok": 30, "alasan": "Stok awal hasil hitung fisik 1 September 2026"}'::jsonb, '2026-09-12 07:30:00+07'),
-  (16, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'penyesuaian_stok', 'barang', 'e31caa3a-cde5-5372-8a44-7f5b67b41f93', '{"stok": 0}'::jsonb, '{"stok": 30, "alasan": "Stok awal hasil hitung fisik 1 September 2026"}'::jsonb, '2026-09-12 07:30:00+07'),
-  (17, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'penyesuaian_stok', 'barang', 'abeb85d1-5170-5581-833b-359c01b563e4', '{"stok": 0}'::jsonb, '{"stok": 160, "alasan": "Stok awal hasil hitung fisik 1 September 2026"}'::jsonb, '2026-09-12 07:30:00+07'),
-  (18, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'penyesuaian_stok', 'barang', '1ecac6f4-140b-58eb-bcf2-e4a6feebf600', '{"stok": 0}'::jsonb, '{"stok": 16, "alasan": "Stok awal hasil hitung fisik 1 September 2026"}'::jsonb, '2026-09-12 07:30:00+07'),
-  (19, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'setujui_pembelian', 'pembelian', '06303baa-6d02-54f6-9b70-c7a62df647e2', '{"status": "diajukan", "harga_beli_satuan": null}'::jsonb, '{"status": "disetujui", "harga_beli_satuan": 70500}'::jsonb, '2026-09-14 13:00:00+07'),
-  (20, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'setujui_pembelian', 'pembelian', 'ccda8513-eaee-5f23-8b3f-5bdebcaf3ab0', '{"status": "diajukan", "harga_beli_satuan": null}'::jsonb, '{"status": "disetujui", "harga_beli_satuan": 41500}'::jsonb, '2026-09-15 13:00:00+07'),
-  (21, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'setujui_pembelian', 'pembelian', '2f0f300a-98f8-5c94-9286-d6cb5f618566', '{"status": "diajukan", "harga_beli_satuan": null}'::jsonb, '{"status": "disetujui", "harga_beli_satuan": 107000}'::jsonb, '2026-09-19 13:00:00+07'),
-  (22, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'setujui_pembelian', 'pembelian', 'ca2ba3f0-47c4-50c4-9833-4e89dc1b9fcf', '{"status": "diajukan", "harga_beli_satuan": null}'::jsonb, '{"status": "disetujui", "harga_beli_satuan": 206000}'::jsonb, '2026-09-20 13:00:00+07'),
-  (23, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', '19a4ffdb-5adc-5da6-8305-c98fe3cc12c9', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-09-11 16:00:00+07"}'::jsonb, '2026-09-22 16:00:00+07'),
-  (24, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'setujui_pembelian', 'pembelian', '2e89aba8-c11c-57af-867a-e8d875a6bba7', '{"status": "diajukan", "harga_beli_satuan": null}'::jsonb, '{"status": "disetujui", "harga_beli_satuan": 101500}'::jsonb, '2026-09-25 13:00:00+07'),
-  (25, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'setujui_pembelian', 'pembelian', '64dae0e1-c4b0-5d6c-9533-95be707832a4', '{"status": "diajukan", "harga_beli_satuan": null}'::jsonb, '{"status": "disetujui", "harga_beli_satuan": 341000}'::jsonb, '2026-09-26 13:00:00+07'),
-  (26, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', '2e674c3e-4123-549d-ac9d-a85065e5dc49', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-09-15 16:00:00+07"}'::jsonb, '2026-09-26 16:00:00+07'),
-  (27, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'tolak_pembelian', 'pembelian', '30e16d6e-605c-58b0-821a-19677004bd3f', '{"status": "diajukan", "harga_beli_satuan": null}'::jsonb, '{"status": "ditolak", "alasan_tolak": "Stok kopi masih cukup untuk 3 minggu, tunda bulan depan"}'::jsonb, '2026-09-28 13:00:00+07'),
-  (28, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', '354d97a2-f718-5745-92af-405bd72d6985', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-09-17 16:00:00+07"}'::jsonb, '2026-09-28 16:00:00+07'),
-  (29, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', '76dce0bf-c581-5f7d-bfc5-8f4e42806823', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-09-18 16:00:00+07"}'::jsonb, '2026-09-29 16:00:00+07'),
-  (30, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', 'b2f34183-5ad2-5514-8dd3-27cca6551273', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-09-19 16:00:00+07"}'::jsonb, '2026-09-30 16:00:00+07'),
-  (31, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', '53d14dbe-431a-566d-a7e6-94335dd7f8ac', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-09-19 16:00:00+07"}'::jsonb, '2026-09-30 16:00:00+07'),
-  (32, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'ubah_harga_jual', 'barang', 'ec9ce527-ed5f-5b7e-80eb-939001450513', '{"harga_jual": 222000}'::jsonb, '{"harga_jual": 226000}'::jsonb, '2026-10-02 08:00:00+07'),
-  (33, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'setujui_pembelian', 'pembelian', 'e108cdc2-782e-5274-b39e-c87dfe76bb6f', '{"status": "diajukan", "harga_beli_satuan": null}'::jsonb, '{"status": "disetujui", "harga_beli_satuan": 125000}'::jsonb, '2026-10-02 13:00:00+07'),
-  (34, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'setujui_pembelian', 'pembelian', '73a09f56-091d-5522-b18a-b14d85e7deed', '{"status": "diajukan", "harga_beli_satuan": null}'::jsonb, '{"status": "disetujui", "harga_beli_satuan": 71500}'::jsonb, '2026-10-03 13:00:00+07'),
-  (35, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', 'a77e4b27-cf34-5ae2-babf-687f4d56e6f0', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-09-23 16:00:00+07"}'::jsonb, '2026-10-04 16:00:00+07'),
-  (36, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', '4e07ed3c-8d7c-5543-b44f-682709ba4ede', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-09-24 16:00:00+07"}'::jsonb, '2026-10-05 16:00:00+07'),
-  (37, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'setujui_pembelian', 'pembelian', '994e9953-d616-56ff-826c-4057d5aa8bf2', '{"status": "diajukan", "harga_beli_satuan": null}'::jsonb, '{"status": "disetujui", "harga_beli_satuan": 42000}'::jsonb, '2026-10-06 13:00:00+07'),
-  (38, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', '2a7e33d9-16ed-577f-88ff-1ff6281ea224', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-09-25 16:00:00+07"}'::jsonb, '2026-10-06 16:00:00+07'),
-  (39, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'setujui_pembelian', 'pembelian', '47be15b5-6c08-548a-86f4-62b65f16cecb', '{"status": "diajukan", "harga_beli_satuan": null}'::jsonb, '{"status": "disetujui", "harga_beli_satuan": 166000}'::jsonb, '2026-10-10 13:00:00+07'),
-  (40, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'setujui_pembelian', 'pembelian', 'e6f4cd7f-74e6-5ccb-a420-ac7759daffc9', '{"status": "diajukan", "harga_beli_satuan": null}'::jsonb, '{"status": "disetujui", "harga_beli_satuan": 140000}'::jsonb, '2026-10-11 13:00:00+07'),
-  (41, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', '8c767893-eb9d-584e-9496-d79b57fe95b7', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-09-30 16:00:00+07"}'::jsonb, '2026-10-11 16:00:00+07'),
-  (42, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', '457923af-a620-557f-82d9-a0484a4ccebe', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-09-30 16:00:00+07"}'::jsonb, '2026-10-11 16:00:00+07'),
-  (43, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'ubah_batas_kredit', 'pelanggan', '6f20e262-db32-5ce4-9a42-c4282d6e48ee', '{"batas_kredit": 20000000}'::jsonb, '{"batas_kredit": 25000000}'::jsonb, '2026-10-12 08:15:00+07'),
-  (44, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', '17fb99f3-a996-50ab-8c2a-ed6738895cc3', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-10-01 16:00:00+07"}'::jsonb, '2026-10-12 16:00:00+07'),
-  (45, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'setujui_pembelian', 'pembelian', '02989490-f44f-5e23-bbd8-3c30b5ed5d8f', '{"status": "diajukan", "harga_beli_satuan": null}'::jsonb, '{"status": "disetujui", "harga_beli_satuan": 108000}'::jsonb, '2026-10-13 13:00:00+07'),
-  (46, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', '0a1a50ff-4dd1-534c-8247-e7f1b231b29f', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-10-03 16:00:00+07"}'::jsonb, '2026-10-14 16:00:00+07'),
-  (47, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', '3d3f27db-2a8b-5612-ba30-7b088a6d4576', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-10-03 16:00:00+07"}'::jsonb, '2026-10-14 16:00:00+07'),
-  (48, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'setujui_pembelian', 'pembelian', 'edff02d0-6460-5630-833d-f05f55c4e4ea', '{"status": "diajukan", "harga_beli_satuan": null}'::jsonb, '{"status": "disetujui", "harga_beli_satuan": 208000}'::jsonb, '2026-10-17 13:00:00+07'),
-  (49, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', '0fd52099-6a0c-5271-9b8a-3dc2970b96b6', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-10-06 16:00:00+07"}'::jsonb, '2026-10-17 16:00:00+07'),
-  (50, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', '359e7a00-f8a5-584a-a503-d35e2b98a2fc', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-10-06 16:00:00+07"}'::jsonb, '2026-10-17 16:00:00+07'),
-  (51, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', '0cadd905-5bdd-5167-b034-5bc19c1228a0', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-10-06 16:00:00+07"}'::jsonb, '2026-10-17 16:00:00+07'),
-  (52, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'setujui_pembelian', 'pembelian', 'bb6e7868-6500-5224-873b-2a19d0414149', '{"status": "diajukan", "harga_beli_satuan": null}'::jsonb, '{"status": "disetujui", "harga_beli_satuan": 148000}'::jsonb, '2026-10-18 13:00:00+07'),
-  (53, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', '1824e36e-0e10-5511-b400-298f6c873fbd', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-10-08 16:00:00+07"}'::jsonb, '2026-10-19 16:00:00+07'),
-  (54, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', 'cf298a5b-ca39-5a0a-860f-9db0a30c7626', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-10-09 16:00:00+07"}'::jsonb, '2026-10-20 16:00:00+07'),
-  (55, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', '486a9c52-7435-5349-a2c3-3789412a42de', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-10-09 16:00:00+07"}'::jsonb, '2026-10-20 16:00:00+07'),
-  (56, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', '3f50277c-0f45-57d1-a50f-4b19bd6472c7', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-10-11 16:00:00+07"}'::jsonb, '2026-10-22 16:00:00+07'),
-  (57, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'setujui_pembelian', 'pembelian', 'cce9f696-2238-50ff-82d4-3f4909fc2509', '{"status": "diajukan", "harga_beli_satuan": null}'::jsonb, '{"status": "disetujui", "harga_beli_satuan": 515000}'::jsonb, '2026-10-23 13:00:00+07'),
-  (58, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'batal_pesanan_dikonfirmasi', 'pesanan_jual', '04e1590c-1736-5c73-92bd-7e510f98e413', '{"status": "dikonfirmasi"}'::jsonb, '{"status": "dibatalkan", "alasan_batal": "Toko membatalkan karena salah pesan barang"}'::jsonb, '2026-10-23 16:00:00+07'),
-  (59, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'setujui_pembelian', 'pembelian', '01df44d6-916d-554e-b362-eee23866b25f', '{"status": "diajukan", "harga_beli_satuan": null}'::jsonb, '{"status": "disetujui", "harga_beli_satuan": 306000}'::jsonb, '2026-10-24 13:00:00+07'),
-  (60, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'penyesuaian_stok', 'barang', 'e2656c25-d025-5ef6-8445-00e99f71ee26', '{"stok": 13}'::jsonb, '{"stok": 1, "alasan": "Barang penyok dan bocor saat bongkar muat"}'::jsonb, '2026-10-24 16:00:00+07'),
-  (61, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'penyesuaian_stok', 'barang', '1ecac6f4-140b-58eb-bcf2-e4a6feebf600', '{"stok": 5}'::jsonb, '{"stok": 0, "alasan": "Kemasan meleleh karena gudang panas, dimusnahkan"}'::jsonb, '2026-10-24 16:00:00+07');
+  (1, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'ubah_peran_akun', 'profiles', '1eb18f29-66c1-5086-900e-874c2d3208e5', '{"peran": "penjualan", "aktif": false}'::jsonb, '{"peran": "penjualan", "aktif": true}'::jsonb, '2026-09-09 09:30:00+07'),
+  (2, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'ubah_peran_akun', 'profiles', '0c99b1d9-84f8-5784-a479-3df27328aebd', '{"peran": "penjualan", "aktif": false}'::jsonb, '{"peran": "penjualan", "aktif": true}'::jsonb, '2026-09-09 09:30:00+07'),
+  (3, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'ubah_peran_akun', 'profiles', 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', '{"peran": "penjualan", "aktif": false}'::jsonb, '{"peran": "gudang", "aktif": true}'::jsonb, '2026-09-09 09:30:00+07'),
+  (4, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'penyesuaian_stok', 'barang', 'ec9ce527-ed5f-5b7e-80eb-939001450513', '{"stok": 0}'::jsonb, '{"stok": 90, "alasan": "Stok awal hasil hitung fisik 1 September 2026"}'::jsonb, '2026-09-13 07:30:00+07'),
+  (5, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'penyesuaian_stok', 'barang', '671e7a37-5f79-5adc-a3b9-c9b01ac33e36', '{"stok": 0}'::jsonb, '{"stok": 60, "alasan": "Stok awal hasil hitung fisik 1 September 2026"}'::jsonb, '2026-09-13 07:30:00+07'),
+  (6, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'penyesuaian_stok', 'barang', '8de3a5b9-010d-5526-bdba-aa0ce0ca897a', '{"stok": 0}'::jsonb, '{"stok": 70, "alasan": "Stok awal hasil hitung fisik 1 September 2026"}'::jsonb, '2026-09-13 07:30:00+07'),
+  (7, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'penyesuaian_stok', 'barang', '91f7a9a7-d484-54ea-bb4a-364cb5049c1e', '{"stok": 0}'::jsonb, '{"stok": 150, "alasan": "Stok awal hasil hitung fisik 1 September 2026"}'::jsonb, '2026-09-13 07:30:00+07'),
+  (8, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'penyesuaian_stok', 'barang', '8e5633cc-afb0-55aa-9c19-c54bf5545d3d', '{"stok": 0}'::jsonb, '{"stok": 120, "alasan": "Stok awal hasil hitung fisik 1 September 2026"}'::jsonb, '2026-09-13 07:30:00+07'),
+  (9, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'penyesuaian_stok', 'barang', 'becad5d3-b8a2-5221-b5f4-25f84b9b2162', '{"stok": 0}'::jsonb, '{"stok": 110, "alasan": "Stok awal hasil hitung fisik 1 September 2026"}'::jsonb, '2026-09-13 07:30:00+07'),
+  (10, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'penyesuaian_stok', 'barang', '75bc9358-ec31-57bc-a48e-112d0290fafa', '{"stok": 0}'::jsonb, '{"stok": 45, "alasan": "Stok awal hasil hitung fisik 1 September 2026"}'::jsonb, '2026-09-13 07:30:00+07'),
+  (11, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'penyesuaian_stok', 'barang', 'ab808a73-0c70-5ac2-ab3b-99c27fd0f2b7', '{"stok": 0}'::jsonb, '{"stok": 40, "alasan": "Stok awal hasil hitung fisik 1 September 2026"}'::jsonb, '2026-09-13 07:30:00+07'),
+  (12, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'penyesuaian_stok', 'barang', 'e0980a04-82e1-5d49-a262-2bfff2d6ca95', '{"stok": 0}'::jsonb, '{"stok": 55, "alasan": "Stok awal hasil hitung fisik 1 September 2026"}'::jsonb, '2026-09-13 07:30:00+07'),
+  (13, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'penyesuaian_stok', 'barang', 'ec3d6dbd-628a-5412-81d3-54c936a3e82f', '{"stok": 0}'::jsonb, '{"stok": 30, "alasan": "Stok awal hasil hitung fisik 1 September 2026"}'::jsonb, '2026-09-13 07:30:00+07'),
+  (14, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'penyesuaian_stok', 'barang', 'e2656c25-d025-5ef6-8445-00e99f71ee26', '{"stok": 0}'::jsonb, '{"stok": 20, "alasan": "Stok awal hasil hitung fisik 1 September 2026"}'::jsonb, '2026-09-13 07:30:00+07'),
+  (15, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'penyesuaian_stok', 'barang', 'f546ffa5-cfb6-559b-b0f3-c68d26fa2b71', '{"stok": 0}'::jsonb, '{"stok": 30, "alasan": "Stok awal hasil hitung fisik 1 September 2026"}'::jsonb, '2026-09-13 07:30:00+07'),
+  (16, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'penyesuaian_stok', 'barang', 'e31caa3a-cde5-5372-8a44-7f5b67b41f93', '{"stok": 0}'::jsonb, '{"stok": 30, "alasan": "Stok awal hasil hitung fisik 1 September 2026"}'::jsonb, '2026-09-13 07:30:00+07'),
+  (17, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'penyesuaian_stok', 'barang', 'abeb85d1-5170-5581-833b-359c01b563e4', '{"stok": 0}'::jsonb, '{"stok": 160, "alasan": "Stok awal hasil hitung fisik 1 September 2026"}'::jsonb, '2026-09-13 07:30:00+07'),
+  (18, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'penyesuaian_stok', 'barang', '1ecac6f4-140b-58eb-bcf2-e4a6feebf600', '{"stok": 0}'::jsonb, '{"stok": 16, "alasan": "Stok awal hasil hitung fisik 1 September 2026"}'::jsonb, '2026-09-13 07:30:00+07'),
+  (19, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'setujui_pembelian', 'pembelian', '06303baa-6d02-54f6-9b70-c7a62df647e2', '{"status": "diajukan", "harga_beli_satuan": null}'::jsonb, '{"status": "disetujui", "harga_beli_satuan": 70500}'::jsonb, '2026-09-15 13:00:00+07'),
+  (20, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'setujui_pembelian', 'pembelian', 'ccda8513-eaee-5f23-8b3f-5bdebcaf3ab0', '{"status": "diajukan", "harga_beli_satuan": null}'::jsonb, '{"status": "disetujui", "harga_beli_satuan": 41500}'::jsonb, '2026-09-16 13:00:00+07'),
+  (21, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'setujui_pembelian', 'pembelian', '2f0f300a-98f8-5c94-9286-d6cb5f618566', '{"status": "diajukan", "harga_beli_satuan": null}'::jsonb, '{"status": "disetujui", "harga_beli_satuan": 107000}'::jsonb, '2026-09-20 13:00:00+07'),
+  (22, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'setujui_pembelian', 'pembelian', 'ca2ba3f0-47c4-50c4-9833-4e89dc1b9fcf', '{"status": "diajukan", "harga_beli_satuan": null}'::jsonb, '{"status": "disetujui", "harga_beli_satuan": 206000}'::jsonb, '2026-09-21 13:00:00+07'),
+  (23, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', '19a4ffdb-5adc-5da6-8305-c98fe3cc12c9', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-09-11 16:00:00+07"}'::jsonb, '2026-09-23 16:00:00+07'),
+  (24, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'setujui_pembelian', 'pembelian', '2e89aba8-c11c-57af-867a-e8d875a6bba7', '{"status": "diajukan", "harga_beli_satuan": null}'::jsonb, '{"status": "disetujui", "harga_beli_satuan": 101500}'::jsonb, '2026-09-26 13:00:00+07'),
+  (25, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'setujui_pembelian', 'pembelian', '64dae0e1-c4b0-5d6c-9533-95be707832a4', '{"status": "diajukan", "harga_beli_satuan": null}'::jsonb, '{"status": "disetujui", "harga_beli_satuan": 341000}'::jsonb, '2026-09-27 13:00:00+07'),
+  (26, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', '2e674c3e-4123-549d-ac9d-a85065e5dc49', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-09-15 16:00:00+07"}'::jsonb, '2026-09-27 16:00:00+07'),
+  (27, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'tolak_pembelian', 'pembelian', '30e16d6e-605c-58b0-821a-19677004bd3f', '{"status": "diajukan", "harga_beli_satuan": null}'::jsonb, '{"status": "ditolak", "alasan_tolak": "Stok kopi masih cukup untuk 3 minggu, tunda bulan depan"}'::jsonb, '2026-09-29 13:00:00+07'),
+  (28, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', '354d97a2-f718-5745-92af-405bd72d6985', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-09-17 16:00:00+07"}'::jsonb, '2026-09-29 16:00:00+07'),
+  (29, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', '76dce0bf-c581-5f7d-bfc5-8f4e42806823', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-09-18 16:00:00+07"}'::jsonb, '2026-09-30 16:00:00+07'),
+  (30, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', 'b2f34183-5ad2-5514-8dd3-27cca6551273', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-09-19 16:00:00+07"}'::jsonb, '2026-10-01 16:00:00+07'),
+  (31, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', '53d14dbe-431a-566d-a7e6-94335dd7f8ac', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-09-19 16:00:00+07"}'::jsonb, '2026-10-01 16:00:00+07'),
+  (32, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'ubah_harga_jual', 'barang', 'ec9ce527-ed5f-5b7e-80eb-939001450513', '{"harga_jual": 222000}'::jsonb, '{"harga_jual": 226000}'::jsonb, '2026-10-03 08:00:00+07'),
+  (33, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'setujui_pembelian', 'pembelian', 'e108cdc2-782e-5274-b39e-c87dfe76bb6f', '{"status": "diajukan", "harga_beli_satuan": null}'::jsonb, '{"status": "disetujui", "harga_beli_satuan": 125000}'::jsonb, '2026-10-03 13:00:00+07'),
+  (34, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'setujui_pembelian', 'pembelian', '73a09f56-091d-5522-b18a-b14d85e7deed', '{"status": "diajukan", "harga_beli_satuan": null}'::jsonb, '{"status": "disetujui", "harga_beli_satuan": 71500}'::jsonb, '2026-10-04 13:00:00+07'),
+  (35, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', 'a77e4b27-cf34-5ae2-babf-687f4d56e6f0', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-09-23 16:00:00+07"}'::jsonb, '2026-10-05 16:00:00+07'),
+  (36, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', '4e07ed3c-8d7c-5543-b44f-682709ba4ede', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-09-24 16:00:00+07"}'::jsonb, '2026-10-06 16:00:00+07'),
+  (37, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'setujui_pembelian', 'pembelian', '994e9953-d616-56ff-826c-4057d5aa8bf2', '{"status": "diajukan", "harga_beli_satuan": null}'::jsonb, '{"status": "disetujui", "harga_beli_satuan": 42000}'::jsonb, '2026-10-07 13:00:00+07'),
+  (38, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', '2a7e33d9-16ed-577f-88ff-1ff6281ea224', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-09-25 16:00:00+07"}'::jsonb, '2026-10-07 16:00:00+07'),
+  (39, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'setujui_pembelian', 'pembelian', '47be15b5-6c08-548a-86f4-62b65f16cecb', '{"status": "diajukan", "harga_beli_satuan": null}'::jsonb, '{"status": "disetujui", "harga_beli_satuan": 166000}'::jsonb, '2026-10-11 13:00:00+07'),
+  (40, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'setujui_pembelian', 'pembelian', 'e6f4cd7f-74e6-5ccb-a420-ac7759daffc9', '{"status": "diajukan", "harga_beli_satuan": null}'::jsonb, '{"status": "disetujui", "harga_beli_satuan": 140000}'::jsonb, '2026-10-12 13:00:00+07'),
+  (41, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', '8c767893-eb9d-584e-9496-d79b57fe95b7', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-09-30 16:00:00+07"}'::jsonb, '2026-10-12 16:00:00+07'),
+  (42, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', '457923af-a620-557f-82d9-a0484a4ccebe', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-09-30 16:00:00+07"}'::jsonb, '2026-10-12 16:00:00+07'),
+  (43, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'ubah_batas_kredit', 'pelanggan', '6f20e262-db32-5ce4-9a42-c4282d6e48ee', '{"batas_kredit": 20000000}'::jsonb, '{"batas_kredit": 25000000}'::jsonb, '2026-10-13 08:15:00+07'),
+  (44, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', '17fb99f3-a996-50ab-8c2a-ed6738895cc3', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-10-01 16:00:00+07"}'::jsonb, '2026-10-13 16:00:00+07'),
+  (45, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'setujui_pembelian', 'pembelian', '02989490-f44f-5e23-bbd8-3c30b5ed5d8f', '{"status": "diajukan", "harga_beli_satuan": null}'::jsonb, '{"status": "disetujui", "harga_beli_satuan": 108000}'::jsonb, '2026-10-14 13:00:00+07'),
+  (46, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', '0a1a50ff-4dd1-534c-8247-e7f1b231b29f', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-10-03 16:00:00+07"}'::jsonb, '2026-10-15 16:00:00+07'),
+  (47, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', '3d3f27db-2a8b-5612-ba30-7b088a6d4576', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-10-03 16:00:00+07"}'::jsonb, '2026-10-15 16:00:00+07'),
+  (48, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'setujui_pembelian', 'pembelian', 'edff02d0-6460-5630-833d-f05f55c4e4ea', '{"status": "diajukan", "harga_beli_satuan": null}'::jsonb, '{"status": "disetujui", "harga_beli_satuan": 208000}'::jsonb, '2026-10-18 13:00:00+07'),
+  (49, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', '0fd52099-6a0c-5271-9b8a-3dc2970b96b6', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-10-06 16:00:00+07"}'::jsonb, '2026-10-18 16:00:00+07'),
+  (50, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', '359e7a00-f8a5-584a-a503-d35e2b98a2fc', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-10-06 16:00:00+07"}'::jsonb, '2026-10-18 16:00:00+07'),
+  (51, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', '0cadd905-5bdd-5167-b034-5bc19c1228a0', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-10-06 16:00:00+07"}'::jsonb, '2026-10-18 16:00:00+07'),
+  (52, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'setujui_pembelian', 'pembelian', 'bb6e7868-6500-5224-873b-2a19d0414149', '{"status": "diajukan", "harga_beli_satuan": null}'::jsonb, '{"status": "disetujui", "harga_beli_satuan": 148000}'::jsonb, '2026-10-19 13:00:00+07'),
+  (53, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', '1824e36e-0e10-5511-b400-298f6c873fbd', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-10-08 16:00:00+07"}'::jsonb, '2026-10-20 16:00:00+07'),
+  (54, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', 'cf298a5b-ca39-5a0a-860f-9db0a30c7626', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-10-09 16:00:00+07"}'::jsonb, '2026-10-21 16:00:00+07'),
+  (55, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', '486a9c52-7435-5349-a2c3-3789412a42de', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-10-09 16:00:00+07"}'::jsonb, '2026-10-21 16:00:00+07'),
+  (56, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'pelunasan', 'pesanan_jual', '3f50277c-0f45-57d1-a50f-4b19bd6472c7', '{"status": "dikirim"}'::jsonb, '{"status": "lunas", "dilunasi_pada": "2026-10-11 16:00:00+07"}'::jsonb, '2026-10-23 16:00:00+07'),
+  (57, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'setujui_pembelian', 'pembelian', 'cce9f696-2238-50ff-82d4-3f4909fc2509', '{"status": "diajukan", "harga_beli_satuan": null}'::jsonb, '{"status": "disetujui", "harga_beli_satuan": 515000}'::jsonb, '2026-10-24 13:00:00+07'),
+  (58, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'batal_pesanan_dikonfirmasi', 'pesanan_jual', '04e1590c-1736-5c73-92bd-7e510f98e413', '{"status": "dikonfirmasi"}'::jsonb, '{"status": "dibatalkan", "alasan_batal": "Toko membatalkan karena salah pesan barang"}'::jsonb, '2026-10-24 16:00:00+07'),
+  (59, 'defeb8ce-05f6-5a28-90ea-d8c5921fe92e', 'setujui_pembelian', 'pembelian', '01df44d6-916d-554e-b362-eee23866b25f', '{"status": "diajukan", "harga_beli_satuan": null}'::jsonb, '{"status": "disetujui", "harga_beli_satuan": 306000}'::jsonb, '2026-10-25 13:00:00+07'),
+  (60, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'penyesuaian_stok', 'barang', 'e2656c25-d025-5ef6-8445-00e99f71ee26', '{"stok": 13}'::jsonb, '{"stok": 1, "alasan": "Barang penyok dan bocor saat bongkar muat"}'::jsonb, '2026-10-25 16:00:00+07'),
+  (61, 'da8229f5-916d-55c1-aaee-cd3cfe3e0a7b', 'penyesuaian_stok', 'barang', '1ecac6f4-140b-58eb-bcf2-e4a6feebf600', '{"stok": 5}'::jsonb, '{"stok": 0, "alasan": "Kemasan meleleh karena gudang panas, dimusnahkan"}'::jsonb, '2026-10-25 16:00:00+07');
 
--- 13. Aktifkan Kembali Trigger Seluruh Tabel
-ALTER TABLE public.profiles ENABLE TRIGGER ALL;
-ALTER TABLE public.pemasok ENABLE TRIGGER ALL;
-ALTER TABLE public.pelanggan ENABLE TRIGGER ALL;
-ALTER TABLE public.barang ENABLE TRIGGER ALL;
-ALTER TABLE public.pembelian ENABLE TRIGGER ALL;
-ALTER TABLE public.pesanan_jual ENABLE TRIGGER ALL;
-ALTER TABLE public.item_pesanan_jual ENABLE TRIGGER ALL;
-ALTER TABLE public.mutasi_stok ENABLE TRIGGER ALL;
-ALTER TABLE public.audit_log ENABLE TRIGGER ALL;
+-- 13. Aktifkan Kembali Trigger Pengguna Seluruh Tabel
+ALTER TABLE public.profiles ENABLE TRIGGER USER;
+ALTER TABLE public.pemasok ENABLE TRIGGER USER;
+ALTER TABLE public.pelanggan ENABLE TRIGGER USER;
+ALTER TABLE public.barang ENABLE TRIGGER USER;
+ALTER TABLE public.pembelian ENABLE TRIGGER USER;
+ALTER TABLE public.pesanan_jual ENABLE TRIGGER USER;
+ALTER TABLE public.item_pesanan_jual ENABLE TRIGGER USER;
+ALTER TABLE public.mutasi_stok ENABLE TRIGGER USER;
+ALTER TABLE public.audit_log ENABLE TRIGGER USER;
 
 -- 14. Reset Sequence Sesuai Mandat Butir 5:
 --     mutasi_stok mulai 129, audit_log mulai 62, SO mulai 46, PO mulai 20

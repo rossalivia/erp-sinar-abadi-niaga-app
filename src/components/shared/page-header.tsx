@@ -19,16 +19,16 @@ export function PageHeader({
   return (
     <div
       className={cn(
-        'flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 mb-5 border-b border-slate-200/60',
+        'flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 mb-5 border-b border-slate-200/60 dark:border-slate-800',
         className
       )}
     >
       <div className="space-y-1">
-        <h1 className="text-lg font-bold text-slate-900 tracking-tight">
+        <h1 className="text-lg font-bold text-slate-900 dark:text-slate-100 tracking-tight">
           {title}
         </h1>
         {description && (
-          <p className="text-xs text-slate-500 font-normal">{description}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-normal">{description}</p>
         )}
       </div>
       {(action || children) && (

@@ -46,12 +46,12 @@ export function DataTable<T>({
 }: DataTableProps<T>) {
   if (isLoading) {
     return (
-      <div className="w-full border border-[#e2ebf6] rounded-2xl overflow-hidden bg-white p-4">
+      <div className="w-full border border-[#e2ebf6] dark:border-slate-800 rounded-2xl overflow-hidden bg-white dark:bg-slate-900 p-4">
         <div className="space-y-2">
-          <div className="h-7 bg-[#f0f5fa] rounded-lg animate-pulse" />
-          <div className="h-6 bg-slate-50 rounded-lg animate-pulse" />
-          <div className="h-6 bg-slate-50 rounded-lg animate-pulse" />
-          <div className="h-6 bg-slate-50 rounded-lg animate-pulse" />
+          <div className="h-7 bg-[#f0f5fa] dark:bg-slate-800 rounded-lg animate-pulse" />
+          <div className="h-6 bg-slate-50 dark:bg-slate-800/60 rounded-lg animate-pulse" />
+          <div className="h-6 bg-slate-50 dark:bg-slate-800/60 rounded-lg animate-pulse" />
+          <div className="h-6 bg-slate-50 dark:bg-slate-800/60 rounded-lg animate-pulse" />
         </div>
       </div>
     );
@@ -93,7 +93,7 @@ export function DataTable<T>({
           <TableRow
             key={keyExtractor(row)}
             className={cn(
-              zebra && rowIdx % 2 === 1 && 'bg-slate-50/50'
+              zebra && rowIdx % 2 === 1 && 'bg-slate-50/50 dark:bg-slate-850/40'
             )}
           >
             {columns.map((col, colIdx) => (
