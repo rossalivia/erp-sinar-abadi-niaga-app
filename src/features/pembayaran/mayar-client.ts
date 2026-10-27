@@ -14,7 +14,7 @@ export class HttpMayarClient implements MayarClient {
   private timeoutMs: number;
 
   constructor(apiKey: string, baseUrl?: string) {
-    this.apiKey = apiKey;
+    this.apiKey = apiKey.replace(/^Bearer\s+/i, '').trim();
     let url = (baseUrl || process.env.MAYAR_BASE_URL || 'https://api.mayar.io/hl/v1').replace(/\/+$/, '');
     // Migrasi domain lama api.mayar.club yang sering mengalami rate-limit/timeout ke domain resmi api.mayar.io
     if (url.includes('api.mayar.club')) {
@@ -241,13 +241,14 @@ export function getMayarClient(customClient?: MayarClient): MayarClient {
     return customClient;
   }
 
+  // Jika mode mock diaktifkan di development/test, gunakan MockMayarClient untuk simulasi offline
+  if (process.env.NODE_ENV !== 'production' && process.env.MAYAR_MOCK === 'true') {
+    return globalMockMayarClient;
+  }
+
   const apiKey = process.env.MAYAR_API_KEY;
   if (apiKey && apiKey.trim() !== '' && !apiKey.includes('placeholder')) {
     return new HttpMayarClient(apiKey);
-  }
-
-  if (process.env.NODE_ENV !== 'production' && process.env.MAYAR_MOCK === 'true') {
-    return globalMockMayarClient;
   }
 
   return new DisabledMayarClient();
