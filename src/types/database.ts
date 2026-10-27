@@ -657,38 +657,59 @@ export type Database = {
       tagihan_mayar: {
         Row: {
           berlaku_hingga: string
+          berlaku_sampai: string
+          catatan_tinjau: string | null
           dibayar_pada: string | null
+          dibuat_oleh: string
           dibuat_pada: string
           diperbarui_pada: string
+          email_penerima: string
           id: string
+          jumlah: number
           link_pembayaran: string
           mayar_invoice_id: string
+          mayar_transaction_id: string | null
           pesanan_jual_id: string
-          status: 'dibuat' | 'dibayar' | 'ditutup' | 'perlu_tinjau'
+          status: 'dibuat' | 'dibayar' | 'kedaluwarsa' | 'ditutup' | 'perlu_tinjau'
+          tautan: string
           total: number
         }
         Insert: {
-          berlaku_hingga: string
+          berlaku_hingga?: string
+          berlaku_sampai?: string
+          catatan_tinjau?: string | null
           dibayar_pada?: string | null
+          dibuat_oleh?: string
           dibuat_pada?: string
           diperbarui_pada?: string
+          email_penerima?: string
           id?: string
-          link_pembayaran: string
+          jumlah?: number
+          link_pembayaran?: string
           mayar_invoice_id: string
+          mayar_transaction_id?: string | null
           pesanan_jual_id: string
-          status?: 'dibuat' | 'dibayar' | 'ditutup' | 'perlu_tinjau'
-          total: number
+          status?: 'dibuat' | 'dibayar' | 'kedaluwarsa' | 'ditutup' | 'perlu_tinjau'
+          tautan?: string
+          total?: number
         }
         Update: {
           berlaku_hingga?: string
+          berlaku_sampai?: string
+          catatan_tinjau?: string | null
           dibayar_pada?: string | null
+          dibuat_oleh?: string
           dibuat_pada?: string
           diperbarui_pada?: string
+          email_penerima?: string
           id?: string
+          jumlah?: number
           link_pembayaran?: string
           mayar_invoice_id?: string
+          mayar_transaction_id?: string | null
           pesanan_jual_id?: string
-          status?: 'dibuat' | 'dibayar' | 'ditutup' | 'perlu_tinjau'
+          status?: 'dibuat' | 'dibayar' | 'kedaluwarsa' | 'ditutup' | 'perlu_tinjau'
+          tautan?: string
           total?: number
         }
         Relationships: [

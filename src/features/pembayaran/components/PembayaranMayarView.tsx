@@ -2,7 +2,9 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { createClient } from '@/lib/supabase/client';
 import {
   CreditCard,
   Copy,
@@ -82,6 +84,7 @@ export function PembayaranMayarView({
   hasRealKey,
   defaultCustomerEmail,
 }: PembayaranMayarViewProps) {
+  const router = useRouter();
   const [urlWebhook, setUrlWebhook] = React.useState(webhookUrl);
   const [isCustomUrl, setIsCustomUrl] = React.useState(false);
   const [copiedWebhook, setCopiedWebhook] = React.useState(false);
@@ -89,6 +92,42 @@ export function PembayaranMayarView({
   const [searchQuery, setSearchQuery] = React.useState('');
   const [filterTab, setFilterTab] = React.useState<'semua' | 'perlu_tautan' | 'aktif' | 'lunas'>('semua');
   const [checkingTagihanId, setCheckingTagihanId] = React.useState<string | null>(null);
+
+  // 1. Supabase Realtime Channel: Re-render instan ketika database berubah via WebSocket
+  React.useEffect(() => {
+    let channel: ReturnType<ReturnType<typeof createClient>['channel']> | null = null;
+    try {
+      const supabase = createClient();
+      channel = supabase
+        .channel('realtime_pembayaran_mayar')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'tagihan_mayar' },
+          () => {
+            router.refresh();
+          }
+        )
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'pesanan_jual' },
+          () => {
+            router.refresh();
+          }
+        )
+        .subscribe();
+    } catch {
+      // Abaikan jika konfigurasi realtime client tidak aktif
+    }
+
+    return () => {
+      if (channel) {
+        try {
+          const supabase = createClient();
+          supabase.removeChannel(channel);
+        } catch {}
+      }
+    };
+  }, [router]);
 
   // Inisialisasi custom webhook URL dari localStorage jika pernah disimpan
   React.useEffect(() => {
@@ -292,6 +331,34 @@ export function PembayaranMayarView({
       setCheckingTagihanId(null);
     }
   };
+
+  // Auto Background Sync: Jika ada tagihan aktif berstatus 'dibuat',
+  // sistem akan memeriksa otomatis ke server Mayar setiap 5 detik secara silent
+  // sehingga layar langsung berubah menjadi Lunas tanpa perlu refresh manual.
+  React.useEffect(() => {
+    const activeWaitingItems = combinedItems.filter(
+      (item) => item.tagihan_id && item.status_tagihan === 'dibuat' && item.status_pesanan === 'dikirim'
+    );
+
+    if (activeWaitingItems.length === 0) return;
+
+    const interval = setInterval(async () => {
+      for (const item of activeWaitingItems) {
+        if (!item.tagihan_id) continue;
+        try {
+          const res = await periksaStatusMayarAction(item.tagihan_id, item.pesanan_jual_id);
+          if (res.success && (res.data?.status === 'lunas' || res.data?.status === 'paid')) {
+            toast.success(`Pesanan ${item.nomor_pesanan} berhasil terverifikasi lunas dari Mayar! 🎉`);
+            router.refresh();
+          }
+        } catch {
+          // Abaikan polling background error
+        }
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [combinedItems, router]);
 
   // Helper Pembuat Link WhatsApp
   const generateWhatsAppUrl = (item: MonitoringItem) => {
@@ -545,9 +612,18 @@ export function PembayaranMayarView({
       <Card className="border-slate-200 bg-white shadow-none">
         <div className="border-b border-slate-200 px-4 py-3.5 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h3 className="text-sm font-bold text-slate-900">
-              Riwayat Tautan & Transaksi Mayar (Pesanan Dikirim)
-            </h3>
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-bold text-slate-900">
+                Riwayat Tautan & Transaksi Mayar (Pesanan Dikirim)
+              </h3>
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                </span>
+                Live Auto-Sync
+              </span>
+            </div>
             <p className="text-xs text-slate-500">
               Menampilkan {filteredItems.length} pesanan dengan akses tautan pembayaran dinamis.
             </p>
