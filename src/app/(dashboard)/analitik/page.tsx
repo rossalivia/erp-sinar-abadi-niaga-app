@@ -53,10 +53,14 @@ export default async function AnalitikPage({ searchParams }: PageProps) {
   const preset = params.preset || (params.dari ? '' : '8');
   const ambang = Math.max(7, parseInt(params.ambang || '30', 10));
 
-  // Hitung rentang tanggal (Asia/Jakarta, default 27 Oktober 2026)
-  const systemDateOverride = process.env.SYSTEM_DATE || process.env.NEXT_PUBLIC_SYSTEM_DATE || '2026-10-27T21:45:00+07:00';
-  const now = systemDateOverride ? new Date(systemDateOverride) : new Date();
-  const todayStr = '2026-10-27';
+  // Hitung rentang tanggal (Asia/Jakarta)
+  const now = new Date();
+  const todayStr = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Jakarta',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(now);
 
   let dari = params.dari;
   const sampai = params.sampai || todayStr;

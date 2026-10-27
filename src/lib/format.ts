@@ -13,44 +13,10 @@ export function formatRupiah(nilai: number | null | undefined): string {
   return formatted.replace(/\s/g, '');
 }
 
-function normalisasiTanggalWIB(date: Date): Date {
-  try {
-    const dtf = new Intl.DateTimeFormat('en-CA', {
-      timeZone: 'Asia/Jakarta',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: 'numeric',
-      hour12: false,
-    });
-
-    const parts = dtf.formatToParts(date);
-    const getPart = (type: string) => parts.find((p) => p.type === type)?.value;
-    const year = getPart('year');
-    const month = getPart('month');
-    const day = getPart('day');
-    const hour = parseInt(getPart('hour') || '0', 10);
-
-    if (year === '2026' && month === '10') {
-      if ((day === '28' || day === '27') && hour < 5) {
-        // Tepat 27 Oktober 2026 pukul 21:59 WIB (14:59 UTC)
-        return new Date('2026-10-27T14:59:00Z');
-      }
-      if (day === '28') {
-        return new Date(date.getTime() - 24 * 60 * 60 * 1000);
-      }
-    }
-  } catch {
-    // fallback jika parsing tanggal gagal
-  }
-  return date;
-}
-
 export function formatTanggal(dateInput: string | Date | null | undefined): string {
   if (!dateInput) return '-';
-  const rawDate = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
-  if (isNaN(rawDate.getTime())) return '-';
-  const d = normalisasiTanggalWIB(rawDate);
+  const d = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+  if (isNaN(d.getTime())) return '-';
   
   return new Intl.DateTimeFormat('id-ID', {
     day: 'numeric',
@@ -62,9 +28,8 @@ export function formatTanggal(dateInput: string | Date | null | undefined): stri
 
 export function formatTanggalWaktu(dateInput: string | Date | null | undefined): string {
   if (!dateInput) return '-';
-  const rawDate = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
-  if (isNaN(rawDate.getTime())) return '-';
-  const d = normalisasiTanggalWIB(rawDate);
+  const d = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+  if (isNaN(d.getTime())) return '-';
 
   return new Intl.DateTimeFormat('id-ID', {
     day: 'numeric',
