@@ -153,22 +153,22 @@ export function DashboardAnalyticsRow({ peran = 'penjualan' }: DashboardAnalytic
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
       {/* 1. BAGIAN KIRI: HEATMAP MATRIX TRANSAKSI (5 Kolom Desktop) */}
-      <div className="lg:col-span-5 rounded-2xl p-5 border border-[#e2ebf6] bg-white shadow-sm flex flex-col justify-between">
+      <div className="lg:col-span-5 rounded-2xl p-5 border border-[#e2ebf6] dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between">
         <div>
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-xs font-bold text-[#0c1a30] uppercase tracking-wider font-mono">
+              <h3 className="text-xs font-bold text-[#0c1a30] dark:text-slate-100 uppercase tracking-wider font-mono">
                 {peran === 'gudang'
                   ? 'Aktivitas Arus Fisik Komoditas'
                   : peran === 'penjualan'
                   ? 'Pola Permintaan Komoditas Toko'
                   : 'Aktivitas Komoditas Bulanan'}
               </h3>
-              <p className="text-[11px] text-slate-500">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
                 Pola intensitas pergerakan pasokan komoditas kelontong sepanjang tahun
               </p>
             </div>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 text-slate-600">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
               Tahun 2026
             </span>
           </div>
@@ -190,7 +190,7 @@ export function DashboardAnalyticsRow({ peran = 'penjualan' }: DashboardAnalytic
               <div className="space-y-1.5">
                 {COMMODITY_MATRIX.map((row) => (
                   <div key={row.category} className="grid grid-cols-13 gap-1 items-center">
-                    <span className="text-[10px] font-medium text-slate-700 truncate pr-1" title={row.category}>
+                    <span className="text-[10px] font-medium text-slate-700 dark:text-slate-300 truncate pr-1" title={row.category}>
                       {row.category.split(' ')[0]}
                     </span>
                     {row.values.map((val, idx) => (
@@ -211,7 +211,7 @@ export function DashboardAnalyticsRow({ peran = 'penjualan' }: DashboardAnalytic
         </div>
 
         {/* Legend Indicator */}
-        <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+        <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
           <span>Intensitas Pasokan:</span>
           <div className="flex items-center gap-1.5 text-[10px]">
             <span>Rendah</span>
@@ -229,18 +229,18 @@ export function DashboardAnalyticsRow({ peran = 'penjualan' }: DashboardAnalytic
       </div>
 
       {/* 2. BAGIAN TENGAH: BERKAS EKSPOR & RIWAYAT CETAK (4 Kolom Desktop) */}
-      <div className="lg:col-span-4 rounded-2xl p-5 border border-[#e2ebf6] bg-white shadow-sm flex flex-col justify-between">
+      <div className="lg:col-span-4 rounded-2xl p-5 border border-[#e2ebf6] dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between">
         <div>
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h3 className="text-xs font-bold text-[#0c1a30] uppercase tracking-wider font-mono">
+              <h3 className="text-xs font-bold text-[#0c1a30] dark:text-slate-100 uppercase tracking-wider font-mono">
                 {peran === 'gudang'
                   ? 'Berkas Logistik & Surat Jalan'
                   : peran === 'penjualan'
                   ? 'Faktur & Dokumen Toko'
                   : 'Dokumen Terbitan Terkini'}
               </h3>
-              <p className="text-[11px] text-slate-500">Berkas transaksi terbitan terakhir</p>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">Berkas transaksi terbitan terakhir</p>
             </div>
             <Printer className="w-4 h-4 text-slate-400" />
           </div>
@@ -249,22 +249,22 @@ export function DashboardAnalyticsRow({ peran = 'penjualan' }: DashboardAnalytic
             {roleExports.slice(0, 4).map((doc) => (
               <div
                 key={doc.id}
-                className="p-2.5 rounded-xl border border-slate-100 bg-slate-50/60 hover:bg-slate-50 hover:border-slate-200 transition-all flex items-center justify-between gap-2"
+                className="p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-700 transition-all flex items-center justify-between gap-2"
               >
                 <div className="min-w-0 flex items-center gap-2.5">
                   <span
                     className={cn(
                       'px-1.5 py-0.5 rounded text-[9px] font-mono font-bold shrink-0',
-                      doc.type === 'PDF' && 'bg-red-50 text-red-700 border border-red-200',
-                      doc.type === 'XLSX' && 'bg-emerald-50 text-emerald-700 border border-emerald-200',
-                      doc.type === 'CSV' && 'bg-blue-50 text-blue-700 border border-blue-200'
+                      doc.type === 'PDF' && 'bg-red-50 dark:bg-red-950/60 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-900/50',
+                      doc.type === 'XLSX' && 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/50',
+                      doc.type === 'CSV' && 'bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900/50'
                     )}
                   >
                     {doc.type}
                   </span>
 
                   <div className="min-w-0">
-                    <h5 className="text-xs font-bold text-slate-800 truncate" title={doc.title}>
+                    <h5 className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate" title={doc.title}>
                       {doc.title}
                     </h5>
                     <p className="text-[10px] text-slate-400 mt-0.5">
@@ -277,7 +277,7 @@ export function DashboardAnalyticsRow({ peran = 'penjualan' }: DashboardAnalytic
                   asChild
                   variant="ghost"
                   size="icon"
-                  className="w-7 h-7 text-slate-400 hover:text-blue-600 hover:bg-blue-50 shrink-0"
+                  className="w-7 h-7 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-slate-700 shrink-0"
                 >
                   <Link href={doc.href} title="Buka Dokumen">
                     <Download className="w-3.5 h-3.5" />
@@ -288,17 +288,17 @@ export function DashboardAnalyticsRow({ peran = 'penjualan' }: DashboardAnalytic
           </div>
         </div>
 
-        <div className="mt-4 pt-3 border-t border-slate-100 text-center">
+        <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-center">
           {peran === 'manajer' ? (
-            <Link href="/audit" className="text-xs font-semibold text-blue-600 hover:text-blue-800">
+            <Link href="/audit" className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
               Buka Riwayat Audit &amp; Dokumen &rarr;
             </Link>
           ) : peran === 'gudang' ? (
-            <Link href="/stok" className="text-xs font-semibold text-blue-600 hover:text-blue-800">
+            <Link href="/stok" className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
               Buka Kartu Mutasi Stok Fisik &rarr;
             </Link>
           ) : (
-            <Link href="/pesanan" className="text-xs font-semibold text-blue-600 hover:text-blue-800">
+            <Link href="/pesanan" className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
               Buka Seluruh Dokumen Faktur &rarr;
             </Link>
           )}
@@ -306,18 +306,18 @@ export function DashboardAnalyticsRow({ peran = 'penjualan' }: DashboardAnalytic
       </div>
 
       {/* 3. BAGIAN KANAN: DONUT CHART DISTRIBUSI TRANSAKSI (3 Kolom Desktop) */}
-      <div className="lg:col-span-3 rounded-2xl p-5 border border-[#e2ebf6] bg-white shadow-sm flex flex-col justify-between">
+      <div className="lg:col-span-3 rounded-2xl p-5 border border-[#e2ebf6] dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between">
         <div>
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h3 className="text-xs font-bold text-[#0c1a30] uppercase tracking-wider font-mono">
+              <h3 className="text-xs font-bold text-[#0c1a30] dark:text-slate-100 uppercase tracking-wider font-mono">
                 {peran === 'gudang' ? 'Distribusi & Muatan' : 'Status Pembayaran'}
               </h3>
-              <p className="text-[11px] text-slate-500">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
                 {peran === 'gudang' ? 'Kelancaran armada pengiriman' : 'Rasio kelunasan faktur'}
               </p>
             </div>
-            <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
               {peran === 'gudang' ? 'Armada' : 'Faktur'}
             </span>
           </div>
@@ -354,7 +354,7 @@ export function DashboardAnalyticsRow({ peran = 'penjualan' }: DashboardAnalytic
 
             {/* Total Count in Center */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-xl font-black text-[#0c1a30] tracking-tight leading-none">
+              <span className="text-xl font-black text-[#0c1a30] dark:text-white tracking-tight leading-none">
                 {peran === 'gudang' ? '84' : '128'}
               </span>
               <span className="text-[9px] text-slate-400 uppercase font-mono mt-0.5">
@@ -366,7 +366,7 @@ export function DashboardAnalyticsRow({ peran = 'penjualan' }: DashboardAnalytic
           {/* Legend Items */}
           <div className="space-y-1.5 pt-1 text-[11px]">
             {donutData.map((item) => (
-              <div key={item.name} className="flex items-center justify-between text-slate-600">
+              <div key={item.name} className="flex items-center justify-between text-slate-600 dark:text-slate-400">
                 <div className="flex items-center gap-1.5">
                   <span
                     className="w-2 h-2 rounded-full shrink-0"
@@ -374,7 +374,7 @@ export function DashboardAnalyticsRow({ peran = 'penjualan' }: DashboardAnalytic
                   />
                   <span>{item.name}</span>
                 </div>
-                <span className="font-bold text-slate-800 tabular-nums">
+                <span className="font-bold text-slate-800 dark:text-slate-200 tabular-nums">
                   {item.value}%
                 </span>
               </div>
@@ -382,17 +382,17 @@ export function DashboardAnalyticsRow({ peran = 'penjualan' }: DashboardAnalytic
           </div>
         </div>
 
-        <div className="mt-4 pt-3 border-t border-slate-100 text-center">
+        <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-center">
           {peran === 'gudang' ? (
-            <Link href="/gudang/picking" className="text-xs font-semibold text-blue-600 hover:text-blue-800">
+            <Link href="/gudang/picking" className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
               Antrean Muatan Gudang &rarr;
             </Link>
           ) : peran === 'penjualan' ? (
-            <Link href="/penagihan" className="text-xs font-semibold text-blue-600 hover:text-blue-800">
+            <Link href="/penagihan" className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
               Monitoring Penagihan Toko &rarr;
             </Link>
           ) : (
-            <Link href="/laporan/piutang" className="text-xs font-semibold text-blue-600 hover:text-blue-800">
+            <Link href="/laporan/piutang" className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
               Laporan Aging Piutang &rarr;
             </Link>
           )}

@@ -307,19 +307,19 @@ export function DashboardMidRow({ peran = 'penjualan' }: DashboardMidRowProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
       {/* 1. BAGIAN KIRI: MODUL & LAPORAN LIBRARY (6 Kolom Desktop) */}
-      <div className="lg:col-span-5 xl:col-span-6 rounded-2xl p-5 border border-[#e2ebf6] bg-white shadow-sm flex flex-col justify-between">
+      <div className="lg:col-span-5 xl:col-span-6 rounded-2xl p-5 border border-[#e2ebf6] dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between">
         <div>
           {/* Header Library */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <div>
-              <h2 className="text-sm font-bold text-[#0c1a30]">
+              <h2 className="text-sm font-bold text-[#0c1a30] dark:text-slate-100">
                 {peran === 'gudang'
                   ? 'Pusat Dokumen & Logistik Pergudangan'
                   : peran === 'penjualan'
                   ? 'Pusat Dokumen & Transaksi Penjualan'
                   : 'Pusat Dokumen & Modul ERP'}
               </h2>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 {peran === 'gudang'
                   ? 'Pintasan instan surat jalan, kartu stok, dan PO masuk'
                   : peran === 'penjualan'
@@ -336,14 +336,14 @@ export function DashboardMidRow({ peran = 'penjualan' }: DashboardMidRowProps) {
                   placeholder="Cari modul..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-8 pr-3 py-1 text-xs rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:outline-hidden focus:ring-1 focus:ring-blue-500 w-36 transition-all"
+                  className="pl-8 pr-3 py-1 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:bg-white dark:focus:bg-slate-900 focus:outline-hidden focus:ring-1 focus:ring-blue-500 w-36 transition-all"
                 />
               </div>
             </div>
           </div>
 
           {/* Filter Tabs */}
-          <div className="flex items-center gap-1 border-b border-slate-100 pb-2 mb-4 overflow-x-auto scrollbar-none text-xs">
+          <div className="flex items-center gap-1 border-b border-slate-100 dark:border-slate-800 pb-2 mb-4 overflow-x-auto scrollbar-none text-xs">
             {availableTabs.map((tab) => (
               <button
                 key={tab.id}
@@ -351,8 +351,8 @@ export function DashboardMidRow({ peran = 'penjualan' }: DashboardMidRowProps) {
                 className={cn(
                   'px-3 py-1 rounded-full font-medium transition-all cursor-pointer whitespace-nowrap',
                   activeTab === tab.id
-                    ? 'bg-[#0c1b3a] text-white shadow-xs'
-                    : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
+                    ? 'bg-[#0c1b3a] dark:bg-blue-600 text-white shadow-xs'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800'
                 )}
               >
                 {tab.label}
@@ -367,7 +367,7 @@ export function DashboardMidRow({ peran = 'penjualan' }: DashboardMidRowProps) {
               return (
                 <div
                   key={item.id}
-                  className="rounded-xl p-3.5 border border-slate-200/90 bg-slate-50/50 hover:bg-white hover:border-blue-200 hover:shadow-sm transition-all group flex flex-col justify-between"
+                  className="rounded-xl p-3.5 border border-slate-200/90 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-white dark:hover:bg-slate-800 hover:border-blue-200 dark:hover:border-slate-700 hover:shadow-sm transition-all group flex flex-col justify-between"
                 >
                   <div>
                     <div className="flex items-start justify-between">
@@ -381,7 +381,7 @@ export function DashboardMidRow({ peran = 'penjualan' }: DashboardMidRowProps) {
                         >
                           <FileText className="w-3.5 h-3.5" />
                         </div>
-                        <h4 className="text-xs font-bold text-slate-900 line-clamp-1 group-hover:text-blue-700 transition-colors">
+                        <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100 line-clamp-1 group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors">
                           {item.title}
                         </h4>
                       </div>
@@ -389,7 +389,7 @@ export function DashboardMidRow({ peran = 'penjualan' }: DashboardMidRowProps) {
                       <button
                         type="button"
                         onClick={() => toggleFavorite(item.id)}
-                        className="text-slate-300 hover:text-amber-500 transition-colors cursor-pointer p-0.5"
+                        className="text-slate-300 dark:text-slate-600 hover:text-amber-500 transition-colors cursor-pointer p-0.5"
                         title="Tandai favorit"
                       >
                         <Star
@@ -401,12 +401,12 @@ export function DashboardMidRow({ peran = 'penjualan' }: DashboardMidRowProps) {
                       </button>
                     </div>
 
-                    <p className="text-[11px] text-slate-500 mt-2 line-clamp-2 leading-relaxed">
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-2 line-clamp-2 leading-relaxed">
                       {item.description}
                     </p>
                   </div>
 
-                  <div className="mt-3 pt-2.5 border-t border-slate-200/60 flex items-center justify-between text-[10px]">
+                  <div className="mt-3 pt-2.5 border-t border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between text-[10px]">
                     <span className="text-slate-400">Jalan: {item.lastRun}</span>
 
                     <div className="flex items-center gap-1.5">
@@ -416,8 +416,8 @@ export function DashboardMidRow({ peran = 'penjualan' }: DashboardMidRowProps) {
                           className={cn(
                             'px-1.5 py-0.2 rounded font-mono font-bold text-[9px]',
                             fmt === 'PDF'
-                              ? 'bg-red-50 text-red-700 border border-red-200'
-                              : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              ? 'bg-red-50 dark:bg-red-950/60 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-900/50'
+                              : 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/50'
                           )}
                         >
                           {fmt}
@@ -428,7 +428,7 @@ export function DashboardMidRow({ peran = 'penjualan' }: DashboardMidRowProps) {
                         asChild
                         variant="ghost"
                         size="icon"
-                        className="w-5 h-5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 ml-1"
+                        className="w-5 h-5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-slate-700 ml-1"
                       >
                         <Link href={item.href} title="Buka modul">
                           <ArrowRight className="w-3 h-3" />
@@ -442,20 +442,20 @@ export function DashboardMidRow({ peran = 'penjualan' }: DashboardMidRowProps) {
           </div>
         </div>
 
-        <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-          <span className="text-slate-500 text-[11px]">
+        <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+          <span className="text-slate-500 dark:text-slate-400 text-[11px]">
             Menampilkan {filteredModules.length} modul berhak akses
           </span>
           {peran === 'manajer' ? (
-            <Link href="/laporan" className="font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1">
+            <Link href="/laporan" className="font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1">
               Lihat semua laporan &rarr;
             </Link>
           ) : peran === 'gudang' ? (
-            <Link href="/stok" className="font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1">
+            <Link href="/stok" className="font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1">
               Buku Kartu Stok Gudang &rarr;
             </Link>
           ) : (
-            <Link href="/pesanan" className="font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1">
+            <Link href="/pesanan" className="font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1">
               Semua Pesanan Penjualan &rarr;
             </Link>
           )}
@@ -463,20 +463,20 @@ export function DashboardMidRow({ peran = 'penjualan' }: DashboardMidRowProps) {
       </div>
 
       {/* 2. BAGIAN TENGAH: JADWAL OPERASIONAL & ANTRIAN (3.5 Kolom Desktop) */}
-      <div className="lg:col-span-3 xl:col-span-3 rounded-2xl p-5 border border-[#e2ebf6] bg-white shadow-sm flex flex-col justify-between">
+      <div className="lg:col-span-3 xl:col-span-3 rounded-2xl p-5 border border-[#e2ebf6] dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between">
         <div>
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-xs font-bold text-[#0c1a30] uppercase tracking-wider font-mono">
+              <h3 className="text-xs font-bold text-[#0c1a30] dark:text-slate-100 uppercase tracking-wider font-mono">
                 {peran === 'gudang'
                   ? 'Jadwal Muatan & Armada'
                   : peran === 'penjualan'
                   ? 'Jadwal Penagihan & Order'
                   : 'Jadwal & Antrean'}
               </h3>
-              <p className="text-[11px] text-slate-500">Operasional terprogram</p>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">Operasional terprogram</p>
             </div>
-            <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">
+            <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
               {schedules.filter((s) => s.enabled).length} Aktif
             </span>
           </div>
@@ -485,19 +485,19 @@ export function DashboardMidRow({ peran = 'penjualan' }: DashboardMidRowProps) {
             {schedules.map((item) => (
               <div
                 key={item.id}
-                className="p-3 rounded-xl border border-slate-100 bg-slate-50/70 hover:bg-slate-50 transition-colors flex items-center justify-between gap-2.5"
+                className="p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800/70 transition-colors flex items-center justify-between gap-2.5"
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
-                    <span className="w-5 h-5 rounded-md bg-blue-100 text-blue-800 text-[9px] font-bold flex items-center justify-center shrink-0">
+                    <span className="w-5 h-5 rounded-md bg-blue-100 dark:bg-blue-950/80 text-blue-800 dark:text-blue-300 text-[9px] font-bold flex items-center justify-center shrink-0">
                       {item.pic}
                     </span>
-                    <h5 className="text-xs font-bold text-slate-800 truncate">
+                    <h5 className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">
                       {item.title}
                     </h5>
                   </div>
 
-                  <div className="flex items-center gap-2 mt-1 text-[10px] text-slate-500">
+                  <div className="flex items-center gap-2 mt-1 text-[10px] text-slate-500 dark:text-slate-400">
                     <span className="flex items-center gap-1">
                       <Clock className="w-3 h-3 text-slate-400" />
                       {item.schedule}
@@ -508,7 +508,7 @@ export function DashboardMidRow({ peran = 'penjualan' }: DashboardMidRowProps) {
                     {item.formats.map((f) => (
                       <span
                         key={f}
-                        className="text-[8px] font-mono px-1 py-0.2 rounded bg-white border border-slate-200 text-slate-600"
+                        className="text-[8px] font-mono px-1 py-0.2 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400"
                       >
                         {f}
                       </span>
@@ -522,7 +522,7 @@ export function DashboardMidRow({ peran = 'penjualan' }: DashboardMidRowProps) {
                   onClick={() => toggleSchedule(item.id)}
                   className={cn(
                     'w-9 h-5 rounded-full transition-colors relative cursor-pointer shrink-0',
-                    item.enabled ? 'bg-[#0c1b3a]' : 'bg-slate-300'
+                    item.enabled ? 'bg-[#0c1b3a] dark:bg-blue-600' : 'bg-slate-300 dark:bg-slate-700'
                   )}
                   title={item.enabled ? 'Matikan jadwal' : 'Aktifkan jadwal'}
                 >
@@ -538,17 +538,17 @@ export function DashboardMidRow({ peran = 'penjualan' }: DashboardMidRowProps) {
           </div>
         </div>
 
-        <div className="mt-4 pt-3 border-t border-slate-100 text-center">
+        <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-center">
           {peran === 'gudang' ? (
-            <Link href="/gudang/picking" className="text-xs font-semibold text-blue-600 hover:text-blue-800">
+            <Link href="/gudang/picking" className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
               Buka Jadwal Muatan Truk &rarr;
             </Link>
           ) : peran === 'penjualan' ? (
-            <Link href="/penagihan" className="text-xs font-semibold text-blue-600 hover:text-blue-800">
+            <Link href="/penagihan" className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
               Buka Jadwal Penagihan &rarr;
             </Link>
           ) : (
-            <Link href="/laporan" className="text-xs font-semibold text-blue-600 hover:text-blue-800">
+            <Link href="/laporan" className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
               Semua Jadwal &amp; Laporan &rarr;
             </Link>
           )}
@@ -556,23 +556,23 @@ export function DashboardMidRow({ peran = 'penjualan' }: DashboardMidRowProps) {
       </div>
 
       {/* 3. BAGIAN KANAN: AI ERP INSIGHTS & REKOMENDASI (3.5 Kolom Desktop) */}
-      <div className="lg:col-span-4 xl:col-span-3 rounded-2xl p-5 border border-[#e2ebf6] bg-gradient-to-br from-white via-blue-50/20 to-indigo-50/30 shadow-sm flex flex-col justify-between">
+      <div className="lg:col-span-4 xl:col-span-3 rounded-2xl p-5 border border-[#e2ebf6] dark:border-slate-800 bg-gradient-to-br from-white via-blue-50/20 to-indigo-50/30 dark:from-slate-900 dark:via-slate-900/95 dark:to-indigo-950/20 shadow-sm flex flex-col justify-between">
         <div>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <div className="h-6 w-6 rounded-lg bg-indigo-600 text-white flex items-center justify-center">
                 <Sparkles className="w-3.5 h-3.5" />
               </div>
-              <h3 className="text-xs font-bold text-[#0c1a30] uppercase tracking-wider font-mono">
+              <h3 className="text-xs font-bold text-[#0c1a30] dark:text-slate-100 uppercase tracking-wider font-mono">
                 AI ERP Advisor
               </h3>
             </div>
-            <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200">
+            <span className="text-[10px] font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/70 px-2 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800/60">
               Cerdas
             </span>
           </div>
 
-          <p className="text-xs text-slate-600 mb-3 leading-relaxed">
+          <p className="text-xs text-slate-600 dark:text-slate-300 mb-3 leading-relaxed">
             {peran === 'gudang'
               ? 'Asisten analitik cerdas untuk estimasi kebutuhan restock komoditas dan jadwal bongkar muat.'
               : peran === 'penjualan'
@@ -595,7 +595,7 @@ export function DashboardMidRow({ peran = 'penjualan' }: DashboardMidRowProps) {
                 value={aiPrompt}
                 onChange={(e) => setAiPrompt(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleGenerateAi()}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 shadow-2xs"
+                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 shadow-2xs"
               />
             </div>
 
@@ -603,7 +603,7 @@ export function DashboardMidRow({ peran = 'penjualan' }: DashboardMidRowProps) {
               type="button"
               onClick={handleGenerateAi}
               disabled={isGenerating || !aiPrompt.trim()}
-              className="w-full h-8 text-xs bg-[#0c1b3a] hover:bg-[#152a54] text-white rounded-xl font-medium gap-1.5 transition-all"
+              className="w-full h-8 text-xs bg-[#0c1b3a] hover:bg-[#152a54] dark:bg-blue-600 dark:hover:bg-blue-500 text-white rounded-xl font-medium gap-1.5 transition-all"
             >
               <Sparkles className="w-3.5 h-3.5" />
               {isGenerating ? 'Menganalisis...' : 'Hasilkan Rekomendasi'}
@@ -612,13 +612,13 @@ export function DashboardMidRow({ peran = 'penjualan' }: DashboardMidRowProps) {
 
           {/* AI Response Display */}
           {aiResponse && (
-            <div className="mb-3 p-3 rounded-xl bg-blue-50 border border-blue-200 text-xs text-blue-900 leading-relaxed animate-in fade-in">
+            <div className="mb-3 p-3 rounded-xl bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-900/60 text-xs text-blue-900 dark:text-blue-200 leading-relaxed animate-in fade-in">
               {aiResponse}
             </div>
           )}
 
           {/* Suggested Proactive Insights */}
-          <div className="space-y-2 pt-2 border-t border-slate-100">
+          <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
               Rekomendasi Terkini
             </span>
@@ -633,13 +633,13 @@ export function DashboardMidRow({ peran = 'penjualan' }: DashboardMidRowProps) {
                       'Minyak Goreng Sawit 2L sisa 14 karton (batas minimum 25 karton). Rekomendasikan segera buat pengajuan PO ke pemasok resmi.'
                     );
                   }}
-                  className="w-full text-left p-2 rounded-lg bg-white border border-slate-200/80 hover:border-indigo-300 hover:bg-indigo-50/50 transition-all text-[11px] text-slate-700 cursor-pointer"
+                  className="w-full text-left p-2 rounded-lg bg-white dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700/80 hover:border-indigo-300 dark:hover:border-indigo-600 hover:bg-indigo-50/50 dark:hover:bg-slate-800 transition-all text-[11px] text-slate-700 dark:text-slate-200 cursor-pointer"
                 >
-                  <div className="flex items-center gap-1.5 font-semibold text-indigo-950">
+                  <div className="flex items-center gap-1.5 font-semibold text-indigo-950 dark:text-indigo-200">
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                     Peringatan Restock Minyak Goreng
                   </div>
-                  <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-1">
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">
                     Stok kritis, sisa di bawah stok minimum
                   </p>
                 </button>
@@ -651,13 +651,13 @@ export function DashboardMidRow({ peran = 'penjualan' }: DashboardMidRowProps) {
                       'Sesi stock opname kuartal ini mencakup 48 SKU aktif. Disarankan verifikasi fisik tepung terigu dan beras sebelum akhir pekan.'
                     );
                   }}
-                  className="w-full text-left p-2 rounded-lg bg-white border border-slate-200/80 hover:border-indigo-300 hover:bg-indigo-50/50 transition-all text-[11px] text-slate-700 cursor-pointer"
+                  className="w-full text-left p-2 rounded-lg bg-white dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700/80 hover:border-indigo-300 dark:hover:border-indigo-600 hover:bg-indigo-50/50 dark:hover:bg-slate-800 transition-all text-[11px] text-slate-700 dark:text-slate-200 cursor-pointer"
                 >
-                  <div className="flex items-center gap-1.5 font-semibold text-indigo-950">
+                  <div className="flex items-center gap-1.5 font-semibold text-indigo-950 dark:text-indigo-200">
                     <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
                     Audit Fisik Rutin Gudang
                   </div>
-                  <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-1">
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">
                     Sinkronisasi fisik vs kartu mutasi stok
                   </p>
                 </button>
@@ -672,13 +672,13 @@ export function DashboardMidRow({ peran = 'penjualan' }: DashboardMidRowProps) {
                       'Toko Berkah Jaya memiliki sisa batas kredit Rp 3.500.000. Masih memenuhi syarat pesanan draf berikutnya dengan termin 14 hari.'
                     );
                   }}
-                  className="w-full text-left p-2 rounded-lg bg-white border border-slate-200/80 hover:border-indigo-300 hover:bg-indigo-50/50 transition-all text-[11px] text-slate-700 cursor-pointer"
+                  className="w-full text-left p-2 rounded-lg bg-white dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700/80 hover:border-indigo-300 dark:hover:border-indigo-600 hover:bg-indigo-50/50 dark:hover:bg-slate-800 transition-all text-[11px] text-slate-700 dark:text-slate-200 cursor-pointer"
                 >
-                  <div className="flex items-center gap-1.5 font-semibold text-indigo-950">
+                  <div className="flex items-center gap-1.5 font-semibold text-indigo-950 dark:text-indigo-200">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                     Kelayakan Kredit Toko Berkah
                   </div>
-                  <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-1">
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">
                     Batas kredit aman untuk order baru
                   </p>
                 </button>
@@ -690,13 +690,13 @@ export function DashboardMidRow({ peran = 'penjualan' }: DashboardMidRowProps) {
                       'Terdapat faktur Toko Subur Makmur mendekati batas jatuh tempo. Lakukan konfirmasi penerimaan barang dan jadwal pelunasan.'
                     );
                   }}
-                  className="w-full text-left p-2 rounded-lg bg-white border border-slate-200/80 hover:border-indigo-300 hover:bg-indigo-50/50 transition-all text-[11px] text-slate-700 cursor-pointer"
+                  className="w-full text-left p-2 rounded-lg bg-white dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700/80 hover:border-indigo-300 dark:hover:border-indigo-600 hover:bg-indigo-50/50 dark:hover:bg-slate-800 transition-all text-[11px] text-slate-700 dark:text-slate-200 cursor-pointer"
                 >
-                  <div className="flex items-center gap-1.5 font-semibold text-indigo-950">
+                  <div className="flex items-center gap-1.5 font-semibold text-indigo-950 dark:text-indigo-200">
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                     Follow-up Tagihan Toko
                   </div>
-                  <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-1">
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">
                     Mencegah tagihan lewat jatuh tempo
                   </p>
                 </button>
@@ -711,13 +711,13 @@ export function DashboardMidRow({ peran = 'penjualan' }: DashboardMidRowProps) {
                       'Minyak Goreng Sawit 2L sisa 14 karton (batas aman 25 karton). Penjualan harian rata-rata 5 karton/hari ke toko kelontong mitra. Disarankan ajukan PO ke pemasok utama.'
                     );
                   }}
-                  className="w-full text-left p-2 rounded-lg bg-white border border-slate-200/80 hover:border-indigo-300 hover:bg-indigo-50/50 transition-all text-[11px] text-slate-700 cursor-pointer"
+                  className="w-full text-left p-2 rounded-lg bg-white dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700/80 hover:border-indigo-300 dark:hover:border-indigo-600 hover:bg-indigo-50/50 dark:hover:bg-slate-800 transition-all text-[11px] text-slate-700 dark:text-slate-200 cursor-pointer"
                 >
-                  <div className="flex items-center gap-1.5 font-semibold text-indigo-950">
+                  <div className="flex items-center gap-1.5 font-semibold text-indigo-950 dark:text-indigo-200">
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                     Prediksi Re-order Minyak Goreng 2L
                   </div>
-                  <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-1">
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">
                     Stok menipis, sisa 3 hari operasional toko
                   </p>
                 </button>
@@ -729,13 +729,13 @@ export function DashboardMidRow({ peran = 'penjualan' }: DashboardMidRowProps) {
                       'Toko Berkah Jaya memiliki piutang Rp 8.500.000 dari plafon Rp 10.000.000 (85% terpakai). Rekomendasikan pembayaran sebelum pesanan baru.'
                     );
                   }}
-                  className="w-full text-left p-2 rounded-lg bg-white border border-slate-200/80 hover:border-indigo-300 hover:bg-indigo-50/50 transition-all text-[11px] text-slate-700 cursor-pointer"
+                  className="w-full text-left p-2 rounded-lg bg-white dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700/80 hover:border-indigo-300 dark:hover:border-indigo-600 hover:bg-indigo-50/50 dark:hover:bg-slate-800 transition-all text-[11px] text-slate-700 dark:text-slate-200 cursor-pointer"
                 >
-                  <div className="flex items-center gap-1.5 font-semibold text-indigo-950">
+                  <div className="flex items-center gap-1.5 font-semibold text-indigo-950 dark:text-indigo-200">
                     <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
                     Peringatan Plafon Kredit Toko
                   </div>
-                  <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-1">
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">
                     2 toko mendekati ambang batas 80% kredit
                   </p>
                 </button>
@@ -746,15 +746,15 @@ export function DashboardMidRow({ peran = 'penjualan' }: DashboardMidRowProps) {
 
         <div className="mt-3 pt-2 text-center">
           {peran === 'manajer' ? (
-            <Link href="/analitik" className="text-xs font-semibold text-indigo-600 hover:text-indigo-800">
+            <Link href="/analitik" className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300">
               Jelajahi Analitik Komprehensif &rarr;
             </Link>
           ) : peran === 'gudang' ? (
-            <Link href="/barang" className="text-xs font-semibold text-indigo-600 hover:text-indigo-800">
+            <Link href="/barang" className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300">
               Katalog SKU &amp; Stok Gudang &rarr;
             </Link>
           ) : (
-            <Link href="/pesanan" className="text-xs font-semibold text-indigo-600 hover:text-indigo-800">
+            <Link href="/pesanan" className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300">
               Kelola Pesanan Penjualan &rarr;
             </Link>
           )}

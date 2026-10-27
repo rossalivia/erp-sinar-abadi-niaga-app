@@ -9,7 +9,7 @@ import {
   Search,
   ChevronDown,
 } from "lucide-react";
-import { logoutAction } from "@/app/login/actions";
+import { logoutAction } from "@/features/akun/actions";
 import type { UserProfile } from "@/types/auth";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/ui/logo";
@@ -48,7 +48,6 @@ export function Header({
   onOpenMobileSidebar,
   onOpenSearch,
 }: HeaderProps) {
-  const [isPending, startTransition] = React.useTransition();
   const [isProfileOpen, setIsProfileOpen] = React.useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
 
@@ -56,12 +55,6 @@ export function Header({
     label: user.peran,
     bg: "bg-[#f0f5fa] dark:bg-slate-800 border-[#e2ebf6] dark:border-slate-700",
     text: "text-[#0c1a30] dark:text-slate-200",
-  };
-
-  const handleLogout = () => {
-    startTransition(async () => {
-      await logoutAction();
-    });
   };
 
   // Close dropdown on outside click
@@ -178,15 +171,15 @@ export function Header({
               </div>
 
               <div className="pt-1 border-t border-slate-100 dark:border-slate-800">
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  disabled={isPending}
-                  className="w-full flex items-center gap-2.5 px-3.5 py-1.5 text-xs text-red-600 dark:text-red-400 hover:bg-red-50/80 dark:hover:bg-red-950/40 transition-colors cursor-pointer text-left"
-                >
-                  <LogOut className="w-3.5 h-3.5" />
-                  <span>{isPending ? "Sedang keluar..." : "Keluar dari Sistem"}</span>
-                </button>
+                <form action={logoutAction}>
+                  <button
+                    type="submit"
+                    className="w-full flex items-center gap-2.5 px-3.5 py-1.5 text-xs text-red-600 dark:text-red-400 hover:bg-red-50/80 dark:hover:bg-red-950/40 transition-colors cursor-pointer text-left"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>Keluar dari Sistem</span>
+                  </button>
+                </form>
               </div>
             </div>
           )}

@@ -28,6 +28,7 @@ import {
   PlusCircle,
   CornerDownLeft,
   X,
+  Zap,
   LucideIcon,
 } from 'lucide-react';
 import { MENU_ITEMS } from '@/lib/akses';
@@ -35,6 +36,7 @@ import type { Peran } from '@/types/auth';
 
 const ICON_MAP: Record<string, LucideIcon> = {
   LayoutDashboard,
+  Zap,
   Package,
   Layers,
   ClipboardCheck,
@@ -114,6 +116,7 @@ const QUICK_ACTIONS: SearchableItem[] = [
 // Peta kategori menu
 const MENU_CATEGORIES: Record<string, string> = {
   '/': 'Menu Utama',
+  '/pusat-tugas': 'Menu Utama',
   '/barang': 'Inventory & Stok',
   '/stok': 'Inventory & Stok',
   '/stok/opname': 'Inventory & Stok',
@@ -138,6 +141,7 @@ const MENU_CATEGORIES: Record<string, string> = {
 // Deskripsi bantuan untuk pencarian cerdas
 const MENU_METADATA: Record<string, { desc: string; keywords: string[] }> = {
   '/': { desc: 'Ringkasan performa penjualan dan status operasional', keywords: ['home', 'beranda', 'ringkasan'] },
+  '/pusat-tugas': { desc: 'Antrean operasional dan transaksi harian yang memerlukan tindakan segera', keywords: ['tugas', 'prioritas', 'antrean', 'todo', 'approval'] },
   '/barang': { desc: 'Katalog master barang, SKU, harga, dan satuan', keywords: ['produk', 'item', 'katalog', 'master barang'] },
   '/stok': { desc: 'Mutasi kartu stok masuk dan keluar per gudang', keywords: ['kartu stok', 'riwayat', 'logistik'] },
   '/stok/opname': { desc: 'Formulir opname fisik dan penyesuaian selisih stok', keywords: ['cek fisik', 'audit stok'] },
@@ -319,7 +323,7 @@ export function CommandMenu({ open, onOpenChange, peran }: CommandMenuProps) {
           className="fixed left-[50%] top-[16%] z-50 w-full max-w-2xl translate-x-[-50%] bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-white/80 dark:border-slate-800 shadow-2xl rounded-2xl flex flex-col overflow-hidden data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 duration-150"
         >
           {/* Header & Search Input */}
-          <div className="flex items-center gap-3 border-b border-slate-200/70 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-850/60 px-4 py-3.5 shrink-0">
+          <div className="flex items-center gap-3 border-b border-slate-200/70 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/60 px-4 py-3.5 shrink-0">
             <Search className="h-4 w-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
             <input
               ref={inputRef}

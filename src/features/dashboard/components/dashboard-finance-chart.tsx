@@ -63,24 +63,24 @@ export function DashboardFinanceChart({
   const marginPersen = ringkasan?.margin_persen || 0;
 
   return (
-    <div className="surface-raised rounded-2xl p-5 border border-[#e2ebf6] shadow-sm space-y-4">
+    <div className="surface-raised rounded-2xl p-5 border border-[#e2ebf6] dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-4">
       {/* Header Grafik & Kontrol Tipe */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#eef4fb]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#eef4fb] dark:border-slate-800">
         <div>
           <div className="flex items-center gap-2">
             <div className="h-5 w-1 bg-[#2563eb] rounded-full" />
-            <h3 className="text-xs font-bold text-[#0c1a30] uppercase tracking-wider font-mono">
+            <h3 className="text-xs font-bold text-[#0c1a30] dark:text-slate-100 uppercase tracking-wider font-mono">
               Grafik Performa Finansial &amp; Margin
             </h3>
-            <span className="text-[10px] text-slate-400">({periodeLabel})</span>
+            <span className="text-[10px] text-slate-400 dark:text-slate-500">({periodeLabel})</span>
           </div>
-          <p className="text-[11px] text-slate-500 mt-0.5">
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
             Perbandingan omzet kotor terhadap margin keuntungan terealisasi.
           </p>
         </div>
 
         <div className="flex items-center gap-1.5 self-start sm:self-auto">
-          <div className="flex items-center gap-1 bg-[#f0f5fa] p-0.5 rounded-xl border border-[#e2ebf6]">
+          <div className="flex items-center gap-1 bg-[#f0f5fa] dark:bg-slate-800 p-0.5 rounded-xl border border-[#e2ebf6] dark:border-slate-700">
             <Button
               type="button"
               size="sm"
@@ -106,25 +106,25 @@ export function DashboardFinanceChart({
       </div>
 
       {/* Komparasi Nilai Utama (Quick Metrics Strip) */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs bg-[#f0f5fa] p-3.5 rounded-xl border border-[#e2ebf6]">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs bg-[#f0f5fa] dark:bg-slate-800/60 p-3.5 rounded-xl border border-[#e2ebf6] dark:border-slate-700/60">
         <div>
-          <span className="text-slate-400 text-[10px] block uppercase font-mono">Omzet Periode Ini</span>
-          <span className="font-extrabold text-[#0c1a30] text-sm tabular-nums">
+          <span className="text-slate-400 dark:text-slate-500 text-[10px] block uppercase font-mono">Omzet Periode Ini</span>
+          <span className="font-extrabold text-[#0c1a30] dark:text-white text-sm tabular-nums">
             {formatRupiah(totalOmzet)}
           </span>
         </div>
         <div>
-          <span className="text-slate-400 text-[10px] block uppercase font-mono">Beban Pokok (HPP)</span>
-          <span className="font-semibold text-slate-600 text-sm tabular-nums">
+          <span className="text-slate-400 dark:text-slate-500 text-[10px] block uppercase font-mono">Beban Pokok (HPP)</span>
+          <span className="font-semibold text-slate-600 dark:text-slate-300 text-sm tabular-nums">
             {formatRupiah(totalHpp)}
           </span>
         </div>
         <div>
-          <span className="text-[#1e40af] text-[10px] font-semibold block uppercase font-mono flex items-center gap-1">
+          <span className="text-[#1e40af] dark:text-blue-400 text-[10px] font-semibold block uppercase font-mono flex items-center gap-1">
             <TrendingUp className="h-3 w-3" />
             Margin Kotor ({marginPersen}%)
           </span>
-          <span className="font-extrabold text-[#1e40af] text-sm tabular-nums">
+          <span className="font-extrabold text-[#1e40af] dark:text-blue-400 text-sm tabular-nums">
             {formatRupiah(totalMargin)}
           </span>
         </div>

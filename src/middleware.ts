@@ -68,10 +68,11 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const isAuthRoute = pathname === '/login' || pathname === '/masuk';
+  const isServerAction = request.headers.get('next-action') !== null;
 
   // Jika belum login
   if (!user) {
-    if (isAuthRoute) {
+    if (isAuthRoute || isServerAction) {
       return supabaseResponse;
     }
     const safeNext = sanitizeNextUrl(pathname + request.nextUrl.search);
@@ -97,6 +98,9 @@ export async function middleware(request: NextRequest) {
   // Akun nonaktif atau profil tidak ditemukan
   if (!profile || !profile.aktif) {
     await supabase.auth.signOut();
+    if (isServerAction) {
+      return supabaseResponse;
+    }
     const redirectUrl = new URL('/login', request.url);
     redirectUrl.searchParams.set('error', 'nonaktif');
     return NextResponse.redirect(redirectUrl);
@@ -104,6 +108,9 @@ export async function middleware(request: NextRequest) {
 
   // Jika sudah login dan mencoba membuka halaman login
   if (isAuthRoute) {
+    if (isServerAction) {
+      return supabaseResponse;
+    }
     return NextResponse.redirect(new URL('/', request.url));
   }
 
@@ -115,6 +122,9 @@ export async function middleware(request: NextRequest) {
   // Periksa hak akses rute berdasarkan matriks peran
   const peran = profile.peran as Peran;
   if (!isRouteAuthorized(pathname, peran)) {
+    if (isServerAction) {
+      return supabaseResponse;
+    }
     return NextResponse.redirect(new URL('/tidak-berwenang', request.url));
   }
 

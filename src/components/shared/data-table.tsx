@@ -93,7 +93,7 @@ export function DataTable<T>({
           <TableRow
             key={keyExtractor(row)}
             className={cn(
-              zebra && rowIdx % 2 === 1 && 'bg-slate-50/50 dark:bg-slate-850/40'
+              zebra && rowIdx % 2 === 1 && 'bg-slate-50/50 dark:bg-slate-800/40'
             )}
           >
             {columns.map((col, colIdx) => (

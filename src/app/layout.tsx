@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Script from 'next/script';
 import { Plus_Jakarta_Sans, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/sonner';
@@ -27,23 +26,6 @@ export const metadata: Metadata = {
   },
 };
 
-const themeScript = `
-  (function() {
-    try {
-      var key = 'erp_sinar_abadi_theme';
-      var theme = localStorage.getItem(key);
-      var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (theme === 'dark' || (!theme && prefersDark) || (theme === 'system' && prefersDark)) {
-        document.documentElement.classList.add('dark');
-        document.documentElement.setAttribute('data-theme', 'dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-        document.documentElement.setAttribute('data-theme', 'light');
-      }
-    } catch(e) {}
-  })();
-`;
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -55,11 +37,6 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${plusJakartaSans.variable} ${geistMono.variable} h-full antialiased overflow-x-hidden w-full max-w-full`}
     >
-      <head>
-        <Script id="theme-init" strategy="beforeInteractive">
-          {themeScript}
-        </Script>
-      </head>
       <body className="min-h-full flex flex-col font-sans text-slate-800 dark:text-slate-100 bg-[#f4f7fb] dark:bg-[#090e1a] selection:bg-indigo-500 selection:text-white overflow-x-hidden w-full max-w-full transition-colors duration-150">
         <ThemeProvider>
           {children}

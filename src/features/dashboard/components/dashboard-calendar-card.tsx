@@ -125,23 +125,23 @@ export function DashboardCalendarCard({ peran = 'penjualan' }: DashboardCalendar
   const activeEvents = filterEventsForRole(rawEvents);
 
   return (
-    <div className="rounded-2xl border border-[#d6e4f5] bg-white p-4 sm:p-5 shadow-sm flex flex-col justify-between h-full">
+    <div className="rounded-2xl border border-[#d6e4f5] dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-sm flex flex-col justify-between h-full">
       {/* Calendar Header: Month, Year, Navigation */}
       <div>
         <div className="flex items-center justify-between mb-3.5">
           <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 text-blue-700 border border-blue-100">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-900/50">
               <CalendarIcon className="h-3.5 w-3.5" />
             </div>
             <div>
-              <h3 className="text-xs font-bold text-[#0c1a30] uppercase tracking-wider font-mono">
+              <h3 className="text-xs font-bold text-[#0c1a30] dark:text-slate-100 uppercase tracking-wider font-mono">
                 {peran === 'gudang'
                   ? 'Jadwal Logistik Gudang'
                   : peran === 'penjualan'
                   ? 'Agenda Penjualan & Tagihan'
                   : 'Kalender Operasional'}
               </h3>
-              <p className="text-[11px] font-semibold text-slate-700">
+              <p className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
                 {NAMA_BULAN[month]} {year}
               </p>
             </div>
@@ -150,21 +150,21 @@ export function DashboardCalendarCard({ peran = 'penjualan' }: DashboardCalendar
           <div className="flex items-center gap-1">
             <button
               onClick={handleResetToday}
-              className="px-2 py-0.5 text-[10px] font-semibold rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors mr-1 cursor-pointer"
+              className="px-2 py-0.5 text-[10px] font-semibold rounded-md border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors mr-1 cursor-pointer"
               title="Kembali ke Hari Ini"
             >
               Hari Ini
             </button>
             <button
               onClick={handlePrevMonth}
-              className="p-1 rounded-md text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+              className="p-1 rounded-md text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               aria-label="Bulan sebelumnya"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button
               onClick={handleNextMonth}
-              className="p-1 rounded-md text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+              className="p-1 rounded-md text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               aria-label="Bulan berikutnya"
             >
               <ChevronRight className="w-4 h-4" />
@@ -178,7 +178,7 @@ export function DashboardCalendarCard({ peran = 'penjualan' }: DashboardCalendar
             <div
               key={hari}
               className={`text-[10px] font-bold py-1 ${
-                idx >= 5 ? 'text-amber-600' : 'text-slate-400'
+                idx >= 5 ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400 dark:text-slate-500'
               }`}
             >
               {hari}
@@ -194,7 +194,7 @@ export function DashboardCalendarCard({ peran = 'penjualan' }: DashboardCalendar
             return (
               <div
                 key={`prev-${idx}`}
-                className="h-8 flex items-center justify-center text-[11px] text-slate-300 font-normal"
+                className="h-8 flex items-center justify-center text-[11px] text-slate-300 dark:text-slate-600 font-normal"
               >
                 {dayNum}
               </div>
@@ -217,10 +217,10 @@ export function DashboardCalendarCard({ peran = 'penjualan' }: DashboardCalendar
                 onClick={() => setSelectedDay(dayNum)}
                 className={`relative h-8 w-full rounded-lg flex flex-col items-center justify-center text-[11px] transition-all cursor-pointer ${
                   isToday
-                    ? 'bg-[#0c1b3a] text-white font-bold shadow-xs'
+                    ? 'bg-[#0c1b3a] dark:bg-blue-600 text-white font-bold shadow-xs'
                     : isSelected
-                    ? 'bg-blue-100 text-blue-900 font-bold ring-1 ring-blue-400'
-                    : 'text-slate-700 hover:bg-slate-100'
+                    ? 'bg-blue-100 dark:bg-blue-950 text-blue-900 dark:text-blue-200 font-bold ring-1 ring-blue-400 dark:ring-blue-600'
+                    : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
               >
                 <span>{dayNum}</span>
@@ -261,9 +261,9 @@ export function DashboardCalendarCard({ peran = 'penjualan' }: DashboardCalendar
       </div>
 
       {/* Selected Date Agenda Details */}
-      <div className="mt-3.5 pt-3 border-t border-slate-100">
+      <div className="mt-3.5 pt-3 border-t border-slate-100 dark:border-slate-800">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-[11px] font-bold text-[#0c1a30] flex items-center gap-1.5">
+          <span className="text-[11px] font-bold text-[#0c1a30] dark:text-slate-100 flex items-center gap-1.5">
             <Clock className="w-3 h-3 text-slate-400" />
             Agenda: {selectedDay} {NAMA_BULAN[month]}
           </span>
@@ -277,7 +277,7 @@ export function DashboardCalendarCard({ peran = 'penjualan' }: DashboardCalendar
             {activeEvents.map((ev) => (
               <div
                 key={ev.id}
-                className="flex items-start gap-2 p-1.5 rounded-lg bg-slate-50 border border-slate-100 text-[11px]"
+                className="flex items-start gap-2 p-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/60 text-[11px]"
               >
                 {ev.type === 'kirim' && (
                   <Truck className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
@@ -289,7 +289,7 @@ export function DashboardCalendarCard({ peran = 'penjualan' }: DashboardCalendar
                   <PackageCheck className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5" />
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-slate-800 truncate">{ev.title}</p>
+                  <p className="font-medium text-slate-800 dark:text-slate-100 truncate">{ev.title}</p>
                   <p className="text-[10px] text-slate-400 font-mono">{ev.time} WIB</p>
                 </div>
               </div>

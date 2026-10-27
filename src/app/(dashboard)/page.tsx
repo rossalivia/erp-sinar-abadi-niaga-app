@@ -8,18 +8,14 @@ import { formatTanggal, formatRupiah } from "@/lib/format";
 import {
   AlertTriangle,
   ShoppingCart,
-  TrendingUp,
-  DollarSign,
   ReceiptText,
-  ArrowRight,
 } from "lucide-react";
 import type { LaporanRingkasan, LaporanAgingPiutang, LaporanMarginMingguanItem } from "@/features/laporan/types";
 import {
   TugasHariIniSkeleton,
   TugasHariIniSection,
 } from "@/features/pusat-tugas/components/tugas-hari-ini-section";
-import { DashboardDateFilter } from "@/features/dashboard/components/dashboard-date-filter";
-import { DashboardFinanceChart } from "@/features/dashboard/components/dashboard-finance-chart";
+import { DashboardFinancialSection } from "@/features/dashboard/components/dashboard-financial-section";
 import { DashboardKpiRow } from "@/features/dashboard/components/dashboard-kpi-row";
 import { DashboardMidRow } from "@/features/dashboard/components/dashboard-mid-row";
 import { DashboardAnalyticsRow } from "@/features/dashboard/components/dashboard-analytics-row";
@@ -296,28 +292,28 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     {
       header: "Kode Barang",
       accessorKey: "kode",
-      className: "w-32 font-mono text-slate-700 font-medium",
+      className: "w-32 font-mono text-slate-700 dark:text-slate-300 font-medium",
     },
     {
       header: "Nama Barang",
       accessorKey: "nama",
-      className: "font-medium text-slate-900",
+      className: "font-medium text-slate-900 dark:text-slate-100",
     },
     {
       header: "Satuan",
       accessorKey: "satuan",
-      className: "w-24 text-slate-500",
+      className: "w-24 text-slate-500 dark:text-slate-400",
     },
     {
       header: "Stok Saat Ini",
       isNumeric: true,
-      className: "w-32 text-red-600 font-semibold tabular-nums",
+      className: "w-32 text-red-600 dark:text-red-400 font-semibold tabular-nums",
       cell: (row) => `${row.stok.toLocaleString("id-ID")} ${row.satuan}`,
     },
     {
       header: "Batas Minimum",
       isNumeric: true,
-      className: "w-32 text-slate-600 tabular-nums",
+      className: "w-32 text-slate-600 dark:text-slate-300 tabular-nums",
       cell: (row) => `${row.stok_minimum.toLocaleString("id-ID")} ${row.satuan}`,
     },
     {
@@ -325,8 +321,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       align: "center",
       className: "w-28",
       cell: () => (
-        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-800">
-          <span className="w-1.5 h-1.5 rounded-full bg-red-600" />
+        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 dark:bg-red-950/70 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-900/60">
+          <span className="w-1.5 h-1.5 rounded-full bg-red-600 dark:bg-red-400" />
           Menipis
         </span>
       ),
@@ -342,7 +338,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
               asChild
               size="sm"
               variant="outline"
-              className="h-7 text-xs px-2.5 border-slate-300 hover:border-slate-400 gap-1"
+              className="h-7 text-xs px-2.5 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-slate-400 dark:hover:bg-slate-800 gap-1"
             >
               <Link href={`/pembelian/baru?barang=${row.id}`}>
                 <ShoppingCart className="w-3 h-3" />
@@ -377,23 +373,13 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         </div>
       </div>
 
-      {/* 2. Global Filter Tanggal Dashboard */}
-      {isManajer && (
-        <DashboardDateFilter
-          dari={dari}
-          sampai={sampai}
-          preset={preset}
-          periodeLabel={periodeJudul}
-        />
-      )}
-
-      {/* 3. Baris 1: 4 Kartu KPI Adaptif per Peran */}
+      {/* 2. Baris 1: 4 Kartu KPI Adaptif per Peran (Diproteksi Ketat BR-12) */}
       <DashboardKpiRow
         peran={user?.peran || "penjualan"}
-        totalOmzet={kpiFinansial?.total_omzet}
+        totalOmzet={isManajer ? kpiFinansial?.total_omzet : undefined}
         totalPesanan={totalPesananCount}
-        totalMargin={kpiFinansial?.total_margin}
-        marginPersen={kpiFinansial?.margin_persen}
+        totalMargin={isManajer ? kpiFinansial?.total_margin : undefined}
+        marginPersen={isManajer ? kpiFinansial?.margin_persen : undefined}
         pesananSelesai={kpiFinansial?.pesanan_lunas}
         pesananProses={kpiFinansial?.pesanan_dikirim}
         pesananMenunggu={jumlahPersetujuanMenunggu}
@@ -457,151 +443,25 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         )}
 
       {/* 7. Pusat Tugas Prioritas (Antrean Cerdas dengan Stagger) */}
-      <Suspense fallback={<TugasHariIniSkeleton />}>
-        <TugasHariIniSection />
-      </Suspense>
+      <div id="pusat-tugas" className="scroll-mt-20">
+        <Suspense fallback={<TugasHariIniSkeleton />}>
+          <TugasHariIniSection />
+        </Suspense>
+      </div>
 
-      {/* 8. Panel Khusus Manajer: Bento Grid & Grafik Finansial */}
+      {/* 8. Panel Khusus Manajer: Bento Grid & Grafik Finansial Reaktif (BR-12) */}
       {isManajer && (
         <section className="space-y-4" aria-label="Keuangan Manajer">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="h-5 w-1 bg-[#2563eb] rounded-full" />
-              <h2 className="text-xs font-bold text-[#0c1a30] uppercase tracking-wider font-mono">
-                Analisis Finansial Mendalam — {periodeJudul}
-              </h2>
-            </div>
-            <Link
-              href="/laporan"
-              className="text-xs font-semibold text-[#2563eb] hover:text-[#1d4ed8] flex items-center gap-1 transition-colors"
-            >
-              Lihat Laporan Lengkap
-              <ArrowRight className="h-3 w-3" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3.5">
-            {/* Bento Card 1: Hero Omzet & Margin (Lebar 2 Kolom di Desktop) */}
-            <div className="md:col-span-2 surface-raised rounded-2xl p-5 flex flex-col justify-between border border-[#e2ebf6] shadow-sm">
-              <div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="h-7 w-7 rounded-xl bg-[#e5f0fd] text-[#1e40af] border border-[#bfdbfe] flex items-center justify-center">
-                      <DollarSign className="w-4 h-4" />
-                    </div>
-                    <span className="text-xs font-semibold text-[#0c1a30]">
-                      Omzet &amp; Margin Kotor
-                    </span>
-                  </div>
-                  <span className="text-[11px] font-mono text-slate-400">
-                    {formatTanggal(dari)} s.d. {formatTanggal(sampai)}
-                  </span>
-                </div>
-
-                <div className="mt-4 flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-6">
-                  <div>
-                    <span className="text-xs text-slate-500 font-medium">Total Omzet</span>
-                    <div className="text-2xl font-extrabold text-[#0c1a30] tabular-nums">
-                      {formatRupiah(kpiFinansial?.total_omzet || 0)}
-                    </div>
-                  </div>
-
-                  <div className="sm:border-l sm:border-[#eef4fb] sm:pl-6">
-                    <span className="text-xs text-[#1e40af] font-semibold flex items-center gap-1">
-                      <TrendingUp className="w-3.5 h-3.5" />
-                      Margin Kotor ({kpiFinansial?.margin_persen || 0}%)
-                    </span>
-                    <div className="text-2xl font-extrabold text-[#1e40af] tabular-nums">
-                      {formatRupiah(kpiFinansial?.total_margin || 0)}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Progress Bar Visual Margin */}
-                <div className="mt-4">
-                  <div className="flex justify-between text-[11px] text-slate-500 mb-1">
-                    <span>{kpiFinansial?.jumlah_pesanan || 0} pesanan selesai</span>
-                    <span className="font-semibold text-slate-700">
-                      Rasio Margin: {kpiFinansial?.margin_persen || 0}%
-                    </span>
-                  </div>
-                  <div className="h-2 w-full bg-[#f0f5fa] rounded-full overflow-hidden border border-[#e2ebf6]">
-                    <div
-                      className="h-full bg-gradient-to-r from-[#2563eb] to-[#0284c7] rounded-full transition-all duration-500"
-                      style={{
-                        width: `${Math.min(Math.max(kpiFinansial?.margin_persen || 0, 0), 100)}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Bento Card 2: Total Piutang Berjalan (Pesanan Dikonfirmasi + Dikirim) */}
-            <div className="surface-raised rounded-2xl p-5 flex flex-col justify-between border border-[#e2ebf6] shadow-sm">
-              <div>
-                <div className="flex items-center justify-between text-xs font-semibold text-slate-600">
-                  <span className="text-[#0c1a30]">Piutang Berjalan</span>
-                  <ReceiptText className="h-4 w-4 text-slate-400" />
-                </div>
-                <div className="mt-2 text-xl font-extrabold text-[#0c1a30] tabular-nums">
-                  {formatRupiah(agingPiutang?.total_piutang_berjalan ?? agingPiutang?.total_piutang_dikirim ?? 0)}
-                </div>
-                <p className="mt-1 text-[11px] text-slate-500">
-                  {(agingPiutang?.total_pesanan_berjalan ?? agingPiutang?.total_pesanan_dikirim) || 0} pesanan berjalan (dikonfirmasi &amp; dikirim)
-                </p>
-              </div>
-
-              <Link
-                href="/laporan/piutang"
-                className="mt-3 text-xs font-semibold text-[#2563eb] hover:text-[#1d4ed8] flex items-center gap-1"
-              >
-                Lihat aging piutang &rarr;
-              </Link>
-            </div>
-
-            {/* Bento Card 3: Tagihan Lewat Tempo & Persetujuan Menunggu */}
-            <div className="surface-raised rounded-2xl p-5 flex flex-col justify-between border border-[#e2ebf6] shadow-sm">
-              <div>
-                <div className="flex items-center justify-between text-xs font-semibold text-slate-600">
-                  <span className="text-[#0c1a30]">Tagihan Lewat Tempo</span>
-                  <AlertTriangle
-                    className={`h-4 w-4 ${
-                      (agingPiutang?.jumlah_pesanan_lewat_tempo || 0) > 0
-                        ? "text-red-600"
-                        : "text-slate-400"
-                    }`}
-                  />
-                </div>
-                <div
-                  className={`mt-2 text-xl font-extrabold tabular-nums ${
-                    (agingPiutang?.jumlah_pesanan_lewat_tempo || 0) > 0
-                      ? "text-red-600"
-                      : "text-[#0c1a30]"
-                  }`}
-                >
-                  {agingPiutang?.jumlah_pesanan_lewat_tempo || 0}{" "}
-                  <span className="text-xs font-normal text-slate-500">faktur</span>
-                </div>
-                <p className="mt-1 text-[11px] text-slate-500">
-                  {jumlahPersetujuanMenunggu} persetujuan harga menunggu
-                </p>
-              </div>
-
-              <Link
-                href="/persetujuan"
-                className="mt-3 text-xs font-semibold text-[#92400e] hover:text-amber-900 flex items-center gap-1"
-              >
-                Tinjau pengajuan &rarr;
-              </Link>
-            </div>
-          </div>
-
-          {/* Grafik Visual Tren Omzet & Margin Finansial Dashboard (8 Minggu Terakhir - PRD Bab 9) */}
-          <DashboardFinanceChart
-            data={marginData}
-            ringkasan={kpiFinansial}
-            periodeLabel="8 Minggu Terakhir"
+          <DashboardFinancialSection
+            peran={user.peran}
+            initialKpi={kpiFinansial}
+            initialMarginData={marginData}
+            initialAgingPiutang={agingPiutang}
+            initialPreset={preset}
+            initialDari={dari}
+            initialSampai={sampai}
+            initialPeriodeJudul={periodeJudul}
+            jumlahPersetujuanMenunggu={jumlahPersetujuanMenunggu}
           />
 
           {/* Daftar Pengajuan Pembelian yang Menunggu Persetujuan Manajer (PRD Bab 9) */}
@@ -610,29 +470,29 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       )}
 
       {/* 5. Tabel Peringatan Stok Menipis (GeneX Card Surface) */}
-      <section className="surface-raised rounded-2xl p-5 border border-[#e2ebf6] shadow-sm" aria-label="Stok Menipis">
+      <section className="surface-raised rounded-2xl p-5 border border-[#e2ebf6] dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm" aria-label="Stok Menipis">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-[#feecec] text-[#991b1b] border border-[#fecaca]">
+            <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-[#feecec] dark:bg-red-950/60 text-[#991b1b] dark:text-red-400 border border-[#fecaca] dark:border-red-900/60">
               <AlertTriangle className="h-4 w-4" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-[#0c1a30]">
+              <h2 className="text-sm font-bold text-[#0c1a30] dark:text-slate-100">
                 Peringatan Stok Menipis
               </h2>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Barang dengan sisa stok pada atau di bawah batas minimum
               </p>
             </div>
           </div>
 
-          <span className="text-xs font-bold text-red-800 bg-red-100 px-2.5 py-0.5 rounded-full tabular-nums">
+          <span className="text-xs font-bold text-red-800 dark:text-red-300 bg-red-100 dark:bg-red-950/80 border border-red-200 dark:border-red-900/60 px-2.5 py-0.5 rounded-full tabular-nums">
             {barangMenipis.length} Barang Perlu Restock
           </span>
         </div>
 
         {stokError ? (
-          <div className="p-4 text-xs text-red-600 bg-red-50 rounded-lg border border-red-200">
+          <div className="p-4 text-xs text-red-600 bg-red-50 dark:bg-red-950/50 rounded-lg border border-red-200 dark:border-red-900">
             Gagal memuat data stok barang: {stokError.message}
           </div>
         ) : (

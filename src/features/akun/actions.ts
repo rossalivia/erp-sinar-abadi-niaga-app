@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 import { createServerClient } from '@/lib/supabase/server';
 import { getErrorMessage } from '@/lib/errors';
 import {
@@ -142,3 +143,10 @@ export async function gantiPasswordAction(
     message: 'Kata sandi berhasil diperbarui',
   };
 }
+
+export async function logoutAction() {
+  const supabase = await createServerClient();
+  await supabase.auth.signOut();
+  redirect('/login');
+}
+

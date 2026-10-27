@@ -26,6 +26,8 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  Zap,
+  Lock,
 } from "lucide-react";
 import type { Peran } from "@/types/auth";
 import { cn } from "@/lib/utils";
@@ -67,7 +69,7 @@ export function Sidebar({
 
   const isActive = (path: string, exact?: boolean) => {
     if (exact || path === "/") return pathname === path;
-    return pathname === path || pathname.startsWith(path);
+    return pathname === path || pathname.startsWith(`${path}/`);
   };
 
   const isManajer = peran === "manajer";
@@ -84,25 +86,16 @@ export function Sidebar({
     }));
   };
 
-  // 5 Kategori Navigasi Resmi sesuai Aturan Kerja
+  // 5 Kategori Navigasi Resmi sesuai Aturan Kerja (AGENTS.md Bagian 8.7)
   const navCategories: NavCategory[] = [
     {
       title: "Menu Utama",
       items: [
         { href: "/", label: "Dashboard", icon: LayoutDashboard, exact: true },
-        {
-          href: "/pesanan",
-          label: "Pesanan B2B",
-          icon: ShoppingCart,
-        },
+        { href: "/pusat-tugas", label: "Pusat Tugas", icon: Zap },
+        { href: "/pesanan", label: "Pesanan B2B", icon: ShoppingCart },
         ...(isPenjualan
-          ? [
-              {
-                href: "/pelanggan",
-                label: "Pelanggan & Toko",
-                icon: Users,
-              },
-            ]
+          ? [{ href: "/pelanggan", label: "Pelanggan & Toko", icon: Users }]
           : []),
       ],
     },
@@ -170,19 +163,19 @@ export function Sidebar({
       {isOpenMobile && (
         <div
           onClick={onCloseMobile}
-          className="fixed inset-0 bg-slate-950/60 z-40 md:hidden backdrop-blur-xs transition-opacity"
+          className="fixed inset-0 bg-slate-950/75 z-40 md:hidden backdrop-blur-xs transition-opacity"
         />
       )}
 
       <aside
         className={cn(
-          "fixed top-0 left-0 bottom-0 z-50 bg-[#0c1b3a] text-slate-300 flex flex-col border-r border-[#152a54] select-none transition-all duration-250 ease-in-out md:translate-x-0 shadow-2xl",
+          "fixed top-0 left-0 bottom-0 z-50 bg-[#070f1e] text-slate-300 flex flex-col border-r border-[#152747] select-none transition-all duration-250 ease-in-out md:translate-x-0 shadow-2xl",
           isCollapsed ? "w-16" : "w-60",
           isOpenMobile ? "translate-x-0" : "-translate-x-full"
         )}
       >
         {/* Brand Header */}
-        <div className="h-14 px-3 flex items-center justify-between border-b border-[#152a54] bg-[#08132b]/90 shrink-0">
+        <div className="h-14 px-3.5 flex items-center justify-between border-b border-[#152747] bg-[#050b17]/95 backdrop-blur-md shrink-0">
           <Link
             href="/"
             onClick={onCloseMobile}
@@ -195,13 +188,24 @@ export function Sidebar({
             {isCollapsed ? (
               <Logo size="xs" variant="icon" inverted={true} />
             ) : (
-              <Logo size="xs" inverted={true} showSubdeskripsi={false} />
+              <div className="flex items-center justify-between w-full">
+                <Logo size="xs" inverted={true} showSubdeskripsi={false} />
+                <div className="hidden xl:flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-[9px] font-mono font-semibold text-emerald-400">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>ERP Live</span>
+                </div>
+              </div>
             )}
           </Link>
         </div>
 
         {/* Navigation Sections */}
-        <div className="flex-1 overflow-y-auto px-2.5 py-3 space-y-4 scrollbar-thin scrollbar-thumb-[#152a54]">
+        <div
+          className={cn(
+            "flex-1 overflow-y-auto py-3 space-y-4 sidebar-scroll",
+            isCollapsed ? "px-2" : "pl-3 pr-0"
+          )}
+        >
           {navCategories.map((category) => {
             const isCategoryCollapsed = collapsedCategories[category.title] && !isCollapsed;
 
@@ -212,21 +216,26 @@ export function Sidebar({
                   <button
                     type="button"
                     onClick={() => toggleCategory(category.title)}
-                    className="w-full flex items-center justify-between px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-[#566e94] hover:text-slate-200 transition-colors font-mono cursor-pointer"
+                    className="w-full flex items-center justify-between pl-2 pr-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#637d9f] hover:text-slate-200 transition-colors font-mono cursor-pointer"
                   >
-                    <span className="truncate">{category.title}</span>
+                    <div className="flex items-center gap-1.5 truncate">
+                      <span className="truncate">{category.title}</span>
+                      {category.restricted && (
+                        <Lock className="h-2.5 w-2.5 text-amber-400/80 shrink-0" />
+                      )}
+                    </div>
                     <ChevronDown
                       className={cn(
-                        "w-3 h-3 transition-transform duration-200 shrink-0",
+                        "w-3 h-3 transition-transform duration-200 shrink-0 text-[#435973]",
                         isCategoryCollapsed && "-rotate-90"
                       )}
                     />
                   </button>
                 ) : (
-                  <div className="my-1.5 border-t border-[#152a54]/80" />
+                  <div className="my-1.5 border-t border-[#152747]/80 mx-1" />
                 )}
 
-                {/* Items */}
+                {/* Items Container */}
                 <AnimatePresence initial={false}>
                   {!isCategoryCollapsed && (
                     <motion.div
@@ -240,44 +249,86 @@ export function Sidebar({
                         const active = isActive(item.href, item.exact);
                         const Icon = item.icon;
 
+                        // Collapsed Mode Item
+                        if (isCollapsed) {
+                          return (
+                            <Link
+                              key={item.href}
+                              href={item.href}
+                              onClick={onCloseMobile}
+                              title={item.label}
+                              className={cn(
+                                "relative flex items-center justify-center w-10 h-10 mx-auto rounded-xl transition-all duration-150 group",
+                                active
+                                  ? "bg-[#142852] text-white border border-[#2b4d91] shadow-xs"
+                                  : "text-[#8ea2c2] hover:text-white hover:bg-white/[0.06]"
+                              )}
+                            >
+                              <Icon className="h-4 w-4 shrink-0 transition-transform group-hover:scale-105" />
+                              {active && (
+                                <span className="absolute -left-1 top-2.5 bottom-2.5 w-1 rounded-r-full bg-amber-400 shadow-[0_0_6px_rgba(245,158,11,0.6)]" />
+                              )}
+                            </Link>
+                          );
+                        }
+
+                        // Expanded Mode Item with Outside Concave Curve Effect
+                        if (active) {
+                          return (
+                            <Link
+                              key={item.href}
+                              href={item.href}
+                              onClick={onCloseMobile}
+                              className="relative flex items-center gap-2.5 pl-3 pr-3.5 py-2.5 text-xs font-semibold bg-[#f0f5fa] dark:bg-[#090e1a] text-slate-900 dark:text-white rounded-l-2xl z-20 group transition-all duration-150 mr-0 shadow-[-2px_2px_10px_rgba(0,0,0,0.06)] active:scale-[0.99]"
+                            >
+                              {/* Amber Dawn Pip ("Sinar Abadi" brand element) */}
+                              <span className="absolute left-1 top-2.5 bottom-2.5 w-1 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
+
+                              {/* Top Outside Concave Curve (Inverted Corner) */}
+                              <svg
+                                className="absolute -top-4 right-0 w-4 h-4 text-[#f0f5fa] dark:text-[#090e1a] fill-current pointer-events-none z-30"
+                                viewBox="0 0 16 16"
+                                aria-hidden="true"
+                              >
+                                <path d="M16 0 C16 8.837 8.837 16 0 16 H16 V0 Z" />
+                              </svg>
+
+                              {/* Bottom Outside Concave Curve (Inverted Corner) */}
+                              <svg
+                                className="absolute -bottom-4 right-0 w-4 h-4 text-[#f0f5fa] dark:text-[#090e1a] fill-current pointer-events-none z-30"
+                                viewBox="0 0 16 16"
+                                aria-hidden="true"
+                              >
+                                <path d="M16 16 C16 7.163 8.837 0 0 0 H16 V16 Z" />
+                              </svg>
+
+                              <Icon className="h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400 group-hover:scale-105 transition-transform" />
+
+                              <span className="truncate flex-1 tracking-tight font-semibold">
+                                {item.label}
+                              </span>
+
+                              {item.badge !== undefined && (
+                                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold shrink-0 bg-slate-200/90 text-slate-800 dark:bg-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700">
+                                  {item.badge}
+                                </span>
+                              )}
+                            </Link>
+                          );
+                        }
+
+                        // Inactive Item
                         return (
                           <Link
                             key={item.href}
                             href={item.href}
                             onClick={onCloseMobile}
-                            title={isCollapsed ? item.label : undefined}
-                            className={cn(
-                              "relative flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-colors group",
-                              active
-                                ? "text-white font-semibold"
-                                : "text-[#8ea2c2] hover:text-white hover:bg-white/6",
-                              isCollapsed && "justify-center px-0 py-2"
-                            )}
+                            className="relative flex items-center gap-2.5 pl-3 pr-3.5 py-2 mr-2.5 text-xs font-medium text-[#8da3c5] hover:text-white hover:bg-white/[0.05] rounded-xl transition-all duration-150 group active:scale-[0.99]"
                           >
-                            {/* Animated Background Pill for Active Link (GeneX Deep Navy Pill) */}
-                            {active && (
-                              <motion.div
-                                layoutId="sidebar-active-pill"
-                                transition={{ type: "spring", stiffness: 450, damping: 35 }}
-                                className="absolute inset-0 bg-[#183162] border border-[#2b4e91]/60 rounded-xl -z-10 shadow-xs"
-                              />
-                            )}
-
-                            <Icon className="h-4 w-4 shrink-0 transition-transform group-hover:scale-105" />
-
-                            {!isCollapsed && (
-                              <span className="truncate flex-1">{item.label}</span>
-                            )}
-
-                            {!isCollapsed && item.badge !== undefined && (
-                              <span
-                                className={cn(
-                                  "px-1.5 py-0.2 rounded-full text-[10px] font-mono font-semibold shrink-0 border",
-                                  item.badgeVariant === "amber"
-                                    ? "bg-amber-500/20 text-amber-300 border-amber-500/30"
-                                    : "bg-blue-500/25 text-blue-200 border-blue-400/30"
-                                )}
-                              >
+                            <Icon className="h-4 w-4 shrink-0 text-[#728aa9] group-hover:text-slate-200 group-hover:scale-105 transition-all" />
+                            <span className="truncate flex-1 tracking-tight">{item.label}</span>
+                            {item.badge !== undefined && (
+                              <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono font-medium shrink-0 bg-white/[0.07] text-slate-400 border border-white/[0.05]">
                                 {item.badge}
                               </span>
                             )}
@@ -292,40 +343,50 @@ export function Sidebar({
           })}
         </div>
 
-        {/* Footer: User Badge & Collapse Toggle */}
-        <div className="p-2.5 border-t border-[#152a54] bg-[#08132b]/90 flex items-center justify-between shrink-0">
+        {/* Footer: User Badge & Connection Status */}
+        <div className="p-2.5 border-t border-[#152747] bg-[#050b17]/95 backdrop-blur-md flex items-center justify-between shrink-0 gap-2">
           <Link
             href="/profil"
             onClick={onCloseMobile}
             className={cn(
-              "flex items-center gap-2 truncate p-1 rounded-xl hover:bg-white/6 transition-colors flex-1",
-              isCollapsed && "justify-center"
+              "flex items-center gap-2 truncate p-1 rounded-xl hover:bg-white/[0.06] transition-colors flex-1",
+              isCollapsed && "justify-center p-0"
             )}
-            title="Buka Profil"
+            title="Buka Pengaturan Profil Saya"
           >
-            <div className="h-7 w-7 rounded-lg bg-[#183162] border border-[#2b4e91]/60 flex items-center justify-center text-xs font-bold text-blue-200 shrink-0">
+            <div className="relative h-8 w-8 rounded-xl bg-gradient-to-br from-[#183163] to-[#0c1a35] border border-[#2b4c8f]/70 flex items-center justify-center text-xs font-bold text-sky-200 shrink-0 shadow-xs">
               {userName ? userName.charAt(0).toUpperCase() : "U"}
+              <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-[#070f1e]" />
             </div>
             {!isCollapsed && (
-              <div className="flex flex-col truncate">
-                <span className="text-xs font-semibold text-slate-200 truncate leading-tight">
+              <div className="flex flex-col truncate text-left">
+                <span className="text-xs font-semibold text-slate-100 truncate leading-tight">
                   {userName || "Pengguna"}
                 </span>
-                <span className="text-[9px] uppercase font-mono text-blue-300 font-bold tracking-wider leading-tight">
-                  {peran}
-                </span>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span
+                    className={cn(
+                      "text-[9px] uppercase font-mono font-bold tracking-wider leading-none px-1 py-0.2 rounded",
+                      peran === "manajer" && "text-amber-400 bg-amber-500/15 border border-amber-500/30",
+                      peran === "penjualan" && "text-blue-400 bg-blue-500/15 border border-blue-500/30",
+                      peran === "gudang" && "text-emerald-400 bg-emerald-500/15 border border-emerald-500/30"
+                    )}
+                  >
+                    {peran}
+                  </span>
+                </div>
               </div>
             )}
           </Link>
 
-          {/* Desktop Collapse Toggle */}
+          {/* Desktop Collapse Toggle Button */}
           {onToggleCollapse && (
             <button
               type="button"
               onClick={onToggleCollapse}
               className={cn(
-                "hidden md:flex items-center justify-center h-7 w-7 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors shrink-0",
-                isCollapsed && "w-full mt-1"
+                "hidden md:flex items-center justify-center h-7 w-7 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors shrink-0 cursor-pointer",
+                isCollapsed && "w-full mt-1.5"
               )}
               title={isCollapsed ? "Buka Sidebar (Expand)" : "Sempitkan Sidebar (Collapse)"}
             >

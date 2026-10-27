@@ -10,8 +10,8 @@ export interface LogoProps extends React.HTMLAttributes<HTMLDivElement> {
 
 /**
  * Simbol Grafis Resmi CV Sinar Abadi Niaga
- * Desain geometris 2D arsitektural: Dua pilar niaga yang menopang busur fajar emas ("Sinar"),
- * membentuk monogram terpadu "SAN" yang tenang, berwibawa, dan profesional.
+ * Desain geometris presisi B2B: Kubus distribusi isometrik terkoordinasi (Pemasok - Pergudangan - Toko Kelontong)
+ * dengan siluet perisai stabilitas niaga dan inti fajar keemasan ("Sinar Abadi").
  */
 export function LogoIcon({
   className,
@@ -24,23 +24,29 @@ export function LogoIcon({
   monochrome?: boolean;
   inverted?: boolean;
 }) {
-  const primaryColor = monochrome
+  const topFace = monochrome
     ? 'currentColor'
     : inverted
-    ? '#FFFFFF'
-    : '#0F172A'; // Slate-900 (Corporate Ink)
+    ? '#38BDF8' // Sky-400 (Platform Distribusi Terpusat)
+    : '#0284C7'; // Sky-600
+
+  const leftFace = monochrome
+    ? 'currentColor'
+    : inverted
+    ? '#FFFFFF' // White (Inbound / Pergudangan Pusat)
+    : '#0F172A'; // Slate-900
+
+  const rightFace = monochrome
+    ? 'currentColor'
+    : inverted
+    ? '#94A3B8' // Slate-400 (Outbound / Armada Mitra)
+    : '#334155'; // Slate-700
 
   const accentColor = monochrome
     ? 'currentColor'
     : inverted
-    ? '#F59E0B'
-    : '#D97706'; // Amber-600 (Sinar Fajar)
-
-  const subColor = monochrome
-    ? 'currentColor'
-    : inverted
-    ? '#94A3B8'
-    : '#475569'; // Slate-600
+    ? '#F59E0B' // Amber-500 (Komoditas Pangan & Sinar Abadi)
+    : '#D97706'; // Amber-600
 
   return (
     <svg
@@ -49,27 +55,37 @@ export function LogoIcon({
       viewBox="0 0 40 40"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={cn('shrink-0', className)}
+      className={cn('shrink-0 select-none', className)}
       aria-hidden="true"
     >
-      {/* Dasar Balok Logistik Distribusi */}
-      <rect x="4" y="24" width="32" height="10" rx="2" fill={primaryColor} />
-
-      {/* Pilar Niaga Kiri & Kanan */}
-      <rect x="4" y="10" width="8" height="12" rx="1.5" fill={primaryColor} />
-      <rect x="28" y="10" width="8" height="12" rx="1.5" fill={primaryColor} />
-
-      {/* Inti Pilar Tengah (Distribusi Terkoordinasi) */}
-      <rect x="16" y="14" width="8" height="8" rx="1.5" fill={subColor} />
-
-      {/* Busur Fajar Keemasan (Sinar Abadi) */}
+      {/* Bidang Atas Isometrik: Platform & Hub Distribusi */}
       <path
-        d="M12 8C12 5.79086 15.5817 4 20 4C24.4183 4 28 5.79086 28 8"
-        stroke={accentColor}
-        strokeWidth="3"
-        strokeLinecap="round"
+        d="M20 4.5L34 12.5L20 20.5L6 12.5L20 4.5Z"
+        fill={topFace}
+        fillOpacity={monochrome ? 0.85 : 1}
       />
-      <circle cx="20" cy="8.5" r="2" fill={accentColor} />
+
+      {/* Inti Fajar Keemasan (Monogram Sinar Komoditas) */}
+      <path
+        d="M20 9.5L23.5 12.5L20 15.5L16.5 12.5L20 9.5Z"
+        fill={accentColor}
+      />
+
+      {/* Bidang Kiri Isometrik: Pergudangan & Manajemen Persediaan */}
+      <path
+        d="M6 14.8L18.5 22V35.5L6 28.3V14.8Z"
+        fill={leftFace}
+      />
+
+      {/* Bidang Kanan Isometrik: Penjualan & Distribusi Toko Kelontong */}
+      <path
+        d="M21.5 22L34 14.8V28.3L21.5 35.5V22Z"
+        fill={rightFace}
+        fillOpacity={monochrome ? 0.7 : 1}
+      />
+
+      {/* Titik Jangkar Presisi Logistik */}
+      <circle cx="20" cy="27" r="1.5" fill={accentColor} />
     </svg>
   );
 }
