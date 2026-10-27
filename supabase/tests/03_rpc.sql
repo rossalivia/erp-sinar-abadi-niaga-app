@@ -643,6 +643,22 @@ BEGIN
     VALUES ('BR-11', 'TC-27a', 'Penyesuaian stok ke angka negatif ditolak', 'FAIL', COALESCE(v_msg, 'Berhasil tanpa error!'));
   END IF;
 
+  -- 8a2. Penyesuaian stok alasan < 10 karakter -> E0023
+  v_err := false; v_msg := NULL;
+  BEGIN
+    PERFORM public.rpc_penyesuaian_stok(v_brg_a, 90, 'Pendek');
+  EXCEPTION WHEN OTHERS THEN
+    v_err := true; v_msg := SQLERRM;
+  END;
+
+  IF v_err AND (v_msg LIKE '%Alasan penyesuaian stok minimal 10 karakter%' OR SQLSTATE = 'E0023') THEN
+    INSERT INTO hasil_uji_rpc (kode_br, kode_tc, deskripsi, status, pesan)
+    VALUES ('BR-11', 'TC-27-alasan', 'Penyesuaian stok alasan < 10 karakter ditolak (E0023)', 'PASS', v_msg);
+  ELSE
+    INSERT INTO hasil_uji_rpc (kode_br, kode_tc, deskripsi, status, pesan)
+    VALUES ('BR-11', 'TC-27-alasan', 'Penyesuaian stok alasan < 10 karakter ditolak', 'FAIL', COALESCE(v_msg, 'Berhasil tanpa error!'));
+  END IF;
+
   -- 8b. Penyesuaian stok valid: alasan >= 10 karakter -> sukses
   PERFORM public.rpc_penyesuaian_stok(v_brg_a, 95, 'Hitung fisik bulanan stok opname');
 

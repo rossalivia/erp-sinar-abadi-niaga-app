@@ -90,13 +90,13 @@ export function Sidebar({
       title: "Menu Utama",
       items: [
         { href: "/", label: "Dashboard", icon: LayoutDashboard, exact: true },
+        {
+          href: "/pesanan",
+          label: "Pesanan B2B",
+          icon: ShoppingCart,
+        },
         ...(isPenjualan
           ? [
-              {
-                href: "/pesanan",
-                label: "Pesanan B2B",
-                icon: ShoppingCart,
-              },
               {
                 href: "/pelanggan",
                 label: "Pelanggan & Toko",

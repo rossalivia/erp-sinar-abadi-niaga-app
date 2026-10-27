@@ -551,6 +551,7 @@ export function PesananEditor({
                         type="number"
                         step="any"
                         min="0"
+                        max={maxDiskon}
                         value={row.diskon_persen}
                         onChange={(e) =>
                           handleUpdateItem(idx, 'diskon_persen', e.target.value)

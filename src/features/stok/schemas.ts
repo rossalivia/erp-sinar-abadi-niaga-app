@@ -9,7 +9,7 @@ export const penyesuaianStokSchema = z.object({
   alasan: z
     .string()
     .trim()
-    .min(10, 'Alasan minimal 10 karakter'),
+    .min(10, 'Alasan penyesuaian stok minimal 10 karakter'),
 });
 
 export type PenyesuaianStokInput = z.infer<typeof penyesuaianStokSchema>;
