@@ -11,15 +11,22 @@ import type {
 export class HttpMayarClient implements MayarClient {
   private baseUrl: string;
   private apiKey: string;
+  private timeoutMs: number;
 
   constructor(apiKey: string, baseUrl?: string) {
     this.apiKey = apiKey;
-    this.baseUrl = (baseUrl || process.env.MAYAR_BASE_URL || 'https://api.mayar.club/hl/v1').replace(/\/+$/, '');
+    let url = (baseUrl || process.env.MAYAR_BASE_URL || 'https://api.mayar.io/hl/v1').replace(/\/+$/, '');
+    // Migrasi domain lama api.mayar.club yang sering mengalami rate-limit/timeout ke domain resmi api.mayar.io
+    if (url.includes('api.mayar.club')) {
+      url = url.replace('api.mayar.club', 'api.mayar.io');
+    }
+    this.baseUrl = url;
+    this.timeoutMs = Number(process.env.MAYAR_TIMEOUT_MS) || 15000;
   }
 
   async createInvoice(params: CreateInvoiceParams): Promise<CreateInvoiceResponse> {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000); // Batas 8 detik (M6)
+    const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
 
     try {
       const res = await fetch(`${this.baseUrl}/invoice/create`, {
@@ -47,13 +54,13 @@ export class HttpMayarClient implements MayarClient {
       return {
         id: json.data.id,
         transactionId: json.data.transactionId || json.data.id,
-        link: json.data.link || `https://pay.mayar.club/p/${json.data.id}`,
+        link: json.data.link || `https://pay.mayar.io/p/${json.data.id}`,
         expiredAt: json.data.expiredAt || params.expiredAt,
         amount: json.data.amount || totalAmount,
       };
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') {
-        throw new Error('Koneksi ke gateway pembayaran Mayar timeout (melebihi 8 detik)');
+        throw new Error(`Koneksi ke gateway pembayaran Mayar timeout (melebihi ${Math.round(this.timeoutMs / 1000)} detik)`);
       }
       throw err;
     } finally {
@@ -63,7 +70,7 @@ export class HttpMayarClient implements MayarClient {
 
   async getInvoice(invoiceId: string): Promise<GetInvoiceResponse> {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000);
+    const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
 
     try {
       const res = await fetch(`${this.baseUrl}/invoice/${invoiceId}`, {
@@ -91,7 +98,7 @@ export class HttpMayarClient implements MayarClient {
       };
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') {
-        throw new Error('Koneksi ke gateway pembayaran Mayar timeout (melebihi 8 detik)');
+        throw new Error(`Koneksi ke gateway pembayaran Mayar timeout (melebihi ${Math.round(this.timeoutMs / 1000)} detik)`);
       }
       throw err;
     } finally {
@@ -101,7 +108,7 @@ export class HttpMayarClient implements MayarClient {
 
   async closeInvoice(invoiceId: string): Promise<boolean> {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000);
+    const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
 
     try {
       const res = await fetch(`${this.baseUrl}/invoice/close/${invoiceId}`, {
