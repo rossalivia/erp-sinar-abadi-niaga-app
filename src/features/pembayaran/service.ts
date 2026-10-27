@@ -163,6 +163,15 @@ export async function periksaStatusMayarService(
     };
   }
 
+  // Jika tagihan sudah berstatus dibayar, langsung kembalikan status lunas
+  if (tagihan.status === 'dibayar') {
+    return {
+      success: true,
+      message: 'Pesanan sudah berhasil dilunasi via Mayar',
+      data: { status: 'lunas' },
+    };
+  }
+
   try {
     const invoice = await client.getInvoice(tagihan.mayar_invoice_id);
 
