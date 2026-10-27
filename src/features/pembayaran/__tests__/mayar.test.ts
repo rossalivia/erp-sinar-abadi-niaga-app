@@ -33,6 +33,7 @@ vi.mock('@/lib/supabase/server', () => ({
               pesanan_jual_id: 'pesanan_test_123',
               mayar_invoice_id: 'inv_mayar_test_123',
               status: 'dibuat',
+              jumlah: 500000,
               total: 500000,
             },
             error: null,

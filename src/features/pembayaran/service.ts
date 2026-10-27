@@ -152,7 +152,7 @@ export async function periksaStatusMayarService(
   // Ambil detail tagihan aktif
   const { data: tagihan, error: tagihanError } = await supabase
     .from('tagihan_mayar')
-    .select('id, pesanan_jual_id, mayar_invoice_id, status, total')
+    .select('id, pesanan_jual_id, mayar_invoice_id, status, jumlah')
     .eq('id', tagihanId)
     .single();
 
