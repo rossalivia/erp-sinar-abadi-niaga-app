@@ -171,8 +171,8 @@ export function Sidebar({
 
       <aside
         className={cn(
-          "fixed top-0 left-0 bottom-0 z-50 bg-[#070f1e] text-slate-300 flex flex-col border-r border-[#152747] select-none transition-all duration-250 ease-in-out md:translate-x-0 shadow-2xl",
-          isCollapsed ? "w-16" : "w-60",
+          "fixed top-0 left-0 bottom-0 z-50 bg-[#070f1e] text-slate-300 flex flex-col select-none transition-all duration-250 ease-in-out md:translate-x-0 shadow-2xl",
+          isCollapsed ? "w-16 border-r border-[#152747]" : "w-60",
           isOpenMobile ? "translate-x-0" : "-translate-x-full"
         )}
       >
@@ -281,7 +281,7 @@ export function Sidebar({
                               key={item.href}
                               href={item.href}
                               onClick={onCloseMobile}
-                              className="relative flex items-center gap-2.5 pl-3 pr-3.5 py-2.5 text-xs font-semibold bg-[#f0f5fa] dark:bg-[#090e1a] text-slate-900 dark:text-white rounded-l-2xl z-20 group transition-all duration-150 mr-0 shadow-[-2px_2px_10px_rgba(0,0,0,0.06)] active:scale-[0.99]"
+                              className="relative flex items-center gap-2.5 pl-3 pr-3.5 py-2.5 text-xs font-semibold bg-[#f0f5fa] dark:bg-[#090e1a] text-slate-900 dark:text-white rounded-l-2xl z-30 group transition-all duration-150 mr-0 active:scale-[0.99]"
                             >
                               {/* Amber Dawn Pip ("Sinar Abadi" brand element) */}
                               <span className="absolute left-1 top-2.5 bottom-2.5 w-1 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
