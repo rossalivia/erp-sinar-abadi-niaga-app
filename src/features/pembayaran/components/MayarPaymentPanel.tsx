@@ -109,9 +109,36 @@ export function MayarPaymentPanel({
         )}
       </div>
 
-      {/* KONDISI 1: Belum ada tagihan sama sekali atau tagihan lama sudah tidak aktif */}
-      {(!latestTagihan || latestTagihan.status === 'ditutup' || latestTagihan.status_efektif === 'kedaluwarsa') &&
-        statusPesanan === 'dikirim' && (
+      {/* KONDISI A: Pesanan Sudah Lunas (Otomatis Nonaktifkan Tautan Online) */}
+      {statusPesanan === 'lunas' && (
+        <div className="space-y-2 py-1">
+          {latestTagihan && latestTagihan.status === 'dibayar' ? (
+            <div className="flex items-center gap-2 text-emerald-700 bg-emerald-50 border border-emerald-200 rounded p-2.5">
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+              <div className="text-xs">
+                <span className="font-semibold block">Pembayaran Diterima via Mayar</span>
+                <span className="text-[11px] text-emerald-600">
+                  Dilunasi pada {latestTagihan.dibayar_pada ? formatTanggalWaktu(latestTagihan.dibayar_pada) : '-'} (Ref: {latestTagihan.mayar_transaction_id || '-'})
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-slate-700 bg-slate-50 border border-slate-200 rounded p-2.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <div className="text-xs">
+                <span className="font-semibold block text-slate-900">Pesanan Telah Dilunasi Secara Manual</span>
+                <span className="text-[11px] text-slate-500">
+                  Pembayaran pesanan telah diselesaikan secara manual. Tautan pembayaran online Mayar dinonaktifkan untuk mencegah pembayaran ganda.
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* KONDISI 1: Belum ada tagihan sama sekali atau tagihan lama sudah tidak aktif (hanya saat dikirim) */}
+      {statusPesanan === 'dikirim' &&
+        (!latestTagihan || latestTagihan.status === 'ditutup' || latestTagihan.status_efektif === 'kedaluwarsa') && (
           <div className="space-y-3 py-1">
             <p className="text-slate-500 text-xs">
               Belum ada tautan bayar online aktif untuk pesanan ini. Anda dapat menerbitkan tautan pembayaran Mayar sandbox untuk dibagikan ke toko pelanggan.
@@ -135,8 +162,10 @@ export function MayarPaymentPanel({
           </div>
         )}
 
-      {/* KONDISI 2: Ada Tagihan Aktif ('dibuat') */}
-      {latestTagihan && (latestTagihan.status === 'dibuat' || latestTagihan.status_efektif === 'dibuat') && (
+      {/* KONDISI 2: Ada Tagihan Aktif ('dibuat') saat status pesanan masih dikirim */}
+      {statusPesanan === 'dikirim' &&
+        latestTagihan &&
+        (latestTagihan.status === 'dibuat' || latestTagihan.status_efektif === 'dibuat') && (
         <div className="space-y-3 pt-1">
           <div className="space-y-1">
             <span className="text-[11px] text-slate-400 block">Tautan Pembayaran:</span>
@@ -223,8 +252,8 @@ export function MayarPaymentPanel({
         </div>
       )}
 
-      {/* KONDISI 3: Tagihan Sudah Dibayar ('dibayar') */}
-      {latestTagihan && latestTagihan.status === 'dibayar' && (
+      {/* KONDISI 3: Tagihan Sudah Dibayar ('dibayar') tapi pesanan belum lunas (sinkronisasi lanjutan) */}
+      {statusPesanan !== 'lunas' && latestTagihan && latestTagihan.status === 'dibayar' && (
         <div className="space-y-2 py-1">
           <div className="flex items-center gap-2 text-emerald-700 bg-emerald-50 border border-emerald-200 rounded p-2.5">
             <CheckCircle2 className="w-4 h-4 shrink-0" />
@@ -239,7 +268,7 @@ export function MayarPaymentPanel({
       )}
 
       {/* KONDISI 4: Tagihan Memerlukan Peninjauan ('perlu_tinjau') */}
-      {latestTagihan && latestTagihan.status === 'perlu_tinjau' && (
+      {statusPesanan !== 'lunas' && latestTagihan && latestTagihan.status === 'perlu_tinjau' && (
         <div className="space-y-2 py-1">
           <div className="flex items-start gap-2 text-amber-800 bg-amber-50 border border-amber-200 rounded p-2.5">
             <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600 mt-0.5" />

@@ -812,7 +812,12 @@ export function PembayaranMayarView({
 
                       {/* KOLOM TAUTAN PEMBAYARAN DINAMIS & SALIN LINK */}
                       <td className="py-2.5 px-3">
-                        {item.tautan ? (
+                        {item.status_pesanan === 'lunas' && item.status_tagihan !== 'dibayar' ? (
+                          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-50 border border-slate-200 text-slate-600 text-[11px]">
+                            <Check className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>Lunas Manual (Tautan Nonaktif)</span>
+                          </div>
+                        ) : item.tautan ? (
                           <div className="space-y-1.5 max-w-sm">
                             <div className="flex items-center gap-1.5">
                               <Input
@@ -871,6 +876,10 @@ export function PembayaranMayarView({
                               )}
                             </div>
                           </div>
+                        ) : item.status_pesanan === 'lunas' ? (
+                          <span className="text-[11px] text-slate-400 italic">
+                            Pesanan Sudah Lunas
+                          </span>
                         ) : (
                           <div className="flex items-center gap-2">
                             <Button

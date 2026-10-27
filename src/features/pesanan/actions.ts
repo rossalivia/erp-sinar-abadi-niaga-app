@@ -213,10 +213,43 @@ export async function catatPelunasanAction(
     };
   }
 
+  // Otomatis batalkan/tutup tagihan Mayar aktif di gateway Mayar agar tidak bisa dibayar ganda (M9)
+  try {
+    const { data: activeTagihan } = await supabase
+      .from('tagihan_mayar')
+      .select('id, mayar_invoice_id')
+      .eq('pesanan_jual_id', pesananId)
+      .in('status', ['dibuat', 'ditutup']);
+
+    if (activeTagihan && activeTagihan.length > 0) {
+      // Pastikan status lokal di database ditutup
+      await supabase
+        .from('tagihan_mayar')
+        .update({
+          status: 'ditutup',
+          catatan_tinjau: 'Ditutup otomatis karena pesanan telah dilunasi manual oleh Manajer',
+          diperbarui_pada: new Date().toISOString(),
+        })
+        .eq('pesanan_jual_id', pesananId)
+        .eq('status', 'dibuat');
+
+      const { getMayarClient } = await import('@/features/pembayaran/mayar-client');
+      const client = getMayarClient();
+      for (const t of activeTagihan) {
+        if (t.mayar_invoice_id) {
+          await client.closeInvoice(t.mayar_invoice_id).catch(() => null);
+        }
+      }
+    }
+  } catch {
+    // Non-blocking jika gateway Mayar tidak terjangkau
+  }
+
   revalidatePath('/pesanan');
   revalidatePath(`/pesanan/${pesananId}`);
   revalidatePath('/pelanggan');
   revalidatePath('/penagihan');
+  revalidatePath('/pembayaran-mayar');
 
   const res = data as { id: string; status: string };
   return {

@@ -46,6 +46,21 @@ export async function buatTagihanMayarAction(
     };
   }
 
+  const { createServerClient } = await import('@/lib/supabase/server');
+  const supabase = await createServerClient();
+  const { data: pesanan } = await supabase
+    .from('pesanan_jual')
+    .select('status')
+    .eq('id', parsed.data.pesananId)
+    .single();
+
+  if (pesanan?.status === 'lunas') {
+    return {
+      success: false,
+      message: 'Pesanan sudah berstatus lunas. Tautan pembayaran online tidak dapat dibuat.',
+    };
+  }
+
   const res = await buatTagihanMayarService({
     pesananId: parsed.data.pesananId,
     email: parsed.data.email,
