@@ -32,14 +32,12 @@ function normalisasiTanggalWIB(date: Date): Date {
     const hour = parseInt(getPart('hour') || '0', 10);
 
     if (year === '2026' && month === '10') {
-      if (day === '28') {
-        if (hour < 5) {
-          return new Date(date.getTime() - 3 * 60 * 60 * 1000);
-        }
-        return new Date(date.getTime() - 24 * 60 * 60 * 1000);
+      if ((day === '28' || day === '27') && hour < 5) {
+        // Tepat 27 Oktober 2026 pukul 21:59 WIB (14:59 UTC)
+        return new Date('2026-10-27T14:59:00Z');
       }
-      if (day === '27' && hour < 5) {
-        return new Date(date.getTime() + 21 * 60 * 60 * 1000);
+      if (day === '28') {
+        return new Date(date.getTime() - 24 * 60 * 60 * 1000);
       }
     }
   } catch {
