@@ -17,6 +17,8 @@ import {
   ArrowRight,
   Radio,
   Link2,
+  RotateCcw,
+  ClipboardPaste,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -80,11 +82,63 @@ export function PembayaranMayarView({
   hasRealKey,
   defaultCustomerEmail,
 }: PembayaranMayarViewProps) {
+  const [urlWebhook, setUrlWebhook] = React.useState(webhookUrl);
+  const [isCustomUrl, setIsCustomUrl] = React.useState(false);
   const [copiedWebhook, setCopiedWebhook] = React.useState(false);
   const [copiedLinkId, setCopiedLinkId] = React.useState<string | null>(null);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [filterTab, setFilterTab] = React.useState<'semua' | 'perlu_tautan' | 'aktif' | 'lunas'>('semua');
   const [checkingTagihanId, setCheckingTagihanId] = React.useState<string | null>(null);
+
+  // Inisialisasi custom webhook URL dari localStorage jika pernah disimpan
+  React.useEffect(() => {
+    try {
+      const saved = localStorage.getItem('erp_mayar_custom_webhook_url');
+      if (saved && saved.trim() !== '') {
+        setUrlWebhook(saved);
+        setIsCustomUrl(saved !== webhookUrl);
+        return;
+      }
+    } catch {}
+    setUrlWebhook(webhookUrl);
+    setIsCustomUrl(false);
+  }, [webhookUrl]);
+
+  const handleChangeWebhookUrl = (val: string) => {
+    setUrlWebhook(val);
+    const customized = val.trim() !== webhookUrl.trim();
+    setIsCustomUrl(customized);
+    try {
+      if (customized) {
+        localStorage.setItem('erp_mayar_custom_webhook_url', val.trim());
+      } else {
+        localStorage.removeItem('erp_mayar_custom_webhook_url');
+      }
+    } catch {}
+  };
+
+  const handleResetWebhookUrl = () => {
+    try {
+      localStorage.removeItem('erp_mayar_custom_webhook_url');
+    } catch {}
+    setUrlWebhook(webhookUrl);
+    setIsCustomUrl(false);
+    toast.info('URL Webhook dikembalikan ke pengaturan default');
+  };
+
+  const handlePasteWebhook = async () => {
+    try {
+      if (navigator?.clipboard?.readText) {
+        const text = await navigator.clipboard.readText();
+        if (text && text.trim() !== '') {
+          handleChangeWebhookUrl(text.trim());
+          toast.success('URL berhasil ditempelkan dari clipboard!');
+          return;
+        }
+      }
+    } catch {}
+    toast.info('Gunakan kombinasi keyboard Ctrl+V di dalam kolom input.');
+  };
 
   // Dialog pembuatan tautan
   const [selectedPesananForCreate, setSelectedPesananForCreate] = React.useState<MonitoringItem | null>(null);
@@ -176,12 +230,39 @@ export function PembayaranMayarView({
     });
   }, [combinedItems, filterTab, searchQuery]);
 
-  // Handler Salin Webhook URL
-  const handleCopyWebhook = () => {
-    navigator.clipboard.writeText(webhookUrl);
-    setCopiedWebhook(true);
-    toast.success('URL Webhook berhasil disalin ke clipboard!');
-    setTimeout(() => setCopiedWebhook(false), 2500);
+  // Handler Salin Webhook URL (dengan fallback robust)
+  const handleCopyWebhook = async () => {
+    let copied = false;
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(urlWebhook);
+        copied = true;
+      }
+    } catch {
+      // Fallback ke textarea di bawah
+    }
+
+    if (!copied) {
+      try {
+        const textarea = document.createElement('textarea');
+        textarea.value = urlWebhook;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        copied = document.execCommand('copy');
+        document.body.removeChild(textarea);
+      } catch {}
+    }
+
+    if (copied) {
+      setCopiedWebhook(true);
+      toast.success('URL Webhook berhasil disalin ke clipboard!');
+      setTimeout(() => setCopiedWebhook(false), 2500);
+    } else {
+      toast.error('Gagal menyalin otomatis. Silakan blok teks URL lalu tekan Ctrl+C.');
+    }
   };
 
   // Handler Salin Link Pembayaran Per Baris
@@ -315,46 +396,100 @@ export function PembayaranMayarView({
           </div>
 
           {/* Kolom Input Khusus URL Webhook Mayar (Callback) */}
-          <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-slate-800">
-              URL Endpoint Webhook Callback (Salin ke Dashboard Mayar):
-            </label>
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">
+                URL Endpoint Webhook Callback (Dapat Diedit / Disesuaikan):
+              </label>
+              <div className="flex items-center gap-2.5">
+                {isCustomUrl && (
+                  <button
+                    type="button"
+                    onClick={handleResetWebhookUrl}
+                    className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-700 hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-300 underline cursor-pointer"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    Reset ke Default Server
+                  </button>
+                )}
+                {typeof window !== 'undefined' && !urlWebhook.startsWith(window.location.origin) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      try {
+                        const parsed = new URL(urlWebhook);
+                        const newUrl = `${window.location.origin}${parsed.pathname}`;
+                        handleChangeWebhookUrl(newUrl);
+                        toast.success('URL disesuaikan dengan host browser saat ini!');
+                      } catch {
+                        const tokenPart = urlWebhook.split('/api/webhooks/mayar/')[1] || '';
+                        handleChangeWebhookUrl(`${window.location.origin}/api/webhooks/mayar/${tokenPart}`);
+                      }
+                    }}
+                    className="text-[11px] font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 underline cursor-pointer"
+                  >
+                    Gunakan Host Browser Ini
+                  </button>
+                )}
+              </div>
+            </div>
+
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
               <div className="relative flex-1">
                 <Input
                   type="text"
-                  readOnly
-                  value={webhookUrl}
-                  className="font-mono text-xs bg-slate-50 text-slate-800 border-slate-300 pr-10 select-all cursor-text"
+                  value={urlWebhook}
+                  onChange={(e) => handleChangeWebhookUrl(e.target.value)}
+                  placeholder="https://domain-anda.com/api/webhooks/mayar/token"
+                  className="font-mono text-xs bg-white text-slate-900 border-slate-300 pr-10 focus:border-slate-500 focus:ring-1 focus:ring-slate-500 dark:bg-slate-900 dark:text-slate-100 dark:border-slate-700"
                 />
                 <Link2 className="absolute right-3 top-2.5 w-4 h-4 text-slate-400" />
               </div>
 
-              <Button
-                type="button"
-                onClick={handleCopyWebhook}
-                className={
-                  copiedWebhook
-                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 shrink-0'
-                    : 'bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-4 shrink-0'
-                }
-              >
-                {copiedWebhook ? (
-                  <>
-                    <Check className="w-3.5 h-3.5 mr-1.5" />
-                    URL Tersalin!
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3.5 h-3.5 mr-1.5" />
-                    Salin Link Webhook
-                  </>
-                )}
-              </Button>
+              <div className="flex items-center gap-2 shrink-0">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handlePasteWebhook}
+                  className="text-xs h-9 px-3 gap-1.5 border-slate-300 text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                  title="Tempelkan URL dari clipboard"
+                >
+                  <ClipboardPaste className="w-3.5 h-3.5" />
+                  <span>Tempel</span>
+                </Button>
+
+                <Button
+                  type="button"
+                  onClick={handleCopyWebhook}
+                  className={
+                    copiedWebhook
+                      ? 'bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 h-9 shrink-0'
+                      : 'bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-4 h-9 shrink-0 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200'
+                  }
+                >
+                  {copiedWebhook ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 mr-1.5" />
+                      URL Tersalin!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5 mr-1.5" />
+                      Salin Link Webhook
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
-            <p className="text-[11px] text-slate-500">
-              Buka <strong className="text-slate-700">Dashboard Mayar &rarr; Settings &rarr; Webhook</strong>, tempelkan URL di atas, dan pilih event <code className="bg-slate-100 text-slate-800 px-1 py-0.5 rounded font-mono text-[10px]">payment.received</code>.
-            </p>
+
+            <div className="flex flex-wrap items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 gap-1 pt-0.5">
+              <span>
+                💡 <strong>Bebas diedit/ditempel:</strong> Jika Anda menggunakan <em>ngrok / tunnel</em> atau domain live Mayar, Anda dapat langsung mengedit atau menempelkan domain di kolom ini tanpa hardcode.
+              </span>
+              <span>
+                Pilih event di Mayar: <code className="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 px-1 py-0.5 rounded font-mono text-[10px]">payment.received</code>
+              </span>
+            </div>
           </div>
 
           {/* Panduan Alur Integrasi 3 Langkah */}
