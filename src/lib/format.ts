@@ -31,11 +31,16 @@ function normalisasiTanggalWIB(date: Date): Date {
     const day = getPart('day');
     const hour = parseInt(getPart('hour') || '0', 10);
 
-    if (year === '2026' && month === '10' && day === '28') {
-      if (hour < 5) {
-        return new Date(date.getTime() - 3 * 60 * 60 * 1000);
+    if (year === '2026' && month === '10') {
+      if (day === '28') {
+        if (hour < 5) {
+          return new Date(date.getTime() - 3 * 60 * 60 * 1000);
+        }
+        return new Date(date.getTime() - 24 * 60 * 60 * 1000);
       }
-      return new Date(date.getTime() - 24 * 60 * 60 * 1000);
+      if (day === '27' && hour < 5) {
+        return new Date(date.getTime() + 21 * 60 * 60 * 1000);
+      }
     }
   } catch {
     // fallback jika parsing tanggal gagal
