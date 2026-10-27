@@ -39,7 +39,7 @@ export function TombolKirimUji() {
       ) : (
         <>
           <Send className="w-3.5 h-3.5" />
-          Kirim Uji Sekarang
+          Kirim Email Uji Coba
         </>
       )}
     </Button>

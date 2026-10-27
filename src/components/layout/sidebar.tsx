@@ -23,6 +23,7 @@ import {
   ShieldCheck,
   CreditCard,
   Upload,
+  Mail,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -151,6 +152,7 @@ export function Sidebar({
               { href: "/akun", label: "Akun & Peran", icon: Settings },
               { href: "/audit", label: "Audit Log Sistem", icon: Database },
               { href: "/impor", label: "Impor Data CSV", icon: Upload },
+              { href: "/notifikasi", label: "Notifikasi Stok", icon: Mail },
             ]
           : []),
       ],

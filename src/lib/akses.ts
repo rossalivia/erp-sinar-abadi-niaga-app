@@ -123,7 +123,7 @@ export const MENU_ITEMS: MenuItem[] = [
     roles: ['manajer'],
   },
   {
-    title: 'Log Notifikasi',
+    title: 'Notifikasi Stok',
     href: '/notifikasi',
     icon: 'Mail',
     roles: ['manajer'],
