@@ -92,16 +92,19 @@ export function PembayaranMayarView({
 
   // Inisialisasi custom webhook URL dari localStorage jika pernah disimpan
   React.useEffect(() => {
-    try {
-      const saved = localStorage.getItem('erp_mayar_custom_webhook_url');
-      if (saved && saved.trim() !== '') {
-        setUrlWebhook(saved);
-        setIsCustomUrl(saved !== webhookUrl);
-        return;
-      }
-    } catch {}
-    setUrlWebhook(webhookUrl);
-    setIsCustomUrl(false);
+    const frameId = requestAnimationFrame(() => {
+      try {
+        const saved = localStorage.getItem('erp_mayar_custom_webhook_url');
+        if (saved && saved.trim() !== '') {
+          setUrlWebhook(saved);
+          setIsCustomUrl(saved !== webhookUrl);
+          return;
+        }
+      } catch {}
+      setUrlWebhook(webhookUrl);
+      setIsCustomUrl(false);
+    });
+    return () => cancelAnimationFrame(frameId);
   }, [webhookUrl]);
 
   const handleChangeWebhookUrl = (val: string) => {

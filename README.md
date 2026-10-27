@@ -76,17 +76,19 @@ Sistem Informasi Perencanaan Sumber Daya Perusahaan (Enterprise Resource Plannin
 
 ---
 
-## 4. Akun Uji & Data Awal
+## 4. Akun Uji Coba & Kredensial
 
-Untuk lingkungan pengujian lokal (`supabase/seed.sql`), tersedia 5 akun representatif:
+Untuk kebutuhan evaluasi sistem, pengujian manual di browser, serta automasi pengujian lokal (`supabase/seed.sql` & `supabase/seed/seed_data_contoh.sql`), tersedia akun representatif untuk masing-masing peran. Seluruh akun menggunakan kata sandi standar yang sama:
 
-| Peran | Email Akun Uji | Wewenang Utama |
-|---|---|---|
-| **Staf Penjualan 1** | `penjualan1@sinarabadi.test` | Pesanan Jual, Pelanggan, Diskon ≤ 10% |
-| **Staf Penjualan 2** | `penjualan2@sinarabadi.test` | Pesanan Jual, Uji Kepemilikan Draf |
-| **Staf Gudang** | `gudang@sinarabadi.test` | Katalog Barang (tanpa harga), Pembelian/PO, Stok Opname |
-| **Manajer** | `manajer@sinarabadi.test` | Seluruh Modul, Approval, Diskon ≤ 25%, Laporan, Audit Log |
-| **Akun Nonaktif** | `nonaktif@sinarabadi.test` | Uji Pemblokiran Login Akun Nonaktif (TC-02) |
+> **Kata Sandi Standar Seluruh Akun Uji:** `Latihan#2026`
+
+| Peran (*Role*) | Nama Petugas | Email Login Resmi | Email Alias Uji | Kata Sandi | Wewenang & Hak Akses Utama |
+|---|---|---|---|---|---|
+| **Manajer** | Hendra Wijaya | `hendra@sinarabadi.test` | `manajer@sinarabadi.test` | `Latihan#2026` | Akses penuh seluruh modul, otorisasi harga jual, approval PO, limit kredit, stock opname, penagihan, analitik, dan audit log. |
+| **Staf Penjualan 1** | Rina Kartika | `rina@sinarabadi.test` | `penjualan1@sinarabadi.test` | `Latihan#2026` | Pembuatan draf pesanan penjualan, batas diskon maks 10%, penagihan piutang pelanggan pribadi (terisolasi). |
+| **Staf Penjualan 2** | Dimas Prasetyo | `dimas@sinarabadi.test` | `penjualan2@sinarabadi.test` | `Latihan#2026` | Akun pembanding untuk uji isolasi draf antar-sales dan uji konkurensi limit kredit/stok. |
+| **Staf Gudang** | Joko Susanto | `joko@sinarabadi.test` | `gudang@sinarabadi.test` | `Latihan#2026` | Pengajuan PO pembelian barang, penerimaan barang fisik, penyesuaian stok, picking list, surat jalan (tanpa akses harga). |
+| **Akun Nonaktif** | Agus Salim | `agus@sinarabadi.test` | `nonaktif@sinarabadi.test` | `Latihan#2026` | Akun berstatus `aktif = false` untuk verifikasi penolakan login otomatis (`E30`). |
 
 ---
 
@@ -203,7 +205,44 @@ Fitur pengiriman email peringatan stok barang menipis berjalan otomatis setiap h
 
 ---
 
-## 9. Lisensi & Hak Cipta
+## 9. Catatan Keputusan Arsitektur (Architecture Decision Records - ADR)
 
-Hak Cipta © 2026 CV Sinar Abadi Niaga. Seluruh hak cipta dilindungi undang-undang.
+Dokumentasi keputusan strategis arsitektur yang melandasi implementasi sistem ERP CV Sinar Abadi Niaga:
+
+### ADR-01: Logika Bisnis Terpusat pada Basis Data (PostgreSQL RPC & `SECURITY DEFINER`)
+- **Konteks:** Sistem ERP menuntut konsistensi tinggi pada pergerakan stok, kalkulasi diskon, batasan kredit, dan pencatatan piutang yang tidak boleh rentan terhadap manipulasi API client.
+- **Keputusan:** Seluruh aturan bisnis inti (BR-01 s.d. BR-14) diimplementasikan secara mutlak di dalam fungsi basis data PostgreSQL (RPC) berstatus `SECURITY DEFINER` dengan parameter eksplisit `SET search_path = public, pg_temp`. Next.js App Router hanya bertindak sebagai presentation layer pemanggil RPC.
+- **Konsekuensi:** Logika bisnis 100% kebal dari bypass klien/REST, atomisitas transaksi ACID terjamin, dan tidak ada inkonsistensi kalkulasi antara UI dan database.
+
+### ADR-02: Kerahasiaan Finansial Mutlak (*Zero-Price-Leakage*) via Column-Level Grants
+- **Konteks:** Spesifikasi PRD melarang keras bocornya harga pokok (`harga_pokok`, `harga_beli_satuan`, `hpp_satuan`, serta margin) kepada peran non-Manajer (Penjualan dan Gudang).
+- **Keputusan:** Menggunakan **PostgreSQL Column-Level Grants** (`REVOKE ALL` dari role `authenticated`, `GRANT SELECT` hanya pada kolom non-rahasia) dipadukan dengan Row Level Security (RLS). Query `SELECT *` langsung ditolak engine database bagi peran selain Manajer.
+- **Konsekuensi:** Data finansial sensitif tidak akan pernah terkirim ke klien non-Manajer, baik pada payload respons JSON, network traffic DevTools, maupun bundel JavaScript statis.
+
+### ADR-03: Kontrol Konkurensi Stok & Anti-Deadlock Transaksi Multi-Baris
+- **Konteks:** Transaksi penjualan simultan oleh banyak staf sales berpotensi menimbulkan *race condition* (stok minus) atau kebuntuan transaksi (*deadlock*).
+- **Keputusan:** Mengimplementasikan penguncian baris `SELECT ... FOR UPDATE` dengan urutan deterministik baku: `pesanan_jual` $\to$ `persetujuan_harga` $\to$ `pelanggan` $\to$ `barang (ORDER BY barang_id ASC)`.
+- **Konsekuensi:** Mengeliminasi error *deadlock detected* (`SQLSTATE 40P01`), menjamin stok tidak pernah bernilai negatif, dan memastikan konsistensi saldo mutasi kartu stok $\sum \text{mutasi} = \text{stok}$.
+
+### ADR-04: Sistem Desain Enterprise & Proteksi Noindex Tiga Lapis
+- **Konteks:** Aplikasi internal korporat membutuhkan antarmuka yang padat informasi, bebas dekorasi berlebihan, dan terlindung dari pengindeksan publik.
+- **Keputusan:** Menerapkan sistem desain Tailwind CSS bernuansa enterprise (palet Slate/Navy, dense data tables, `tabular-nums`), dipadukan dengan proteksi *noindex* 3 lapis: `public/robots.txt` (`Disallow: /`), metadata layout React (`robots: { index: false, follow: false }`), serta header HTTP `X-Robots-Tag: noindex, nofollow` di Next.js middleware dan `netlify.toml`.
+- **Konsekuensi:** Pengalaman pengguna efisien untuk entri data cepat dan aplikasi terlindung dari perayapan mesin pencari publik.
+
+### ADR-05: Integrasi Payment Gateway Mayar & Handshake Dua Arah Webhook
+- **Konteks:** Pembayaran piutang melalui payment gateway Mayar membutuhkan verifikasi yang aman dari serangan pemalsuan payload (*tampering* dan *replay attack*).
+- **Keputusan:** Rute webhook `/api/webhook/mayar` memvalidasi secret token menggunakan perbandingan *constant-time* (`crypto.timingSafeEqual`), membatasi ukuran payload maksimal 100 KB, melakukan verifikasi status invoice secara aktif ke API Mayar (*two-way handshake*), dan mencatat `event_id` unik untuk menjamin idempotensi.
+- **Konsekuensi:** Mencegah terjadinya pelunasan palsu, pembayaran ganda (*double-settlement*), dan *timing attack*.
+
+### ADR-06: Notifikasi Email Stok Menipis Harian (Resend + Cron Token)
+- **Konteks:** Notifikasi stok menipis harian dikirim setiap pukul 07.00 WIB kepada Manajer dan Gudang aktif tanpa membebani sesi pengguna.
+- **Keputusan:** Pemanggilan trigger cron `/api/cron/notifikasi-stok` diamankan dengan Secret Bearer Token, fungsi basis data `rpc_sistem_klaim_notifikasi()` menjamin idempotensi harian (hanya 1 pengiriman sukses per tanggal bisnis), serta pengujian manual dibatasi *rate limiting* 1 kali per menit.
+- **Konsekuensi:** Eksekusi background andal, kuota pihak ketiga (Resend) terjaga, dan kebal dari spam pengiriman.
+
+---
+
+## 10. Lisensi & Hak Cipta
+
+Hak Cipta © 2026 CV Sinar Abadi Niaga. Seluruh hak cipta dilindungi undang-undang.  
 Dibuat untuk kebutuhan operasional distribusi internal perusahaan.
+

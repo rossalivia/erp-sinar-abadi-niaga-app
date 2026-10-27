@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { redirect } from 'next/navigation';
-import { Mail, Clock, ShieldCheck, Info, AlertTriangle, CheckCircle2, History } from 'lucide-react';
+import { Mail, Clock, ShieldCheck, Info, AlertTriangle, History } from 'lucide-react';
 import { getProfil } from '@/lib/profil';
 import { createServerClient } from '@/lib/supabase/server';
 import { formatTanggalWaktu, formatTanggal } from '@/lib/format';
@@ -250,7 +250,7 @@ export default async function NotifikasiPage() {
           <span className="font-semibold text-slate-900 dark:text-slate-100">
             Ketentuan Pengujian Manual & Kebijakan Anti-Spam:
           </span>{' '}
-          Tombol <span className="font-medium text-slate-900 dark:text-slate-200">"Kirim Email Uji Coba"</span> dibatasi secara ketat maksimal <strong>1 kali per menit</strong> pada basis data Postgres untuk mencegah pengiriman ganda (flooding) dan menjaga kuota API Resend. Jika pengujian baru saja dilakukan, tombol akan otomatis masuk mode hitung mundur (cooldown).
+          Tombol <span className="font-medium text-slate-900 dark:text-slate-200">&ldquo;Kirim Email Uji Coba&rdquo;</span> dibatasi secara ketat maksimal <strong>1 kali per menit</strong> pada basis data Postgres untuk mencegah pengiriman ganda (flooding) dan menjaga kuota API Resend. Jika pengujian baru saja dilakukan, tombol akan otomatis masuk mode hitung mundur (cooldown).
         </div>
       </div>
 
