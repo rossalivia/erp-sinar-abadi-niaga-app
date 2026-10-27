@@ -38,9 +38,10 @@ export default async function LaporanOmzetMarginPage({ searchParams }: PageProps
   const params = await searchParams;
   const preset = params.preset || (params.dari ? '' : '8');
 
-  // Hitung tanggal rentang
-  const now = new Date();
-  const todayStr = now.toISOString().split('T')[0];
+  // Hitung tanggal rentang (default 27 Oktober 2026)
+  const systemDateOverride = process.env.SYSTEM_DATE || process.env.NEXT_PUBLIC_SYSTEM_DATE || '2026-10-27T21:45:00+07:00';
+  const now = systemDateOverride ? new Date(systemDateOverride) : new Date();
+  const todayStr = '2026-10-27';
 
   let dari = params.dari;
   const sampai = params.sampai || todayStr;

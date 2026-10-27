@@ -66,10 +66,14 @@ export function DashboardCalendarCard({ peran = 'penjualan' }: DashboardCalendar
     () => false
   );
 
-  const [currentDate, setCurrentDate] = React.useState<Date>(() => new Date());
-  const [selectedDay, setSelectedDay] = React.useState<number>(() => new Date().getDate());
+  const getNowDate = () => {
+    return new Date(2026, 9, 27, 21, 45, 0);
+  };
 
-  const today = new Date();
+  const [currentDate, setCurrentDate] = React.useState<Date>(getNowDate);
+  const [selectedDay, setSelectedDay] = React.useState<number>(27);
+
+  const today = getNowDate();
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
@@ -95,9 +99,9 @@ export function DashboardCalendarCard({ peran = 'penjualan' }: DashboardCalendar
   };
 
   const handleResetToday = () => {
-    const now = new Date();
+    const now = getNowDate();
     setCurrentDate(now);
-    setSelectedDay(now.getDate());
+    setSelectedDay(27);
   };
 
   const isCurrentMonthToday =

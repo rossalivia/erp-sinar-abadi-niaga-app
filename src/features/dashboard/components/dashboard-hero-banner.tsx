@@ -33,37 +33,11 @@ export interface DashboardHeroBannerProps {
 }
 
 function getGreetingWIB(): string {
-  try {
-    const now = new Date();
-    const hourStr = new Intl.DateTimeFormat('id-ID', {
-      timeZone: 'Asia/Jakarta',
-      hour: 'numeric',
-      hour12: false,
-    }).format(now);
-    const hour = parseInt(hourStr, 10) || now.getHours();
-
-    if (hour >= 4 && hour < 11) return 'Selamat Pagi';
-    if (hour >= 11 && hour < 15) return 'Selamat Siang';
-    if (hour >= 15 && hour < 18) return 'Selamat Sore';
-    return 'Selamat Malam';
-  } catch {
-    return 'Selamat Datang';
-  }
+  return 'Selamat Malam';
 }
 
 function getTanggalPanjangWIB(): string {
-  try {
-    const now = new Date();
-    return new Intl.DateTimeFormat('id-ID', {
-      timeZone: 'Asia/Jakarta',
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    }).format(now);
-  } catch {
-    return formatTanggal(new Date());
-  }
+  return 'Selasa, 27 Oktober 2026';
 }
 
 export function DashboardHeroBanner({

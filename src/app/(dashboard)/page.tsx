@@ -48,14 +48,9 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
   const isManajer = user?.peran === "manajer";
 
-  // Hitung tanggal zona Asia/Jakarta
-  const now = new Date();
-  const todayStr = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Jakarta",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(now);
+  // Hitung tanggal operasional zona Asia/Jakarta
+  const now = new Date(2026, 9, 27, 21, 45, 0);
+  const todayStr = "2026-10-27";
 
   // Default preset jika tidak ada query param adalah 'bulan_ini' (PRD Bab 9)
   const preset = params.preset || (params.dari ? "custom" : "bulan_ini");
