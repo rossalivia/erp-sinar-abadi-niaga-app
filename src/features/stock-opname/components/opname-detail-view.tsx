@@ -68,8 +68,13 @@ export function OpnameDetailView({
         return;
       }
       router.refresh();
-    } catch {
-      setErrorMessage('Terjadi kesalahan jaringan.');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : '';
+      if (msg.includes('Server Action') || msg.includes('older or newer deployment')) {
+        setErrorMessage('Aplikasi baru saja diperbarui di server. Silakan muat ulang halaman (F5 / Refresh) lalu coba lagi.');
+      } else {
+        setErrorMessage('Terjadi kesalahan koneksi atau sesi kedaluwarsa. Silakan muat ulang halaman.');
+      }
       setIsLoading(false);
     }
   };
@@ -88,8 +93,13 @@ export function OpnameDetailView({
       }
       setShowConfirmModal(false);
       router.refresh();
-    } catch {
-      setErrorMessage('Terjadi kesalahan jaringan.');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : '';
+      if (msg.includes('Server Action') || msg.includes('older or newer deployment')) {
+        setErrorMessage('Aplikasi baru saja diperbarui di server. Silakan muat ulang halaman (F5 / Refresh) lalu coba lagi.');
+      } else {
+        setErrorMessage('Terjadi kesalahan koneksi atau sesi kedaluwarsa. Silakan muat ulang halaman.');
+      }
       setIsLoading(false);
       setShowConfirmModal(false);
     }
@@ -116,8 +126,13 @@ export function OpnameDetailView({
       }
       setShowCancelModal(false);
       router.refresh();
-    } catch {
-      setCancelReasonError('Terjadi kesalahan jaringan.');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : '';
+      if (msg.includes('Server Action') || msg.includes('older or newer deployment')) {
+        setCancelReasonError('Aplikasi baru saja diperbarui di server. Silakan muat ulang halaman (F5 / Refresh) lalu coba lagi.');
+      } else {
+        setCancelReasonError('Terjadi kesalahan koneksi atau sesi kedaluwarsa. Silakan muat ulang halaman.');
+      }
       setIsLoading(false);
     }
   };
