@@ -37,7 +37,7 @@ Sistem Informasi Perencanaan Sumber Daya Perusahaan (Enterprise Resource Plannin
   - Database Trigger Guards untuk validasi integritas kolom.
   - **Tanpa Service-Role Key:** Aplikasi berjalan 100% menggunakan Anon Key + Sesi Pengguna terotentikasi.
 - **Pengujian:**
-  - Unit & Integration: [Vitest](https://vitest.dev/) (61 skenario pengujian skema, utilitas, dan invarian).
+  - Unit & Integration: [Vitest](https://vitest.dev/) (231 skenario pengujian pada 25 berkas uji mencakup skema Zod, invarian kartu stok, kalkulasi diskon, batas kredit, dan fitur tambahan).
   - End-to-End (E2E): [Playwright](https://playwright.dev/) (Uji alur transaksi, pencegahan kebocoran data jaringan, dan route guard).
   - Uji Konkurensi: SQL/Bash scripts (20/20 paralel pass pada locking stok dan limit kredit).
 
@@ -143,14 +143,14 @@ Aplikasi dilengkapi dengan rangkaian pengujian berlapis:
   ```bash
   npm run test
   ```
-  Menjalankan 61 pengujian otomatis pada skema Zod, invarian kartu stok, format angka Rupiah, dan kalkulasi diskon/margin.
+  Menjalankan 231 pengujian otomatis (25 berkas) pada skema Zod, invarian kartu stok, format angka Rupiah, kalkulasi diskon/margin, skoring kredit, dan pencegahan formula injection.
 - **End-to-End Test (Playwright):**
   Salin `.env.test.example` menjadi `.env.test.local`, isi kata sandi akun uji Anda, lalu jalankan:
   ```bash
   npm run test:e2e
   ```
-- **Status 28 Test Case:**
-  Seluruh 28 Test Case terverifikasi Lulus 100%. Rincian bukti pengujian dapat ditinjau di [docs/03-test-plan.md](docs/03-test-plan.md).
+- **Status Test Case (TC):**
+  28 Baseline Test Case (TC-01 s.d. TC-28) dan seluruh Test Case Peningkatan Fitur Baru (TC-29 s.d. TC-245) terverifikasi **Lulus 100%**. Rincian bukti pengujian dapat ditinjau di [docs/03-test-plan.md](docs/03-test-plan.md).
 
 ---
 
@@ -231,7 +231,7 @@ Dokumentasi keputusan strategis arsitektur yang melandasi implementasi sistem ER
 
 ### ADR-05: Integrasi Payment Gateway Mayar & Handshake Dua Arah Webhook
 - **Konteks:** Pembayaran piutang melalui payment gateway Mayar membutuhkan verifikasi yang aman dari serangan pemalsuan payload (*tampering* dan *replay attack*).
-- **Keputusan:** Rute webhook `/api/webhook/mayar` memvalidasi secret token menggunakan perbandingan *constant-time* (`crypto.timingSafeEqual`), membatasi ukuran payload maksimal 100 KB, melakukan verifikasi status invoice secara aktif ke API Mayar (*two-way handshake*), dan mencatat `event_id` unik untuk menjamin idempotensi.
+- **Keputusan:** Rute webhook `/api/webhooks/mayar/[token]` memvalidasi secret token menggunakan perbandingan *constant-time* (`crypto.timingSafeEqual`), membatasi ukuran payload maksimal 100 KB, melakukan verifikasi status invoice secara aktif ke API Mayar (*two-way handshake*), dan mencatat `event_id` unik untuk menjamin idempotensi.
 - **Konsekuensi:** Mencegah terjadinya pelunasan palsu, pembayaran ganda (*double-settlement*), dan *timing attack*.
 
 ### ADR-06: Notifikasi Email Stok Menipis Harian (Resend + Cron Token)
