@@ -32,9 +32,7 @@ function simulasiValidasiDraf(
     if (it.jumlah < 1) {
       throw { code: 'E0004', message: 'Jumlah minimal 1' };
     }
-    if (peran === 'penjualan' && it.diskon_persen > 10) {
-      throw { code: 'E0009', message: 'Diskon harus 0% sampai 10%' };
-    }
+    // Draf diizinkan hingga 25% (semua peran) untuk keperluan pengajuan persetujuan
     if (it.diskon_persen > 25) {
       throw { code: 'E0010', message: 'Diskon harus 0% sampai 25%' };
     }
@@ -149,23 +147,12 @@ describe('Penegasan Aturan BR-04 dan Pengetatan Diskon', () => {
     });
   });
 
-  describe('3. Penolakan Keras Diskon > 10% untuk Staf Penjualan (Bukan Clamp)', () => {
-    it('staf penjualan mengirim diskon 11% ditolak dengan E0009', () => {
-      expect(() => {
-        simulasiValidasiDraf('penjualan', [
-          { jumlah: 1, harga_satuan: 100000, diskon_persen: 11 },
-        ]);
-      }).toThrowError();
-
-      try {
-        simulasiValidasiDraf('penjualan', [
-          { jumlah: 1, harga_satuan: 100000, diskon_persen: 11 },
-        ]);
-      } catch (err: unknown) {
-        const error = err as { code: string; message: string };
-        expect(error.code).toBe('E0009');
-        expect(error.message).toBe('Diskon harus 0% sampai 10%');
-      }
+  describe('3. Validasi Diskon > 10% untuk Staf Penjualan (Pengajuan Persetujuan)', () => {
+    it('staf penjualan diizinkan menyimpan draf diskon 11% s.d. 25% untuk pengajuan persetujuan', () => {
+      const res = simulasiValidasiDraf('penjualan', [
+        { jumlah: 1, harga_satuan: 100000, diskon_persen: 20 },
+      ]);
+      expect(res.success).toBe(true);
     });
 
     it('staf penjualan mengirim diskon 10% diterima', () => {

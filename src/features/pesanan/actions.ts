@@ -39,17 +39,6 @@ export async function simpanDrafPesananAction(
     };
   }
 
-  const profil = await getProfil();
-  if (profil?.peran === 'penjualan') {
-    const hasDiskonOver10 = parsed.data.items.some((it) => it.diskon_persen > 10);
-    if (hasDiskonOver10) {
-      return {
-        success: false,
-        message: 'Diskon harus 0% sampai 10%',
-      };
-    }
-  }
-
   const supabase = await createServerClient();
   const { data, error } = await supabase.rpc('rpc_simpan_draf_pesanan', {
     p_pelanggan_id: parsed.data.pelanggan_id,

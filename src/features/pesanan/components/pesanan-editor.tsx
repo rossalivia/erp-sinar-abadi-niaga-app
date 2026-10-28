@@ -46,7 +46,7 @@ export function PesananEditor({
   initialData,
 }: PesananEditorProps) {
   const router = useRouter();
-  const maxDiskon = peran === 'manajer' ? 25 : 10;
+  const maxDiskon = 25; // Batas mutlak sistem untuk pengajuan draf
   const isEditing = Boolean(initialData?.id);
 
   const [pelangganId, setPelangganId] = React.useState<string>(
@@ -142,6 +142,11 @@ export function PesananEditor({
     return hitungTotalPesanan(calcItems);
   }, [items, barangMap]);
 
+  // Deteksi apakah draf berisi diskon > 10% yang memerlukan persetujuan dispensasi Manajer
+  const hasDiskonOver10 = React.useMemo(() => {
+    return peran === 'penjualan' && items.some((it) => it.diskon_persen > 10);
+  }, [peran, items]);
+
   const { warnings: creditWarnings } = useCreditAdvisory(pelangganId, totalPesanan);
 
   function handleAddItem() {
@@ -230,10 +235,6 @@ export function PesananEditor({
       }
       if (it.diskon_persen < 0 || it.diskon_persen > 25) {
         setErrorMessage(`Baris #${i + 1}: Diskon harus 0% sampai 25%`);
-        return;
-      }
-      if (peran === 'penjualan' && it.diskon_persen > 10) {
-        setErrorMessage(`Baris #${i + 1}: Diskon harus 0% sampai 10%`);
         return;
       }
     }
@@ -443,6 +444,16 @@ export function PesananEditor({
               </span>
             </div>
           )}
+
+          {/* Banner Peringatan Dispensasi Persetujuan Manajer untuk Diskon > 10% */}
+          {hasDiskonOver10 && (
+            <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 text-blue-900 rounded text-xs">
+              <AlertCircle className="w-4 h-4 shrink-0 text-blue-600" />
+              <span>
+                <strong>Dispensasi Diskon Manajer:</strong> Terdapat baris barang dengan diskon lebih dari 10%. Draf pesanan dapat disimpan, namun Anda wajib mengajukan permohonan melalui tombol <strong>&ldquo;Ajukan Persetujuan Harga&rdquo;</strong> ke Manajer sebelum pesanan dapat dikonfirmasi.
+              </span>
+            </div>
+          )}
         </div>
       )}
 
@@ -454,7 +465,9 @@ export function PesananEditor({
               Daftar Barang ({items.length} / 20 baris)
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              Batas diskon peran {peran}: maksimum {maxDiskon}%. Harga diambil dari master barang.
+              {peran === 'penjualan'
+                ? 'Diskon langsung staf: 0-10% (diskon 11-25% diizinkan untuk diajukan ke Manajer).'
+                : 'Batas diskon Manajer: maksimum 25%.'}
             </p>
           </div>
           <Button

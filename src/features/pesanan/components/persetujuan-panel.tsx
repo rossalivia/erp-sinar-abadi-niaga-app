@@ -295,7 +295,7 @@ export function PersetujuanPanel({
       <div className="pt-3 text-xs text-slate-600">
         {!statusPersetujuan ? (
           <p className="text-slate-500">
-            Pesanan ini berada dalam status draf. Jika terdapat harga barang di bawah HPP yang ditolak sistem saat konfirmasi, Staf Penjualan dapat mengajukan permohonan dispensasi persetujuan ke Manajer.
+            Pesanan ini berada dalam status draf. Jika terdapat harga barang di bawah HPP atau diskon melebihi 10%, Staf Penjualan dapat mengajukan permohonan dispensasi persetujuan ke Manajer sebelum pesanan dapat dikonfirmasi.
           </p>
         ) : statusPersetujuan === 'menunggu' ? (
           <div className="bg-amber-50/70 border border-amber-200 rounded p-3 text-amber-900 space-y-1">
