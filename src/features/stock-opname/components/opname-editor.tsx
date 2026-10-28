@@ -378,35 +378,38 @@ export function OpnameEditor({ katalogBarang, initialData }: OpnameEditorProps) 
       )}
 
       {/* Form Metadata Sesi & Pemilihan Barang */}
-      <div className="rounded-2xl border border-white/80 bg-white/80 backdrop-blur-md p-5 shadow-neu-sm">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="md:col-span-2">
-            <FormField label="Catatan / Area Audit" id="catatan" hint="Opsional">
-              <input
-                id="catatan"
-                type="text"
-                value={catatan}
-                onChange={(e) => setCatatan(e.target.value)}
-                placeholder="Contoh: Audit Rutin Akhir Bulan Rak Sembako A & B"
-                className="w-full rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-800"
-              />
-            </FormField>
-          </div>
+      <div className="rounded-2xl border border-white/80 bg-white/80 backdrop-blur-md p-5 shadow-neu-sm space-y-4">
+        {/* Baris 1: Catatan Audit */}
+        <div>
+          <FormField label="Catatan / Area Audit" id="catatan" hint="Opsional">
+            <input
+              id="catatan"
+              type="text"
+              value={catatan}
+              onChange={(e) => setCatatan(e.target.value)}
+              placeholder="Contoh: Audit Rutin Akhir Bulan Rak Sembako A & B"
+              className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-800"
+            />
+          </FormField>
+        </div>
 
-          <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1">
-              Tambah Barang ke Sesi
-            </label>
-            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
+        {/* Baris 2: Pemilihan & Penambahan Barang */}
+        <div className="pt-3 border-t border-slate-100">
+          <label className="block text-xs font-semibold text-slate-800 mb-2">
+            Tambah Barang ke Sesi Opname
+          </label>
+          <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2.5">
+            {/* Dropdown Satuan dengan min-w-0 flex-1 */}
+            <div className="min-w-0 flex-1">
               <select
                 value={selectedBarangId}
                 onChange={(e) => setSelectedBarangId(e.target.value)}
-                className="flex-1 rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-900 focus:border-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-800 min-w-[140px]"
+                className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 focus:border-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-800 truncate"
               >
                 <option value="">
                   {availableBarang.length === 0
-                    ? '-- Seluruh barang sudah masuk --'
-                    : `-- Pilih Barang (${availableBarang.length}) --`}
+                    ? '-- Seluruh barang aktif sudah masuk ke sesi --'
+                    : `-- Pilih Barang Satuan (${availableBarang.length} tersedia) --`}
                 </option>
                 {availableBarang.map((b) => (
                   <option key={b.id} value={b.id}>
@@ -414,42 +417,46 @@ export function OpnameEditor({ katalogBarang, initialData }: OpnameEditorProps) 
                   </option>
                 ))}
               </select>
-
-              <button
-                type="button"
-                onClick={() => handleAddBarang()}
-                disabled={!selectedBarangId}
-                className="inline-flex items-center gap-1 rounded-md bg-slate-900 px-3 py-1.5 text-xs font-medium text-white disabled:opacity-40 hover:bg-slate-800 transition-colors shrink-0"
-                title="Tambahkan 1 barang terpilih"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                <span>Tambah</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={handleOpenMultiSelectModal}
-                className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors shrink-0"
-                title="Pilih beberapa barang sekaligus dengan fitur pencarian"
-              >
-                <CheckSquare className="h-3.5 w-3.5 text-slate-500" />
-                <span>Pilih Banyak</span>
-              </button>
             </div>
+
+            {/* Tombol Tambah Satuan */}
+            <button
+              type="button"
+              onClick={() => handleAddBarang()}
+              disabled={!selectedBarangId}
+              className="inline-flex items-center justify-center gap-1.5 rounded-md bg-slate-900 px-4 py-2 text-xs font-medium text-white disabled:opacity-40 hover:bg-slate-800 transition-colors shrink-0 shadow-sm"
+              title="Tambahkan 1 barang terpilih"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Tambah</span>
+            </button>
+
+            <div className="h-6 w-px bg-slate-200 hidden md:block mx-1" />
+
+            {/* Tombol Multi-Select Modal */}
+            <button
+              type="button"
+              onClick={handleOpenMultiSelectModal}
+              className="inline-flex items-center justify-center gap-1.5 rounded-md border border-indigo-200 bg-indigo-50/70 px-4 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 hover:border-indigo-300 transition-colors shrink-0"
+              title="Pilih beberapa barang sekaligus dengan fitur pencarian & centang"
+            >
+              <CheckSquare className="h-4 w-4 text-indigo-600" />
+              <span>Pilih Banyak Barang</span>
+            </button>
           </div>
         </div>
 
         {/* Shortcut Tombol Aksi Cepat */}
-        <div className="mt-3 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+        <div className="mt-3 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
           <span>
-            Pilih barang satuan, pilih beberapa item tertentu, atau muat seluruh katalog gudang sekaligus.
+            Pilih barang satuan di atas, gunakan <strong className="text-indigo-600 font-medium">Pilih Banyak Barang</strong> untuk memilih beberapa item spesifik, atau muat seluruh katalog gudang sekaligus.
           </span>
           <div className="flex items-center gap-4">
             {rows.length > 0 && (
               <button
                 type="button"
                 onClick={handleClearAll}
-                className="inline-flex items-center gap-1 text-rose-600 hover:text-rose-700 font-medium hover:underline transition-colors"
+                className="inline-flex items-center gap-1 text-rose-600 hover:text-rose-700 font-semibold hover:underline transition-colors"
                 title="Kosongkan seluruh barang yang sudah dimuat"
               >
                 <Trash2 className="h-3.5 w-3.5" />
