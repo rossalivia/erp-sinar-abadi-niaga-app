@@ -9,10 +9,10 @@
 Dokumen ini merupakan laporan pengujian menyeluruh (*master test plan*) aplikasi ERP **CV Sinar Abadi Niaga**. Seluruh pengujian dirancang untuk memverifikasi pemenuhan aturan bisnis PRD (*Business Rules* BR-01 s.d. BR-12) pada **Bagian I**, serta seluruh fitur peningkatan dan modul tambahan (*Enhancements - Bobot 25%*) pada **Bagian II**.
 
 ### Metrik Status Pengujian
-- **Total Skenario Uji**: 238 Test Case
+- **Total Skenario Uji**: 245 Test Case
 - **Bagian I (Aturan Bisnis Utama PRD BR-01 s.d. BR-12)**: 28 Test Case — **100% Lulus**
-- **Bagian II (Fitur Tambahan / Enhancements)**: 210 Test Case — **100% Lulus**
-- **Tingkat Kelulusan Akhir (*Pass Rate*)**: **100% (238 / 238 Lulus)**
+- **Bagian II (Fitur Tambahan / Enhancements)**: 217 Test Case — **100% Lulus**
+- **Tingkat Kelulusan Akhir (*Pass Rate*)**: **100% (245 / 245 Lulus)**
 
 ### Lingkungan & Konfigurasi Uji
 1. **Basis Data**: Supabase PostgreSQL dengan skema relasional terisolasi, Row Level Security (RLS), Column-Level Grants, fungsi bisnis atomik (`SECURITY DEFINER` dengan `SET search_path = public, pg_temp`), serta trigger guard.
@@ -416,10 +416,29 @@ Bagian ini memuat seluruh pengujian fitur peningkatan sistem (*system enhancemen
 
 ---
 
+### Sub-bagian II.16: Modul Pengajuan Draf Diskon Penjualan > 10% untuk Dispensasi Manajer (PRD BR-03 & BR-04)
+| Kode | Rujukan | Akun | Langkah | Hasil diharapkan | Hasil sebenarnya | Status |
+|---|---|---|---|---|---|---|
+| **TC-239**| Diskon Penjualan | P1 | Staf Penjualan membuat/mengubah draf pesanan dengan diskon baris antara 10.01% sampai 25.00%. | Sistem mengizinkan simpan draf dengan diskon hingga 25% tanpa terpotong kaku ke 10% untuk diajukan ke Manajer. | Draf berhasil disimpan di database; nilai diskon tersimpan utuh dan banner instruksi pengajuan persetujuan muncul di UI. | Lulus |
+| **TC-240**| Diskon Penjualan | P1 | Staf Penjualan mencoba menekan tombol "Konfirmasi Pesanan" langsung pada pesanan dengan diskon > 10%. | Sistem menolak keras konfirmasi langsung oleh Staf Penjualan dengan pesan galat `E0009`. | Konfirmasi langsung ditolak database dan UI; staf diarahkan menekan tombol "Ajukan Persetujuan Harga". | Lulus |
+| **TC-241**| Zero-Leakage HPP | P1 | Staf Penjualan mencoba mengonfirmasi pesanan dengan harga jual bersih di bawah HPP master barang. | Konfirmasi ditolak dengan pesan standar persis: `"Harga di bawah batas, minta persetujuan Manajer"` (`E0011`). | Pesan error tampil tanpa membocorkan angka riil HPP; Staf Penjualan tidak mendapatkan akses ke data finansial rahasia. | Lulus |
+| **TC-242**| Persetujuan Harga | P1, M | Staf Penjualan menekan tombol "Ajukan Persetujuan Harga" lalu Manajer membuka dasbor. | Pengajuan tercatat di tabel `persetujuan_harga` dan otomatis muncul sebagai antrean tugas harian Manajer. | Manajer menerima kartu tugas dispensasi harga di Pusat Tugas Harian, dapat menyetujui atau menolak permohonan. | Lulus |
+
+---
+
+### Sub-bagian II.17: Peningkatan UX Sesi Stock Opname & Penyesuaian Fisik (PRD BR-11 & US-08)
+| Kode | Rujukan | Akun | Langkah | Hasil diharapkan | Hasil sebenarnya | Status |
+|---|---|---|---|---|---|---|
+| **TC-243**| Stock Opname UX | G, M | Pengguna mengeklik tombol "Kosongkan Daftar" / "Hapus Semua" setelah memuat barang aktif. | Seluruh daftar inventarisasi fisik langsung bersih dalam satu kali klik tanpa harus menghapus satu per satu. | Baris tabel terhapus bersih; jika terdapat angka fisik yang diubah, sistem meminta konfirmasi pengamanan terlebih dahulu. | Lulus |
+| **TC-244**| Stock Opname Multi-Select | G, M | Pengguna membuka modal "Pilih Banyak Barang", mengetik SKU/nama pada kotak pencarian, dan mencentang barang. | Barang terpilih ditambahkan sekaligus ke sesi opname, dan barang yang sudah ada otomatis disaring untuk mencegah duplikasi. | Modal multi-select menambahkan seluruh item terpilih secara massal; dropdown satuan menyaring produk yang sudah ada di sesi. | Lulus |
+| **TC-245**| Aturan Selisih Fisik | G, M | Simpan sesi opname yang memiliki item dengan selisih fisik (`stok_fisik <> stok_sistem`) tanpa keterangan memadai. | Sistem menolak simpan jika keterangan kurang dari 10 karakter dengan pesan galat `E0016`. | Validasi Zod dan RPC `rpc_buat_opname_stok` mewajibkan pengisian alasan selisih minimal 10 karakter sebelum diajukan ke Manajer. | Lulus |
+
+---
+
 ## 3. Kesimpulan & Rekomendasi Rilis
 
-Berdasarkan eksekusi pengujian komprehensif terhadap seluruh **238 skenario uji**:
+Berdasarkan eksekusi pengujian komprehensif terhadap seluruh **245 skenario uji**:
 1. **Bagian I (BR-01 s.d. BR-12)**: 28 test case aturan bisnis inti terbukti lulus 100%, menegakkan integritas mutasi stok atomik `FOR UPDATE`, bebas *deadlock*, perlindungan mutlak kerahasiaan harga pokok (*Zero-Price-Leakage*), dan kontrol batas kredit.
-2. **Bagian II (Fitur Tambahan / Enhancements)**: 210 test case fitur peningkatan terbukti lulus 100%, memvalidasi modul pembayaran daring Mayar Sandbox dengan handshake webhook timing-safe, modul limit kredit dinamis (BR-13/14), notifikasi email stok harian via Resend dan cron token, stock opname anti-drift, penagihan WhatsApp resmi, impor CSV massal, picking list, analitik pelanggan, cetak surat jalan, dan laporan manajerial PRD Bab 9.
+2. **Bagian II (Fitur Tambahan / Enhancements)**: 217 test case fitur peningkatan terbukti lulus 100%, memvalidasi modul pembayaran daring Mayar Sandbox dengan handshake webhook timing-safe, modul limit kredit dinamis (BR-13/14), notifikasi email stok harian via Resend dan cron token, stock opname anti-drift dengan fitur massal Clear All dan Multi-Select, pengajuan draf dispensasi diskon penjualan > 10% ke Manajer, penagihan WhatsApp resmi, impor CSV massal, picking list, analitik pelanggan, cetak surat jalan, dan laporan manajerial PRD Bab 9.
 
 Sistem ERP **CV Sinar Abadi Niaga** dinyatakan berstatus **SIAP RILIS KE LINGKUNGAN PRODUKSI (*READY FOR PRODUCTION DEPLOYMENT*)**.

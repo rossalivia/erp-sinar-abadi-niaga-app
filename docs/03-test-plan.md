@@ -445,6 +445,28 @@ Urutan validasi `konfirmasi_pesanan`: (1) akses/kepemilikan → E01/E02, (2) sta
 | **TC-237** | Omzet & Margin Bulan Berjalan Dashboard Manajer | M | SQL + Vitest | **Lulus** | 2026-10-26 | `supabase/tests/17_laporan_prd_bab_9.sql`<br>`src/features/laporan/__tests__/laporan.test.ts` | Dashboard default ke bulan berjalan (Asia/Jakarta), menghitung omzet pesanan dikirim & lunas berdasarkan `dikirim_pada`, margin rupiah dan persentase terhitung akurat. |
 | **TC-238** | Zero-Leakage Data Rahasia Finansial pada Dashboard & Laporan Non-Manajer | P, G | SQL + Vitest | **Lulus** | 2026-10-26 | `supabase/tests/17_laporan_prd_bab_9.sql`<br>`src/features/laporan/__tests__/laporan.test.ts` | Staf Penjualan dan Gudang diblokir database saat memanggil RPC finansial (`E0002`), dan dashboard Penjualan/Gudang tidak menerima atau memproses nilai `harga_pokok`, `hpp_satuan`, atau `margin`. |
 
+---
+
+## 22. Test Case Tambahan: Pengajuan Draf Diskon Penjualan > 10% untuk Dispensasi Manajer (TC-239 s.d. TC-242)
+
+| ID | Fokus Uji | Aktor | Media | Status | Tanggal Uji | Bukti Uji | Ringkasan Verifikasi & Hasil |
+|---|---|---|---|---|---|---|---|
+| **TC-239** | Staf Penjualan menyimpan draf pesanan dengan diskon 10.01% – 25% untuk pengajuan dispensasi | P | SQL + Vitest | **Lulus** | 2026-10-28 | `supabase/migrations/20261028091000_izinkan_draf_diskon_pengajuan.sql`<br>`src/features/pesanan/__tests__/br04-diskon-penjualan.test.ts` | Draf berhasil disimpan, nilai diskon baris > 10% tercatat utuh di `item_pesanan_jual` tanpa terpotong kaku ke 10%. |
+| **TC-240** | Penolakan konfirmasi langsung oleh Staf Penjualan pada pesanan dengan diskon > 10% | P | SQL + Vitest | **Lulus** | 2026-10-28 | `supabase/migrations/20261028091000_izinkan_draf_diskon_pengajuan.sql`<br>`src/features/pesanan/__tests__/br04-diskon-penjualan.test.ts` | Ditolak dengan kode error `E0009: Diskon harus 0% sampai 10%`. Konfirmasi langsung dicegah, staf diarahkan mengajukan persetujuan ke Manajer. |
+| **TC-241** | Penolakan konfirmasi langsung Penjualan saat harga di bawah HPP tanpa kebocoran nilai HPP | P | SQL + Vitest | **Lulus** | 2026-10-28 | `supabase/migrations/20261027190000_penguncian_stok_pesanan.sql`<br>`src/features/pesanan/__tests__/br04-diskon-penjualan.test.ts` | Ditolak dengan pesan aman persis `E0011: Harga di bawah batas, minta persetujuan Manajer` tanpa membocorkan angka riil HPP ke staf penjualan. |
+| **TC-242** | Pengajuan dispensasi harga ke Manajer tercatat di `persetujuan_harga` & muncul di Pusat Tugas | P, M | SQL + Vitest | **Lulus** | 2026-10-28 | `supabase/migrations/20261028091000_izinkan_draf_diskon_pengajuan.sql`<br>`src/features/pusat-tugas/__tests__/utils.test.ts` | Record tercatat dengan status `menunggu`, muncul pada antrean Pusat Tugas Manajer, dan draf terkunci dari konfirmasi staf hingga disetujui Manajer. |
+
+---
+
+## 23. Test Case Tambahan: Peningkatan UX Sesi Stock Opname & Penyesuaian Fisik (TC-243 s.d. TC-245)
+
+| ID | Fokus Uji | Aktor | Media | Status | Tanggal Uji | Bukti Uji | Ringkasan Verifikasi & Hasil |
+|---|---|---|---|---|---|---|---|
+| **TC-243** | Fitur Kosongkan Daftar (Clear All) pada Sesi Stock Opname | G, M | Vitest + Komponen | **Lulus** | 2026-10-28 | `src/features/stock-opname/components/opname-editor.tsx`<br>`src/features/stock-opname/__tests__/schemas.test.ts` | Seluruh baris inventarisasi fisik berhasil dikosongkan sekaligus tanpa perlu menghapus item satu per satu, dengan proteksi konfirmasi bila ada hitungan yang telah diubah. |
+| **TC-244** | Modal Multi-Select & Filter Duplikasi Produk pada Sesi Stock Opname | G, M | Vitest + Komponen | **Lulus** | 2026-10-28 | `src/features/stock-opname/components/opname-editor.tsx`<br>`src/features/stock-opname/__tests__/schemas.test.ts` | Menambahkan beberapa item spesifik sekaligus melalui dialog pencarian SKU/nama dengan checkbox; barang yang sudah masuk ke sesi otomatis tersaring dari pilihan. |
+| **TC-245** | Validasi penolakan selisih stok fisik tanpa alasan minimal 10 karakter | G, M | SQL + Vitest | **Lulus** | 2026-10-28 | `src/features/stock-opname/__tests__/schemas.test.ts`<br>`supabase/migrations/20261022000000_stock_opname.sql` | Ditolak oleh skema Zod dan constraint database jika `selisih != 0` dan keterangan < 10 karakter (`E0016`). Koreksi mutasi stok hanya terjadi saat disetujui Manajer. |
+
+
 
 
 
