@@ -64,13 +64,12 @@ export function PrintButton({
     <div className={`flex items-center gap-2 print:hidden mb-6 ${className}`}>
       {targetHref ? (
         <Button
-          type="button"
           variant="outline"
           size="sm"
           asChild
-          className="text-xs h-8 gap-1.5 print:hidden border-slate-300 text-slate-700 hover:text-slate-900"
+          className="text-xs h-8 gap-1.5 print:hidden border-slate-300 text-slate-700 hover:text-slate-900 cursor-pointer"
         >
-          <Link href={targetHref} onClick={onBack ? handleBack : undefined}>
+          <Link href={targetHref}>
             <ArrowLeft className="w-3.5 h-3.5 print:hidden" />
             {backLabel}
           </Link>
@@ -81,7 +80,7 @@ export function PrintButton({
           variant="outline"
           size="sm"
           onClick={handleBack}
-          className="text-xs h-8 gap-1.5 print:hidden border-slate-300 text-slate-700 hover:text-slate-900"
+          className="text-xs h-8 gap-1.5 print:hidden border-slate-300 text-slate-700 hover:text-slate-900 cursor-pointer"
         >
           <ArrowLeft className="w-3.5 h-3.5 print:hidden" />
           {backLabel}
