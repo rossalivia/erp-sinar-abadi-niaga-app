@@ -73,7 +73,7 @@ export default async function KartuPiutangPage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-white text-slate-900 p-4 sm:p-8 max-w-4xl mx-auto print:p-0 print:max-w-none">
       {/* Kontrol Cetak (Disembunyikan saat cetak fisik) */}
-      <PrintButton />
+      <PrintButton backHref={`/pelanggan/${id}`} />
 
       {/* Dokumen Kartu Piutang */}
       <div className="border border-slate-200 rounded-lg p-6 sm:p-8 bg-white print:border-none print:p-0">

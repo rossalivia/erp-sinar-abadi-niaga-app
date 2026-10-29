@@ -69,7 +69,7 @@ export default async function CetakPesananPage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-white text-slate-900 p-4 sm:p-8 max-w-4xl mx-auto">
       {/* Kontrol Cetak (Disembunyikan saat di-print) */}
-      <PrintButton />
+      <PrintButton backHref={`/pesanan/${id}`} />
 
       {/* Dokumen Kertas */}
       <div className="border border-slate-300 p-8 sm:p-10 rounded-sm space-y-6 print:border-none print:p-0">

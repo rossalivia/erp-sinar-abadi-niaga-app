@@ -193,7 +193,7 @@ export function PesananActions({
           asChild
           className="text-xs h-8 gap-1.5 border-slate-300 text-slate-800 hover:text-slate-900"
         >
-          <Link href={`/pesanan/${pesananId}/surat-jalan`} target="_blank">
+          <Link href={`/pesanan/${pesananId}/surat-jalan`}>
             <Printer className="w-3.5 h-3.5" />
             Cetak Surat Jalan
           </Link>
@@ -208,7 +208,7 @@ export function PesananActions({
           asChild
           className="text-xs h-8 gap-1.5 border-slate-300"
         >
-          <Link href={`/pesanan/${pesananId}/cetak`} target="_blank">
+          <Link href={`/pesanan/${pesananId}/cetak`}>
             <Printer className="w-3.5 h-3.5" />
             Cetak Faktur
           </Link>

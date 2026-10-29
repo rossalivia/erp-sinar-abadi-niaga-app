@@ -68,7 +68,7 @@ export default async function SuratJalanPage({ params }: PageProps) {
                 </p>
               </div>
               <div className="pt-2">
-                <Button asChild variant="outline" size="sm" className="text-xs gap-1.5 border-slate-300">
+                <Button asChild variant="outline" size="sm" className="text-xs gap-1.5 border-slate-300 print:hidden">
                   <Link href={`/pesanan/${id}`}>
                     <ArrowLeft className="w-3.5 h-3.5" />
                     Kembali ke Detail Pesanan
@@ -111,8 +111,8 @@ export default async function SuratJalanPage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 p-4 sm:p-8">
       {/* Kontrol Cetak (Disembunyikan saat di-print) */}
-      <div className="max-w-4xl mx-auto">
-        <PrintButton />
+      <div className="max-w-4xl mx-auto print:hidden">
+        <PrintButton backHref={`/pesanan/${id}`} />
       </div>
 
       {/* Lembar Dokumen Kertas Cetak A4 */}
