@@ -10,6 +10,7 @@ import {
 } from '../mayar-client';
 import {
   prosesWebhookMayarService,
+  getAppBaseUrl,
 } from '../service';
 import { GET as webhookGet, PUT as webhookPut, POST as webhookPost } from '@/app/api/webhooks/mayar/[token]/route';
 
@@ -491,6 +492,89 @@ describe('Modul Tautan Bayar Piutang lewat Mayar (PRD 11.3)', () => {
       const json = await response.json();
       expect(json.ok).toBe(true);
       expect(json.pesan).toContain('Event diabaikan');
+    });
+  });
+
+  describe('5. Dinamisasi Domain Produksi & Redirect URL Mayar (TC-247)', () => {
+    const originalEnv = { ...process.env };
+
+    beforeEach(() => {
+      delete process.env.APP_URL;
+      delete process.env.NEXT_PUBLIC_APP_URL;
+      delete process.env.URL;
+      delete process.env.DEPLOY_PRIME_URL;
+    });
+
+    afterEach(() => {
+      process.env = { ...originalEnv };
+    });
+
+    it('TC-247.1: Menggunakan clientOrigin peramban (window.location.origin) saat aksi dipicu di live Netlify', () => {
+      const liveOrigin = 'https://erp-sinar-abadi-niaga.rossalivia.site';
+      const baseUrl = getAppBaseUrl(liveOrigin);
+      expect(baseUrl).toBe('https://erp-sinar-abadi-niaga.rossalivia.site');
+    });
+
+    it('TC-247.2: Menggunakan domain produksi Netlify jika di lingkungan non-development tanpa env localhost', () => {
+      setNodeEnv('production');
+      const baseUrl = getAppBaseUrl();
+      expect(baseUrl).toBe('https://erp-sinar-abadi-niaga.rossalivia.site');
+    });
+
+    it('TC-247.3: Menghormati variabel lingkungan URL (Netlify site URL) jika tersedia', () => {
+      process.env.URL = 'https://custom-deploy.netlify.app';
+      const baseUrl = getAppBaseUrl();
+      expect(baseUrl).toBe('https://custom-deploy.netlify.app');
+    });
+
+    it('TC-247.4: Tidak membocorkan localhost ke URL redirect di lingkungan produksi Netlify', () => {
+      setNodeEnv('production');
+      process.env.APP_URL = 'http://localhost:3000'; // Kasus tertinggal di .env
+      const baseUrl = getAppBaseUrl();
+      expect(baseUrl).not.toContain('localhost');
+      expect(baseUrl).toBe('https://erp-sinar-abadi-niaga.rossalivia.site');
+    });
+
+    it('TC-247.5: HttpMayarClient menyertakan redirectUrl, redirect_url, dan success_url secara serentak ke API Mayar', async () => {
+      let capturedBody: Record<string, unknown> | null = null;
+      const originalFetch = global.fetch;
+
+      global.fetch = vi.fn().mockImplementation(async (_url, options) => {
+        capturedBody = JSON.parse(options.body as string);
+        return {
+          ok: true,
+          json: async () => ({
+            data: {
+              id: 'inv_mock_123',
+              link: 'https://pay.mayar.io/p/inv_mock_123',
+            },
+          }),
+        };
+      });
+
+      try {
+        const client = new HttpMayarClient('test_api_key', 'https://api.mayar.io/hl/v1');
+        const expectedRedirect = 'https://erp-sinar-abadi-niaga.rossalivia.site/pembayaran/selesai';
+
+        await client.createInvoice({
+          name: 'Toko Test',
+          email: 'toko@example.com',
+          mobile: '08123456789',
+          redirectUrl: expectedRedirect,
+          description: 'Test Tagihan',
+          expiredAt: '2026-10-30T00:00:00Z',
+          items: [{ description: 'Barang A', quantity: 1, rate: 100000 }],
+          extraData: { noCustomer: 'PEL-01', idProd: 'SO-01' },
+        });
+
+        expect(capturedBody).not.toBeNull();
+        const payload = capturedBody as unknown as Record<string, unknown>;
+        expect(payload.redirectUrl).toBe(expectedRedirect);
+        expect(payload.redirect_url).toBe(expectedRedirect);
+        expect(payload.success_url).toBe(expectedRedirect);
+      } finally {
+        global.fetch = originalFetch;
+      }
     });
   });
 });

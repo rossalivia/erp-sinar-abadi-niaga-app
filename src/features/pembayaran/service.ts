@@ -33,6 +33,63 @@ interface TagihanCariDbRow {
 /**
  * Service pembuatan tagihan pembayaran online Mayar oleh Manajer (M5).
  */
+/**
+ * Menentukan URL dasar aplikasi secara dinamis untuk webhook dan redirect URL gateway pembayaran Mayar.
+ *
+ * Prioritas resolusi:
+ * 1. `clientOrigin` (dari window.location.origin peramban saat aksi dipicu) jika bukan localhost
+ * 2. Environment Variables non-localhost:
+ *    - `APP_URL`
+ *    - `NEXT_PUBLIC_APP_URL`
+ *    - `URL` (domain utama situs Netlify)
+ *    - `DEPLOY_PRIME_URL` (URL deploy Netlify)
+ * 3. Jika `clientOrigin` ada (meski localhost di development lokal)
+ * 4. Domain produksi resmi Netlify: "https://erp-sinar-abadi-niaga.rossalivia.site" (jika di produksi)
+ * 5. Fallback: "https://erp-sinar-abadi-niaga.rossalivia.site" (production) atau "http://localhost:3000" (development)
+ */
+export function getAppBaseUrl(clientOrigin?: string): string {
+  if (clientOrigin && typeof clientOrigin === 'string') {
+    const trimmed = clientOrigin.trim().replace(/\/+$/, '');
+    if (trimmed && !trimmed.includes('localhost') && !trimmed.includes('127.0.0.1')) {
+      return trimmed;
+    }
+  }
+
+  const envCandidates = [
+    process.env.APP_URL,
+    process.env.NEXT_PUBLIC_APP_URL,
+    process.env.URL,
+    process.env.DEPLOY_PRIME_URL,
+  ];
+
+  for (const envVal of envCandidates) {
+    if (envVal && typeof envVal === 'string') {
+      const trimmed = envVal.trim().replace(/\/+$/, '');
+      if (trimmed) {
+        if (!trimmed.includes('localhost') && !trimmed.includes('127.0.0.1')) {
+          return trimmed;
+        }
+        if (process.env.NODE_ENV === 'development') {
+          return trimmed;
+        }
+      }
+    }
+  }
+
+  if (clientOrigin && typeof clientOrigin === 'string') {
+    const trimmed = clientOrigin.trim().replace(/\/+$/, '');
+    if (trimmed) {
+      return trimmed;
+    }
+  }
+
+  if (process.env.NODE_ENV === 'development') {
+    return 'http://localhost:3000';
+  }
+
+  return 'https://erp-sinar-abadi-niaga.rossalivia.site';
+}
+
 export async function buatTagihanMayarService(
   input: BuatTagihanInput,
   customClient?: MayarClient
@@ -59,8 +116,10 @@ export async function buatTagihanMayarService(
   }
 
   const pesanan = siapkanData[0];
-  const appUrl = (process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000').replace(/\/+$/, '');
-  const redirectUrl = `${appUrl}/pembayaran/selesai`;
+  const appUrl = getAppBaseUrl(input.origin);
+  const redirectUrl = (input.redirectUrl && input.redirectUrl.trim() !== '')
+    ? input.redirectUrl.trim()
+    : `${appUrl}/pembayaran/selesai`;
 
   // Normalisasi nomor telepon untuk Mayar
   const telpNorm = normalisasiNomorTelepon(pesanan.telepon_pelanggan);

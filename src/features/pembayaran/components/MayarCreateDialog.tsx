@@ -61,6 +61,10 @@ export function MayarCreateDialog({
       formData.set('pesananId', pesananId);
       formData.set('email', email.trim());
       formData.set('masaBerlakuHari', masaBerlaku);
+      if (typeof window !== 'undefined' && window.location?.origin) {
+        formData.set('origin', window.location.origin);
+        formData.set('redirectUrl', `${window.location.origin}/pembayaran/selesai`);
+      }
 
       const res = await buatTagihanMayarAction(formData);
 

@@ -472,6 +472,13 @@ Urutan validasi `konfirmasi_pesanan`: (1) akses/kepemilikan → E01/E02, (2) sta
 |---|---|---|---|---|---|---|---|
 | **TC-246** | Navigasi Tombol Kembali & Utilitas Print:Hidden pada Cetak Surat Jalan dan Faktur | P, G, M | Vitest + Komponen | **Lulus** | 2026-10-29 | `src/features/pesanan/components/print-button.tsx`<br>`src/features/pesanan/__tests__/print-button.test.ts` | Tombol "Kembali" menyelesaikan rute secara mulus ke detail pesanan (`/pesanan/[id]`) atau fallback peramban tanpa membuat pengguna terjebak pada halaman cetak. Seluruh elemen navigasi dan tombol cetak memiliki kelas `print:hidden` sehingga tidak ikut tercetak pada dokumen fisik atau PDF. |
 
+## 25. Test Case Tambahan: Dinamisasi Domain Produksi & Redirect URL Gateway Pembayaran Mayar (TC-247)
+
+| ID | Fokus Uji | Aktor | Media | Status | Tanggal Uji | Bukti Uji | Ringkasan Verifikasi & Hasil |
+|---|---|---|---|---|---|---|---|
+| **TC-247** | Resolusi Dinamis `redirect_url` & `success_url` Mayar Menggunakan Domain Produksi Netlify | M | Vitest + Komponen | **Lulus** | 2026-10-29 | `src/features/pembayaran/service.ts`<br>`src/features/pembayaran/mayar-client.ts`<br>`src/features/pembayaran/__tests__/mayar.test.ts` | Resolusi URL pengalihan pasca bayar Mayar (`/pembayaran/selesai`) secara dinamis menggunakan `window.location.origin` pengguna atau domain resmi Netlify (`https://erp-sinar-abadi-niaga.rossalivia.site`) tanpa hardcode `localhost:3000`. Payload pembuatan invoice Mayar menyertakan `redirectUrl`, `redirect_url`, dan `success_url` serentak untuk kompatibilitas penuh. |
+
+
 
 
 

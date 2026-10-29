@@ -43,6 +43,8 @@ export interface CreateInvoiceParams {
   email: string;
   mobile: string;
   redirectUrl: string;
+  redirect_url?: string;
+  success_url?: string;
   description: string;
   expiredAt: string; // ISO 8601 UTC
   items: MayarInvoiceItem[];
@@ -78,6 +80,8 @@ export interface BuatTagihanInput {
   pesananId: string;
   email: string;
   masaBerlakuHari: number;
+  origin?: string;
+  redirectUrl?: string;
 }
 
 export interface ServiceResult<T = unknown> {

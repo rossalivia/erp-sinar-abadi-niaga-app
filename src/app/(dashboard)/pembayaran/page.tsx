@@ -2,7 +2,7 @@ import * as React from 'react';
 import { redirect } from 'next/navigation';
 import { getProfil } from '@/lib/profil';
 import { createServerClient } from '@/lib/supabase/server';
-import { ambilRiwayatTagihanMayarService } from '@/features/pembayaran/service';
+import { ambilRiwayatTagihanMayarService, getAppBaseUrl } from '@/features/pembayaran/service';
 import { PageHeader } from '@/components/shared/page-header';
 import { PembayaranMayarView, type PesananDikirimItem } from '@/features/pembayaran/components/PembayaranMayarView';
 
@@ -85,7 +85,7 @@ export default async function PembayaranMayarPage() {
   );
 
   const webhookToken = process.env.MAYAR_WEBHOOK_TOKEN || 'sandbox_webhook_token_rahasia';
-  const appUrl = (process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000').replace(/\/+$/, '');
+  const appUrl = getAppBaseUrl();
   const webhookUrl = `${appUrl}/api/webhooks/mayar/${webhookToken}`;
   const defaultCustomerEmail = process.env.DEFAULT_CUSTOMER_EMAIL || 'toko.pelanggan@sinarabadi.co.id';
 

@@ -14,6 +14,8 @@ const buatTagihanSchema = z.object({
   pesananId: z.string().uuid({ message: 'ID pesanan tidak valid' }),
   email: z.string().email({ message: 'Format email pelanggan tidak valid' }),
   masaBerlakuHari: z.coerce.number().min(1).max(30).default(7),
+  origin: z.string().optional(),
+  redirectUrl: z.string().optional(),
 });
 
 /**
@@ -35,6 +37,8 @@ export async function buatTagihanMayarAction(
     pesananId: formData.get('pesananId'),
     email: formData.get('email'),
     masaBerlakuHari: formData.get('masaBerlakuHari') || 7,
+    origin: formData.get('origin') || undefined,
+    redirectUrl: formData.get('redirectUrl') || undefined,
   };
 
   const parsed = buatTagihanSchema.safeParse(raw);
@@ -65,6 +69,8 @@ export async function buatTagihanMayarAction(
     pesananId: parsed.data.pesananId,
     email: parsed.data.email,
     masaBerlakuHari: parsed.data.masaBerlakuHari,
+    origin: parsed.data.origin,
+    redirectUrl: parsed.data.redirectUrl,
   });
 
   if (res.success) {

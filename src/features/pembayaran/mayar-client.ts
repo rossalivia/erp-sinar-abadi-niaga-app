@@ -35,7 +35,11 @@ export class HttpMayarClient implements MayarClient {
           Authorization: `Bearer ${this.apiKey}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(params),
+        body: JSON.stringify({
+          ...params,
+          redirect_url: params.redirect_url || params.redirectUrl,
+          success_url: params.success_url || params.redirectUrl,
+        }),
         signal: controller.signal,
       });
 
