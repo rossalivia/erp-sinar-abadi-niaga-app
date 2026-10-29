@@ -466,6 +466,13 @@ Urutan validasi `konfirmasi_pesanan`: (1) akses/kepemilikan → E01/E02, (2) sta
 | **TC-244** | Modal Multi-Select & Filter Duplikasi Produk pada Sesi Stock Opname | G, M | Vitest + Komponen | **Lulus** | 2026-10-28 | `src/features/stock-opname/components/opname-editor.tsx`<br>`src/features/stock-opname/__tests__/schemas.test.ts` | Menambahkan beberapa item spesifik sekaligus melalui dialog pencarian SKU/nama dengan checkbox; barang yang sudah masuk ke sesi otomatis tersaring dari pilihan. |
 | **TC-245** | Validasi penolakan selisih stok fisik tanpa alasan minimal 10 karakter | G, M | SQL + Vitest | **Lulus** | 2026-10-28 | `src/features/stock-opname/__tests__/schemas.test.ts`<br>`supabase/migrations/20261022000000_stock_opname.sql` | Ditolak oleh skema Zod dan constraint database jika `selisih != 0` dan keterangan < 10 karakter (`E0016`). Koreksi mutasi stok hanya terjadi saat disetujui Manajer. |
 
+## 24. Test Case Tambahan: Perbaikan Navigasi Tombol Kembali pada Dokumen Cetak (TC-246)
+
+| ID | Fokus Uji | Aktor | Media | Status | Tanggal Uji | Bukti Uji | Ringkasan Verifikasi & Hasil |
+|---|---|---|---|---|---|---|---|
+| **TC-246** | Navigasi Tombol Kembali & Utilitas Print:Hidden pada Cetak Surat Jalan dan Faktur | P, G, M | Vitest + Komponen | **Lulus** | 2026-10-29 | `src/features/pesanan/components/print-button.tsx`<br>`src/features/pesanan/__tests__/print-button.test.ts` | Tombol "Kembali" menyelesaikan rute secara mulus ke detail pesanan (`/pesanan/[id]`) atau fallback peramban tanpa membuat pengguna terjebak pada halaman cetak. Seluruh elemen navigasi dan tombol cetak memiliki kelas `print:hidden` sehingga tidak ikut tercetak pada dokumen fisik atau PDF. |
+
+
 
 
 
