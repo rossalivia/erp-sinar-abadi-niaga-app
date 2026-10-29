@@ -47,6 +47,8 @@ interface TagihanCariDbRow {
  * 4. Domain produksi resmi Netlify: "https://erp-sinar-abadi-niaga.rossalivia.site" (jika di produksi)
  * 5. Fallback: "https://erp-sinar-abadi-niaga.rossalivia.site" (production) atau "http://localhost:3000" (development)
  */
+export const DEFAULT_PRODUCTION_DOMAIN = 'https://erp-sinar-abadi-niaga.rossalivia.site';
+
 export function getAppBaseUrl(clientOrigin?: string): string {
   if (clientOrigin && typeof clientOrigin === 'string') {
     const trimmed = clientOrigin.trim().replace(/\/+$/, '');
@@ -65,30 +67,17 @@ export function getAppBaseUrl(clientOrigin?: string): string {
   for (const envVal of envCandidates) {
     if (envVal && typeof envVal === 'string') {
       const trimmed = envVal.trim().replace(/\/+$/, '');
-      if (trimmed) {
-        if (!trimmed.includes('localhost') && !trimmed.includes('127.0.0.1')) {
-          return trimmed;
-        }
-        if (process.env.NODE_ENV === 'development') {
-          return trimmed;
-        }
+      if (trimmed && !trimmed.includes('localhost') && !trimmed.includes('127.0.0.1')) {
+        return trimmed;
       }
     }
   }
 
-  if (clientOrigin && typeof clientOrigin === 'string') {
-    const trimmed = clientOrigin.trim().replace(/\/+$/, '');
-    if (trimmed) {
-      return trimmed;
-    }
-  }
-
-  if (process.env.NODE_ENV === 'development') {
-    return 'http://localhost:3000';
-  }
-
-  return 'https://erp-sinar-abadi-niaga.rossalivia.site';
+  // Gateway Mayar berjalan di cloud publik; jangan pernah mengarahkan Mayar ke localhost
+  return DEFAULT_PRODUCTION_DOMAIN;
 }
+
+
 
 export async function buatTagihanMayarService(
   input: BuatTagihanInput,
@@ -117,7 +106,11 @@ export async function buatTagihanMayarService(
 
   const pesanan = siapkanData[0];
   const appUrl = getAppBaseUrl(input.origin);
-  const redirectUrl = (input.redirectUrl && input.redirectUrl.trim() !== '')
+  const isInputRedirectLocal = Boolean(
+    input.redirectUrl &&
+    (input.redirectUrl.includes('localhost') || input.redirectUrl.includes('127.0.0.1'))
+  );
+  const redirectUrl = (input.redirectUrl && input.redirectUrl.trim() !== '' && !isInputRedirectLocal)
     ? input.redirectUrl.trim()
     : `${appUrl}/pembayaran/selesai`;
 

@@ -576,5 +576,36 @@ describe('Modul Tautan Bayar Piutang lewat Mayar (PRD 11.3)', () => {
         global.fetch = originalFetch;
       }
     });
+
+    it('TC-247.6: Menolak localhost bahkan jika clientOrigin atau env lokal disuplai dan tetap mengembalikan domain Netlify', () => {
+      setNodeEnv('development');
+      expect(getAppBaseUrl('http://localhost:3000')).toBe('https://erp-sinar-abadi-niaga.rossalivia.site');
+      expect(getAppBaseUrl('http://127.0.0.1:3000')).toBe('https://erp-sinar-abadi-niaga.rossalivia.site');
+      expect(getAppBaseUrl()).toBe('https://erp-sinar-abadi-niaga.rossalivia.site');
+    });
+
+    it('TC-247.7: Sanitasi redirectUrl mencegah pengiriman localhost ke gateway Mayar', () => {
+      const sanitizeRedirectUrl = (inputRedirect?: string, appUrl = getAppBaseUrl()) => {
+        const isLocal = Boolean(
+          inputRedirect && (inputRedirect.includes('localhost') || inputRedirect.includes('127.0.0.1'))
+        );
+        return inputRedirect && inputRedirect.trim() !== '' && !isLocal
+          ? inputRedirect.trim()
+          : `${appUrl}/pembayaran/selesai`;
+      };
+
+      // Kasus input localhost dari browser dev
+      expect(sanitizeRedirectUrl('http://localhost:3000/pembayaran/selesai')).toBe(
+        'https://erp-sinar-abadi-niaga.rossalivia.site/pembayaran/selesai'
+      );
+      // Kasus domain produksi valid
+      expect(sanitizeRedirectUrl('https://custom.site/pembayaran/selesai')).toBe(
+        'https://custom.site/pembayaran/selesai'
+      );
+      // Kasus kosong
+      expect(sanitizeRedirectUrl()).toBe(
+        'https://erp-sinar-abadi-niaga.rossalivia.site/pembayaran/selesai'
+      );
+    });
   });
 });

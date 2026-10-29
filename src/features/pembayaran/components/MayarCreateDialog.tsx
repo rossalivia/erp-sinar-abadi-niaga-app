@@ -62,8 +62,13 @@ export function MayarCreateDialog({
       formData.set('email', email.trim());
       formData.set('masaBerlakuHari', masaBerlaku);
       if (typeof window !== 'undefined' && window.location?.origin) {
-        formData.set('origin', window.location.origin);
-        formData.set('redirectUrl', `${window.location.origin}/pembayaran/selesai`);
+        const origin = window.location.origin;
+        const isLocal = origin.includes('localhost') || origin.includes('127.0.0.1');
+        const effectiveOrigin = isLocal
+          ? 'https://erp-sinar-abadi-niaga.rossalivia.site'
+          : origin;
+        formData.set('origin', effectiveOrigin);
+        formData.set('redirectUrl', `${effectiveOrigin}/pembayaran/selesai`);
       }
 
       const res = await buatTagihanMayarAction(formData);

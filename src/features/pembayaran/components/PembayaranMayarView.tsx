@@ -135,10 +135,12 @@ export function PembayaranMayarView({
     const frameId = requestAnimationFrame(() => {
       try {
         const saved = localStorage.getItem('erp_mayar_custom_webhook_url');
-        if (saved && saved.trim() !== '') {
+        if (saved && saved.trim() !== '' && !saved.includes('localhost') && !saved.includes('127.0.0.1')) {
           setUrlWebhook(saved);
           setIsCustomUrl(saved !== webhookUrl);
           return;
+        } else if (saved && (saved.includes('localhost') || saved.includes('127.0.0.1'))) {
+          localStorage.removeItem('erp_mayar_custom_webhook_url');
         }
       } catch {}
       setUrlWebhook(webhookUrl);
@@ -487,7 +489,10 @@ export function PembayaranMayarView({
                     Reset ke Default Server
                   </button>
                 )}
-                {typeof window !== 'undefined' && !urlWebhook.startsWith(window.location.origin) && (
+                {typeof window !== 'undefined' &&
+                  !window.location.origin.includes('localhost') &&
+                  !window.location.origin.includes('127.0.0.1') &&
+                  !urlWebhook.startsWith(window.location.origin) && (
                   <button
                     type="button"
                     onClick={() => {
